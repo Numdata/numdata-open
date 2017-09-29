@@ -1,0 +1,514 @@
+/*
+ * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Numdata nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NUMDATA BV BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.numdata.oss.log;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
+
+/**
+ * Log target that allows network clients to view logs of a running application.
+ *
+ * @author  Peter S. Heijnen
+ */
+public class LogServer
+	implements LogTarget
+{
+	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final ClassLogger LOG = ClassLogger.getFor( LogServer.class );
+
+	/**
+	 * Name of system property through which the TCP/IP port can be set. If set
+	 * to 'default' or an empty string, the {@link #DEFAULT_PORT} is used.
+	 */
+	public static final String PORT_SYSTEM_PROPERTY = "log.server.port";
+
+	/**
+	 * Default port for log server.
+	 */
+	public static final int DEFAULT_PORT = 7709;
+
+	/**
+	 * Request from client to server.
+	 */
+	public enum Request
+	{
+		/**
+		 * Quit log session.
+		 *
+		 * Server will disconnect.
+		 */
+		QUIT,
+
+		/**
+		 * Switch log level.
+		 *
+		 * Should be followed by log level written using
+		 * {@link DataOutputStream#writeInt(int)}.
+		 */
+		SWITCH_LOG_LEVEL
+	}
+
+	/**
+	 * List of active client connection handlers.
+	 */
+	private final List<ConnectionHandler> _connectionHandlers = new ArrayList<ConnectionHandler>();
+
+	/**
+	 * Log message buffer. Used for history playback.
+	 */
+	private final LinkedList<LogMessage> _messageBuffer = new LinkedList<LogMessage>();
+
+	/**
+	 * Estimated size (in bytes) of log message in message buffer.
+	 */
+	private int _bufferSize = 0;
+
+	/**
+	 * Get default {@link LogServer} if the {@link #PORT_SYSTEM_PROPERTY} is set.
+	 *
+	 * @return  Default {@link LogServer} instance;
+	 *          {@code null} if no default instance is available.
+	 */
+	static LogServer getDefaultInstance()
+	{
+		LogServer result = null;
+
+		try
+		{
+			final String port = System.getProperty( PORT_SYSTEM_PROPERTY );
+			if ( port != null )
+			{
+				result = new LogServer( ( TextTools.isNonEmpty( port ) && !"default".equals( port ) ) ? Integer.parseInt( port ) : DEFAULT_PORT );
+			}
+		}
+		catch ( SecurityException e )
+		{
+			/* ignore no access to system property */
+		}
+		catch ( Throwable t )
+		{
+			/* ignore all other problems, but do print them on the console */
+			t.printStackTrace();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Construct server.
+	 *
+	 * @param   port    TCP/IP port to listen to.
+	 */
+	public LogServer( final int port )
+	{
+		ServerSocket serverSocket = null;
+		try
+		{
+			serverSocket = new ServerSocket( port );
+		}
+		catch ( IOException e )
+		{
+			LOG.warn( "Failed to open log server socket: " + e.getMessage(), e );
+		}
+
+		if ( serverSocket != null )
+		{
+			final Thread serverThread = new Thread( new SocketMonitor( serverSocket ) );
+			serverThread.setPriority( Thread.MIN_PRIORITY );
+			serverThread.setDaemon( true );
+			serverThread.start();
+		}
+	}
+
+	@Override
+	public boolean isLevelEnabled( final String name, final int level )
+	{
+		boolean result = false;
+
+		for ( final ConnectionHandler connectionHandler : new ArrayList<ConnectionHandler>( _connectionHandlers ) )
+		{
+			if ( connectionHandler.isLevelEnabled( level ) )
+			{
+				result = true;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public void log( final String name, final int level, final String message, final Throwable throwable, final String threadName )
+	{
+		final LogMessage logMessage = new LogMessage( name, level, message, throwable, threadName );
+
+		bufferMessage( logMessage );
+
+		for ( final ConnectionHandler connectionHandler : new ArrayList<ConnectionHandler>( _connectionHandlers ) )
+		{
+			if ( connectionHandler.isLevelEnabled( level ) )
+			{
+				connectionHandler.send( logMessage );
+			}
+		}
+	}
+
+	/**
+	 * Place log message in buffer.
+	 *
+	 * @param   logMessage  Log message to
+	 */
+	protected void bufferMessage( final LogMessage logMessage )
+	{
+		final LinkedList<LogMessage> messageBuffer = _messageBuffer;
+		synchronized ( messageBuffer )
+		{
+			int bufferSize = _bufferSize + getMessageSize( logMessage );
+
+			while ( bufferSize > 100000 )
+			{
+				if ( messageBuffer.isEmpty() )
+				{
+					bufferSize = 0;
+					break;
+				}
+
+				final LogMessage removedMessage = messageBuffer.removeFirst();
+				bufferSize -= getMessageSize( removedMessage );
+			}
+
+			_bufferSize = bufferSize;
+			messageBuffer.add( logMessage );
+		}
+	}
+
+	/**
+	 * Get log messages from buffer.
+	 *
+	 * @param   logLevel    Only get log messages upto this level.
+	 *
+	 * @return  Buffered log messages.
+	 */
+	protected List<LogMessage> getBufferedMessages( final int logLevel )
+	{
+		final LinkedList<LogMessage> result = new LinkedList<LogMessage>();
+
+		final LinkedList<LogMessage> messageBuffer = _messageBuffer;
+		synchronized ( messageBuffer )
+		{
+			for ( final LogMessage logMessage : messageBuffer )
+			{
+				if ( ( logMessage.level <= logLevel ) )
+				{
+					result.add( logMessage );
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get size of log message in bytes. This only makes a best effort to
+	 * estimate the size based on the total number of characters in the message.
+	 * The actual number of bytes is always more than the result of this method.
+	 *
+	 * @param   logMessage  Log message to get size of.
+	 *
+	 * @return  Log message size in bytes.
+	 */
+	public static int getMessageSize( @NotNull final LogMessage logMessage )
+	{
+		int stringLength = 0;
+
+		final String name = logMessage.name;
+		if ( name != null )
+		{
+			stringLength += name.length();
+		}
+
+		final String message = logMessage.message;
+		if ( message != null )
+		{
+			stringLength += message.length();
+		}
+
+		for ( RemoteException exception = logMessage.throwable ; exception != null; exception = exception.getCause() )
+		{
+			final String exceptionMessage = exception.getMessage();
+			if ( exceptionMessage != null )
+			{
+				stringLength += exceptionMessage.length();
+			}
+
+			for ( final StackTraceElement stackTraceElement : exception.getStackTrace() )
+			{
+				final String className = stackTraceElement.getClassName();
+				stringLength += className.length();
+
+				final String fileName = stackTraceElement.getFileName();
+				if ( fileName != null )
+				{
+					stringLength += fileName.length();
+				}
+
+				final String methodName = stackTraceElement.getMethodName();
+				stringLength += methodName.length();
+			}
+		}
+
+		return 2 * stringLength;
+	}
+
+	/**
+	 * Listens to incoming connections.
+	 */
+	private class SocketMonitor
+		implements Runnable
+	{
+		/**
+		 * Server socket to accept connections from.
+		 */
+		private final ServerSocket _serverSocket;
+
+		/**
+		 * Construct socket connection listener.
+		 *
+		 * @param   serverSocket    Server socket to accept connections from.
+		 */
+		private SocketMonitor( final ServerSocket serverSocket )
+		{
+			_serverSocket = serverSocket;
+		}
+
+		@Override
+		public void run()
+		{
+			final ServerSocket serverSocket = _serverSocket;
+			LOG.info( "Log server started, listening to " + serverSocket.getInetAddress() + ':' + serverSocket.getLocalPort() );
+
+			try
+			{
+				while ( !serverSocket.isClosed() )
+				{
+					try
+					{
+						final Socket clientSocket = serverSocket.accept();
+
+						try
+						{
+							_connectionHandlers.add( new ConnectionHandler( clientSocket ) );
+						}
+						catch ( Exception e )
+						{
+							e.printStackTrace();
+							clientSocket.close();
+						}
+					}
+					catch ( IOException e )
+					{
+						if ( !serverSocket.isClosed() )
+						{
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			finally
+			{
+				if ( serverSocket != null )
+				{
+					try
+					{
+						serverSocket.close();
+					}
+					catch ( IOException e )
+					{
+						/* ignore socket closing problems */
+					}
+				}
+			}
+
+			LOG.debug( "Log server terminated" );
+		}
+	}
+
+	/**
+	 * Handles a client connection.
+	 */
+	private class ConnectionHandler
+		implements Runnable
+	{
+		/**
+		 * Log level.
+		 */
+		private int _logLevel = ClassLogger.INFO;
+
+		/**
+		 * Socket connected to client.
+		 */
+		private final Socket _socket;
+
+		/**
+		 * Output stream to connected client.
+		 */
+		private ObjectOutput _out;
+
+		/**
+		 * Thread on which the client is handled.
+		 */
+		private Thread _thread;
+
+		/**
+		 * Constructs a new handler for the given socket.
+		 *
+		 * @param   socket  Socket connected to a client.
+		 */
+		ConnectionHandler( final Socket socket )
+		{
+			_socket = socket;
+			_out = null;
+
+			LOG.debug( "Log client connected from " + socket.getInetAddress() );
+			final Thread thread = new Thread( this );
+			thread.setDaemon( true );
+			thread.setPriority( Thread.MIN_PRIORITY );
+			_thread = thread;
+			thread.start();
+		}
+
+		@Override
+		public void run()
+		{
+			final Socket socket = _socket;
+			try
+			{
+				final ObjectOutputStream out = new ObjectOutputStream( socket.getOutputStream() );
+				_out = out;
+
+				final ObjectInput in  = new ObjectInputStream( socket.getInputStream() );
+				final int initialLogLevel = in.readInt();
+				_logLevel = initialLogLevel;
+				for ( final LogMessage logMessage : getBufferedMessages( initialLogLevel ) )
+				{
+					out.writeObject( logMessage );
+				}
+				out.flush();
+
+				while ( !Thread.interrupted() && !socket.isClosed() && !socket.isInputShutdown() && !socket.isOutputShutdown() )
+				{
+					final Object request = in.readObject();
+					LOG.debug( "Log client request: " + request );
+
+					if ( request == LogServer.Request.QUIT )
+					{
+						break;
+					}
+					else if ( request == LogServer.Request.SWITCH_LOG_LEVEL )
+					{
+						final int level = in.readInt();
+						if ( ( level < ClassLogger.FATAL ) || ( level > ClassLogger.TRACE ) )
+						{
+							break;
+						}
+
+						_logLevel = level;
+					}
+				}
+			}
+			catch ( IOException e )
+			{
+				LOG.debug( "Unexpected client disconnect: " + e, e );
+			}
+			catch ( ClassNotFoundException e )
+			{
+				LOG.warn( "Bad object received from client: " + e, e );
+			}
+			finally
+			{
+				try
+				{
+					socket.close();
+				}
+				catch ( IOException e )
+				{
+					LOG.debug( "Failed to close socket: " + e, e );
+				}
+			}
+
+			LOG.debug( "Log client " + socket.getInetAddress() + " disconnected" );
+		}
+
+		/**
+		 * Test if the specified log level is enabled for this client.
+		 *
+		 * @param   level   Log level.
+		 *
+		 * @return  {@code true} if the log level is enabled;
+		 *          {@code false} if the log level is disabled.
+		 */
+		private boolean isLevelEnabled( final int level )
+		{
+			return ( level <= _logLevel );
+		}
+
+		/**
+		 * Send object to client.
+		 *
+		 * @param object Object to send.
+		 */
+		public void send( final Object object )
+		{
+			synchronized ( this )
+			{
+				final Thread thread = _thread;
+				final ObjectOutput out = _out;
+				if ( ( thread != null ) && ( out != null ) )
+				{
+					try
+					{
+						out.writeObject( object );
+						out.flush();
+					}
+					catch ( Throwable t )
+					{
+						_out = null;
+						t.printStackTrace();
+						thread.interrupt();
+						_thread = null;
+					}
+				}
+			}
+		}
+	}
+}

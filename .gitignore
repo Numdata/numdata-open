@@ -1,0 +1,7 @@
+/.idea/
+*.iml
+target/
+node_modules/
+*.jar
+*.jar.pack.gz
+!/serial/javacomm/comm.jar
