@@ -315,7 +315,7 @@ public class ResourceBundleTools
 				{
 					LOG.trace( "getBundleHierarchyElements() got super-bundle for super-class " + superclass.getName() + " with keys " + new TreeSet<String>( superBundle.keySet() ) );
 				}
-				result.add( superclass.getName() );
+				result.addAll( getBundleHierarchyNames( superclass ) );
 			}
 			catch ( final MissingResourceException ignored )
 			{
@@ -328,11 +328,11 @@ public class ResourceBundleTools
 			try
 			{
 				final ResourceBundle bundle = getBundleHierarchy( declaringClass, null );
-				result.add( declaringClass.getName() );
 				if ( trace )
 				{
 					LOG.trace( "getBundleHierarchyElements() got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
 				}
+				result.addAll( getBundleHierarchyNames( declaringClass ) );
 			}
 			catch ( final MissingResourceException ignored )
 			{
