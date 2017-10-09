@@ -72,13 +72,13 @@ export default class LengthMeasureFormat
 	 * </pre>
 	 */
 	static PARSE_PATTERN =
-		//                                               numerator
-		//  negative?                                    |      denominator
-		//  |      feet                      whole       |      |      decimal (inches)
-		//  |      |                         |           |      |      |        fraction    inches?
-		//  |      |                         |           |      |      |           |        |
-		//  1      2                         3           4      5      6           7        8
-			/\s*(-)?(?:(\d+)'[-\s]?)?(?:(?:(?:(?:(\d+)[-\s])?(\d+)\/(\d+))|(\d+(?:[\.,](\d+))?))(")?)?/;
+		//                                                   numerator
+		//      negative?                                    |      denominator
+		//      |      feet                      whole       |      |      decimal (inches)
+		//      |      |                         |           |      |      |       fraction    inches?
+		//      |      |                         |           |      |      |          |        |
+		//      1      2                         3           4      5      6          7        8
+			/\s*(-)?(?:(\d+)'[-\s]?)?(?:(?:(?:(?:(\d+)[-\s])?(\d+)\/(\d+))|(\d+(?:[.,](\d+))?))(")?)?/;
 
 	/**
 	 * Group index in {@link #PARSE_PATTERN}.

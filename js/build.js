@@ -29,5 +29,7 @@
 const build = require( '@numdata/common-build-gulp' ).build;
 build( {
 	source: 'src/**/*.js',
-	target: 'lib'
+	target: 'lib',
+	test: 'test/**/Test*.js',
+	testTarget: 'generated-sources/test'
 } );

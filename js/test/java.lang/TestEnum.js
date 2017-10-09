@@ -24,9 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
-const assert = require( 'chai' ).assert;
-const Enum = require( '../../lib/java.lang/Enum' ).default;
+import { assert } from 'chai';
+import Enum from '../../lib/java.lang/Enum';
 
 class Enum1 extends Enum
 {

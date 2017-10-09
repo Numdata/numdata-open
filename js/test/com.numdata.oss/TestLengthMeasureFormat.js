@@ -24,17 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
-const expect = require('chai').expect;
+import { expect } from 'chai';
+import { BigDecimal } from 'bigdecimal';
 
-var BigDecimal = require( 'bigdecimal' ).BigDecimal;
-
-var parseBigRational = require( 'big-rational' );
-var BigRational = parseBigRational().constructor;
+import parseBigRational from 'big-rational';
+const BigRational = parseBigRational().constructor;
 BigRational.parse = parseBigRational;
 
-var LengthMeasurePreferences = require( '../../lib/com.numdata.oss/LengthMeasurePreferences' ).default;
-var Locale = require( '../../lib/com.numdata.oss/Locale' ).default;
+import LengthMeasurePreferences from '../../lib/com.numdata.oss/LengthMeasurePreferences';
+import Locale from '../../lib/com.numdata.oss/Locale';
 
 /**
  * Unit test for {@link LengthMeasureFormat} class.

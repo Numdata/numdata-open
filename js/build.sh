@@ -9,27 +9,11 @@ function run()
 
     case "$1" in
     clean)
-        rm -rf lib dist
-        ;;
-
-    validate)
-        eslint src || exit $?
-        eslint --env mocha test || exit $?
-        ;;
-
-    test)
-        mocha --recursive test || exit $?
-        ;;
-
-    patch)
-        ./build.sh clean &&
-        ./build.sh build &&
-        npm version patch &&
-        npm publish || exit $?
+        rm -rf lib dist generated-sources/test*
         ;;
 
     *)
-        node build.js "$@"
+        node build.js "$@" || exit $?
         ;;
     esac
 }

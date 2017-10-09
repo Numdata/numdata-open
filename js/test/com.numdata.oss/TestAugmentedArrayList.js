@@ -24,10 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
-const assert = require('chai').assert;
-
-const AugmentedArrayList = require( '../../lib/com.numdata.oss/AugmentedArrayList' ).default;
+import { assert } from 'chai';
+import AugmentedArrayList from '../../lib/com.numdata.oss/AugmentedArrayList';
 
 describe( 'AugmentedArrayList', function()
 {
