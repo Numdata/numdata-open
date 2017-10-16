@@ -84,7 +84,7 @@ extends BasicJspWriter
 	}
 
 	/**
-	 * Create an <c{@code dentingJspWriter} instance from the specified writer.
+	 * Create an {@code IndentingJspWriter} instance from the specified writer.
 	 * If the writer was already an {@code IndentingJspWriter} instance, it is
 	 * returned unchanged. Otherwise, construct a new wrapper with the specified
 	 * indent properties.
@@ -101,7 +101,7 @@ extends BasicJspWriter
 	}
 
 	/**
-	 * Create an <c{@code dentingJspWriter} instance from the specified writer.
+	 * Create an {@code IndentingJspWriter} instance from the specified writer.
 	 * If the writer was already an {@code IndentingJspWriter} instance, it is
 	 * returned unchanged. Otherwise, construct a new wrapper with the specified
 	 * indent properties.

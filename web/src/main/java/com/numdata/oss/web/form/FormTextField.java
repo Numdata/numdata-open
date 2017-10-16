@@ -49,12 +49,12 @@ extends FormField
 	private static final ClassLogger LOG = ClassLogger.getFor( FormTextField.class );
 
 	/**
-	 * Visible size of field (-1 => unspecified).
+	 * Visible size of field (-1 =&gt; unspecified).
 	 */
 	private int _size = -1;
 
 	/**
-	 * Maximum number of characters in field (-1 => unspecified).
+	 * Maximum number of characters in field (-1 =&gt; unspecified).
 	 */
 	private int _maxlength = -1;
 
@@ -102,7 +102,7 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target Target object of field.
-	 * @param size   Visable size of field (-1 => unspecified).
+	 * @param size   Visable size of field (-1 =&gt; unspecified).
 	 */
 	public FormTextField( final FieldTarget target, final int size )
 	{
@@ -113,8 +113,8 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target    Target object of field.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 */
 	public FormTextField( final FieldTarget target, final int size, final int maxLength )
@@ -126,8 +126,8 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target    Target object of field.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 * @param password  Field is a password vs. regular text field.
 	 */

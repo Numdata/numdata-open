@@ -50,17 +50,17 @@ extends FormField
 	private static final ClassLogger LOG = ClassLogger.getFor( FormNumberField.class );
 
 	/**
-	 * Maximum number of fraction digits (0 => integer only).
+	 * Maximum number of fraction digits (0 =&gt; integer only).
 	 */
 	private final int _maximumFractionDigits;
 
 	/**
-	 * Minimum value ({@code null} => don't care, 0 => positive only).
+	 * Minimum value ({@code null} =&gt; don't care, 0 =&gt; positive only).
 	 */
 	private BigDecimal _minValue;
 
 	/**
-	 * Maximum value ({@code null} => don't care).
+	 * Maximum value ({@code null} =&gt; don't care).
 	 */
 	private BigDecimal _maxValue;
 
@@ -75,11 +75,11 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target                Target object of field.
-	 * @param maximumFractionDigits Maximum number of fraction digits (0 =>
+	 * @param maximumFractionDigits Maximum number of fraction digits (0 =&gt;
 	 *                              integer only).
-	 * @param minValue              Minimum value ({@code null} => don't care, 0
-	 *                              => positive only).
-	 * @param maxValue              Maximum value ({@code null} => don't care).
+	 * @param minValue              Minimum value ({@code null} =&gt; don't care, 0
+	 *                              =&gt; positive only).
+	 * @param maxValue              Maximum value ({@code null} =&gt; don't care).
 	 */
 	public FormNumberField( @NotNull final FieldTarget target, final int maximumFractionDigits, @Nullable final BigDecimal minValue, @Nullable final BigDecimal maxValue )
 	{
@@ -93,7 +93,7 @@ extends FormField
 	/**
 	 * Get minimum value.
 	 *
-	 * @return Minimum value; {@code null} => don't care; {@code 0.0}=> positive
+	 * @return Minimum value; {@code null} =&gt; don't care; {@code 0.0} =&gt; positive
 	 * only.
 	 */
 	public BigDecimal getMinValue()
@@ -104,7 +104,7 @@ extends FormField
 	/**
 	 * Set minimum value.
 	 *
-	 * @param minValue Minimum value ({@code null} => don't care; {@code 0.0} =>
+	 * @param minValue Minimum value ({@code null} =&gt; don't care; {@code 0.0} =&gt;
 	 *                 positive only).
 	 */
 	public void setMinValue( final BigDecimal minValue )
@@ -115,7 +115,7 @@ extends FormField
 	/**
 	 * Get maximum value.
 	 *
-	 * @return Maximum value; {@code null} => don't care.
+	 * @return Maximum value; {@code null} =&gt; don't care.
 	 */
 	public BigDecimal getMaxValue()
 	{
@@ -125,7 +125,7 @@ extends FormField
 	/**
 	 * Set maximum value.
 	 *
-	 * @param maxValue Maximum value ({@code null} => don't care).
+	 * @param maxValue Maximum value ({@code null} =&gt; don't care).
 	 */
 	public void setMaxValue( final BigDecimal maxValue )
 	{

@@ -59,7 +59,7 @@ extends FormField
 	private int _minimumRows;
 
 	/**
-	 * Maximum number of rows in text area (-1 => unbound).
+	 * Maximum number of rows in text area (-1 =&gt; unbound).
 	 */
 	private int _maximumRows = -1;
 
@@ -84,8 +84,8 @@ extends FormField
 	 * Construct text area with the specified number of rows and columns.
 	 *
 	 * @param target      Target object of field.
-	 * @param minimumRows Minimum number of rows (-1 => unbound).
-	 * @param columns     Number of columns (-1 => unspecified).
+	 * @param minimumRows Minimum number of rows (-1 =&gt; unbound).
+	 * @param columns     Number of columns (-1 =&gt; unspecified).
 	 */
 	public FormTextArea( final FieldTarget target, final int minimumRows, final int columns )
 	{
@@ -96,7 +96,7 @@ extends FormField
 	}
 
 	/**
-	 * Set the number of columns in text area (-1 => unspecified).
+	 * Set the number of columns in text area (-1 =&gt; unspecified).
 	 *
 	 * @param columns Number of columns
 	 */
@@ -106,7 +106,7 @@ extends FormField
 	}
 
 	/**
-	 * Get minimum number of rows in text area (-1 => unbound).
+	 * Get minimum number of rows in text area (-1 =&gt; unbound).
 	 *
 	 * @return Minimum number of rows
 	 */
@@ -116,7 +116,7 @@ extends FormField
 	}
 
 	/**
-	 * Set the minimum number of rows in text area (-1 => unbound).
+	 * Set the minimum number of rows in text area (-1 =&gt; unbound).
 	 *
 	 * @param rows Minimum number of rows
 	 */
@@ -126,7 +126,7 @@ extends FormField
 	}
 
 	/**
-	 * Get maximum number of rows in text area (zero or less => unbound).
+	 * Get maximum number of rows in text area (zero or less =&gt; unbound).
 	 *
 	 * @return Maximum number of rows.
 	 */
@@ -136,7 +136,7 @@ extends FormField
 	}
 
 	/**
-	 * Set maximum number of rows in text area (zero or less => unbound).
+	 * Set maximum number of rows in text area (zero or less =&gt; unbound).
 	 *
 	 * @param rows Maximum number of rows.
 	 */
@@ -187,7 +187,7 @@ extends FormField
 	 *
 	 * @param value String value.
 	 *
-	 * @return Number of lines in string (0 if {@code null}; >=1 otherwise).
+	 * @return Number of lines in string (0 if {@code null}; &gt;=1 otherwise).
 	 */
 	public static int getLineCount( @Nullable final String value )
 	{

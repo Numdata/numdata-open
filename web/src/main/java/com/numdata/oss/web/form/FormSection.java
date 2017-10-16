@@ -101,7 +101,7 @@ extends FormContainer
 	/**
 	 * Set title of section.
 	 *
-	 * @param title Title of section ({@code null} => no title).
+	 * @param title Title of section ({@code null} =&gt; no title).
 	 */
 	public void setTitle( @Nullable final String title )
 	{

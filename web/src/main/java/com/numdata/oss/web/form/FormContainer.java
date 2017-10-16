@@ -228,6 +228,7 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
+	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -251,6 +252,7 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
+	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -375,8 +377,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 *
 	 * @return Text field that was created.
@@ -394,8 +396,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 * @param value     Initial value to assign to text field.
 	 *
@@ -413,8 +415,8 @@ extends FormComponent
 	 *
 	 * @param bundle  Resource bundle containing the field label (key=name).
 	 * @param target  Target object.
-	 * @param rows    Number of rows (-1 => unspecified).
-	 * @param columns Number of columns (-1 => unspecified).
+	 * @param rows    Number of rows (-1 =&gt; unspecified).
+	 * @param columns Number of columns (-1 =&gt; unspecified).
 	 *
 	 * @return Text area that was created.
 	 */
@@ -433,7 +435,7 @@ extends FormComponent
 	 *                              (key=name).
 	 * @param target                Target object.
 	 * @param allowNegative         Allow negative numbers.
-	 * @param maximumFractionDigits Maximum number of fraction digits (0 =>
+	 * @param maximumFractionDigits Maximum number of fraction digits (0 =&gt;
 	 *                              integer only).
 	 *
 	 * @return Number field that was created.

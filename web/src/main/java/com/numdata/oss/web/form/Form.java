@@ -131,7 +131,7 @@ extends FormContainer
 	/**
 	 * Set title of form.
 	 *
-	 * @param title Title of form ({@code null} => no title).
+	 * @param title Title of form ({@code null} =&gt; no title).
 	 */
 	public void setTitle( @Nullable final String title )
 	{

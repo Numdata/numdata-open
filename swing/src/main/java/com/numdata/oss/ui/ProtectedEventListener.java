@@ -202,7 +202,7 @@ public class ProtectedEventListener
 		}
 	}
 
-	/** @noinspection CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof,CastConflictsWithInstanceof */
+	/** @noinspection CastConflictsWithInstanceof,JavaDoc */
 	protected void protectedHandleEvent( final EventObject event )
 		throws Exception
 	{
