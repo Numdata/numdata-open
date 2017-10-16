@@ -39,7 +39,7 @@
 
 	<artifactId>numdata-micro-editor</artifactId>
 	<version>1.1</version>
-	<description>Micro Test Editor. Basically a JDialog with a JTextArea.</description>
+	<description>Micro Text Editor. Basically a JDialog with a JTextArea.</description>
 	<url>http://www.numdata.com/</url>
 
 	<licenses>

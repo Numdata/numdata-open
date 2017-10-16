@@ -39,7 +39,7 @@
 
 	<artifactId>numdata-swing</artifactId>
 	<version>1.1</version>
-	<description>Micellaneous basic Java tools.</description>
+	<description>Miscellaneous Java Swing components and tools.</description>
 	<url>http://www.numdata.com/</url>
 
 	<licenses>
