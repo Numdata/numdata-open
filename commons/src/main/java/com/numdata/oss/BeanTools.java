@@ -693,6 +693,11 @@ public class BeanTools
 			{
 				setValue( bean, Short.parseShort( value ) );
 			}
+			else if ( type.isEnum() )
+			{
+				//noinspection unchecked
+				setValue( bean, Enum.valueOf( type.asSubclass( Enum.class ), value ) );
+			}
 			else
 			{
 				setValue( bean, value );
