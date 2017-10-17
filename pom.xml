@@ -34,6 +34,8 @@
 	<groupId>com.numdata</groupId>
 	<artifactId>numdata-open</artifactId>
 	<version>1.1</version>
+
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Collection of miscellaneous open source libraries.</description>
 	<url>http://www.numdata.com/</url>
 
@@ -44,9 +46,30 @@
 		</license>
 	</licenses>
 
+	<developers>
+		<developer>
+			<name>Peter S. Heijnen</name>
+			<email>heijnen@numdata.com</email>
+			<organization>Numdata BV</organization>
+			<organizationUrl>http://www.numdata.com/</organizationUrl>
+		</developer>
+		<developer>
+			<name>Gerrit Meinders</name>
+			<email>meinders@numdata.com</email>
+			<organization>Numdata BV</organization>
+			<organizationUrl>http://www.numdata.com/</organizationUrl>
+		</developer>
+	</developers>
+
+	<organization>
+		<name>Numdata BV</name>
+		<url>http://www.numdata.com/</url>
+	</organization>
+
 	<scm>
 		<url>https://github.com/Numdata/numdata-open</url>
 		<connection>scm:git:https://github.com/Numdata/numdata-open.git</connection>
+		<developerConnection>scm:git:https://github.com/Numdata/numdata-open.git</developerConnection>
 	</scm>
 
 	<packaging>pom</packaging>
@@ -295,7 +318,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.18.1</version>
+				<version>2.20.1</version>
 			</plugin>
 		</plugins>
 	</reporting>
