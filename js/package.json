@@ -10,13 +10,11 @@
     "email": "meinders@numdata.com"
   },
   "dependencies": {
-    "big-rational": "^0.10.5",
+    "big-rational": "^0.10.7",
     "bigdecimal": "^0.6.1"
   },
   "devDependencies": {
     "@numdata/common-build-gulp": "^1.0.0",
-    "chai": "^3.5.0",
-    "eslint": "^3.16.1",
-    "mocha": "^2.5.3"
+    "chai": "^3.5.0"
   }
 }
