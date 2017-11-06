@@ -87,22 +87,12 @@ extends FormContainer
 		_title = title;
 	}
 
-	/**
-	 * Get title of section.
-	 *
-	 * @return Title of section; {@code null} if section has no title.
-	 */
 	@Nullable
 	public String getTitle()
 	{
 		return _title;
 	}
 
-	/**
-	 * Set title of section.
-	 *
-	 * @param title Title of section ({@code null} => no title).
-	 */
 	public void setTitle( @Nullable final String title )
 	{
 		_title = title;

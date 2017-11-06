@@ -112,35 +112,16 @@ extends FormComponent
 		_qualifiedNameUsed = qualifiedNames;
 	}
 
-	/**
-	 * Returns whether the container's components should qualify their names.
-	 *
-	 * @return {@code true} if names are qualified; {@code false} otherwise.
-	 */
 	public boolean isQualifiedNameUsed()
 	{
 		return _qualifiedNameUsed;
 	}
 
-	/**
-	 * Test whether this container should be hidden if the form is not
-	 * editable.
-	 *
-	 * @return {@code true} if this container is hidden if it is not editable;
-	 * {@code false} if it is always shown.
-	 */
 	public boolean isHideIfReadOnly()
 	{
 		return _hideIfReadOnly;
 	}
 
-	/**
-	 * Set whether this container should be hidden if the form is not editable.
-	 *
-	 * @param hideIfReadOnly {@code true} if this container should be hidden if
-	 *                       it is not editable; {@code false} to always show
-	 *                       it.
-	 */
 	public void setHideIfReadOnly( final boolean hideIfReadOnly )
 	{
 		_hideIfReadOnly = hideIfReadOnly;
@@ -229,6 +210,7 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
+	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -252,6 +234,7 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
+	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -376,8 +359,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visible size of field (-1 = unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =
 	 *                  unspecified).
 	 *
 	 * @return Text field that was created.
@@ -395,8 +378,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 => unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =>
+	 * @param size      Visible size of field (-1 = unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =
 	 *                  unspecified).
 	 * @param value     Initial value to assign to text field.
 	 *
@@ -414,8 +397,8 @@ extends FormComponent
 	 *
 	 * @param bundle  Resource bundle containing the field label (key=name).
 	 * @param target  Target object.
-	 * @param rows    Number of rows (-1 => unspecified).
-	 * @param columns Number of columns (-1 => unspecified).
+	 * @param rows    Number of rows (-1 = unspecified).
+	 * @param columns Number of columns (-1 = unspecified).
 	 *
 	 * @return Text area that was created.
 	 */
@@ -434,7 +417,7 @@ extends FormComponent
 	 *                              (key=name).
 	 * @param target                Target object.
 	 * @param allowNegative         Allow negative numbers.
-	 * @param maximumFractionDigits Maximum number of fraction digits (0 =>
+	 * @param maximumFractionDigits Maximum number of fraction digits (0 &#8658;
 	 *                              integer only).
 	 *
 	 * @return Number field that was created.
@@ -570,11 +553,6 @@ extends FormComponent
 		return _components.indexOf( component );
 	}
 
-	/**
-	 * Returns the components in this container.
-	 *
-	 * @return Form components.
-	 */
 	public List<FormComponent> getComponents()
 	{
 		return Collections.unmodifiableList( _components );
