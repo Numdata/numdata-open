@@ -101,7 +101,7 @@ extends FormContainer
 	/**
 	 * Set title of section.
 	 *
-	 * @param title Title of section ({@code null} =&gt; no title).
+	 * @param title Title of section ({@code null} => no title).
 	 */
 	public void setTitle( @Nullable final String title )
 	{
@@ -207,23 +207,25 @@ extends FormContainer
 			for ( int i = 0; i < container.getComponentCount(); i++ )
 			{
 				final FormComponent component = container.getComponent( i );
-
-				if ( ( component instanceof FormField ) )
+				if ( component.isVisible() )
 				{
-					if ( ( (FormField)component ).isRequired() )
+					if ( ( component instanceof FormField ) )
 					{
-						result = true;
-						break;
+						if ( ( (FormField)component ).isRequired() )
+						{
+							result = true;
+							break;
+						}
 					}
-				}
-				else if ( component instanceof FormContainer )
-				{
-					if ( todo == null )
+					else if ( component instanceof FormContainer )
 					{
-						todo = new LinkedList<FormContainer>();
-					}
+						if ( todo == null )
+						{
+							todo = new LinkedList<FormContainer>();
+						}
 
-					todo.add( (FormContainer)component );
+						todo.add( (FormContainer)component );
+					}
 				}
 			}
 		}

@@ -123,7 +123,8 @@ extends FormComponent
 	}
 
 	/**
-	 * Test whether this container should be hidden if the form is not editable.
+	 * Test whether this container should be hidden if the form is not
+	 * editable.
 	 *
 	 * @return {@code true} if this container is hidden if it is not editable;
 	 * {@code false} if it is always shown.
@@ -228,7 +229,6 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
-	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -252,7 +252,6 @@ extends FormComponent
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
-	 * @param <T>      Enumeration type.
 	 *
 	 * @return Choice field that was created.
 	 *
@@ -377,8 +376,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 =&gt; unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =&gt;
+	 * @param size      Visable size of field (-1 => unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =>
 	 *                  unspecified).
 	 *
 	 * @return Text field that was created.
@@ -396,8 +395,8 @@ extends FormComponent
 	 *
 	 * @param bundle    Resource bundle containing the field label (key=name).
 	 * @param target    Target object.
-	 * @param size      Visable size of field (-1 =&gt; unspecified).
-	 * @param maxLength Maximum number of characters in field (-1 =&gt;
+	 * @param size      Visable size of field (-1 => unspecified).
+	 * @param maxLength Maximum number of characters in field (-1 =>
 	 *                  unspecified).
 	 * @param value     Initial value to assign to text field.
 	 *
@@ -415,8 +414,8 @@ extends FormComponent
 	 *
 	 * @param bundle  Resource bundle containing the field label (key=name).
 	 * @param target  Target object.
-	 * @param rows    Number of rows (-1 =&gt; unspecified).
-	 * @param columns Number of columns (-1 =&gt; unspecified).
+	 * @param rows    Number of rows (-1 => unspecified).
+	 * @param columns Number of columns (-1 => unspecified).
 	 *
 	 * @return Text area that was created.
 	 */
@@ -435,7 +434,7 @@ extends FormComponent
 	 *                              (key=name).
 	 * @param target                Target object.
 	 * @param allowNegative         Allow negative numbers.
-	 * @param maximumFractionDigits Maximum number of fraction digits (0 =&gt;
+	 * @param maximumFractionDigits Maximum number of fraction digits (0 =>
 	 *                              integer only).
 	 *
 	 * @return Number field that was created.
@@ -539,6 +538,26 @@ extends FormComponent
 	}
 
 	/**
+	 * Get number of components in this container.
+	 *
+	 * @return Number of components in this container.
+	 */
+	public int getVisibleComponentCount()
+	{
+		int result = 0;
+
+		for ( final FormComponent component : _components )
+		{
+			if ( component.isVisible() )
+			{
+				result++;
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Get index of component in this container.
 	 *
 	 * @param component Component to get index of.
@@ -571,24 +590,27 @@ extends FormComponent
 			for ( int i = 0; i < getComponentCount(); i++ )
 			{
 				final FormComponent component = getComponent( i );
-				component.generate( contextPath, form, table, iw, formFactory );
-
-				if ( component.isEditable() && ( component instanceof FormField ) )
+				if ( component.isVisible() )
 				{
-					final FormField field = (FormField)component;
-					final String note = field.getDescription();
-					if ( !TextTools.isEmpty( note ) )
-					{
-						if ( table != null )
-						{
-							table.newRow( iw );
-							table.newColumn( iw );
-							table.newColumn( iw );
-						}
+					component.generate( contextPath, form, table, iw, formFactory );
 
-						iw.append( "<div class=\"fieldNote\">" );
-						iw.append( note );
-						iw.append( "</div>" );
+					if ( component.isEditable() && ( component instanceof FormField ) )
+					{
+						final FormField field = (FormField)component;
+						final String note = field.getDescription();
+						if ( !TextTools.isEmpty( note ) )
+						{
+							if ( table != null )
+							{
+								table.newRow( iw );
+								table.newColumn( iw );
+								table.newColumn( iw );
+							}
+
+							iw.append( "<div class=\"fieldNote\">" );
+							iw.append( note );
+							iw.append( "</div>" );
+						}
 					}
 				}
 			}
@@ -623,35 +645,37 @@ extends FormComponent
 		for ( int i = getComponentCount(); --i >= 0; )
 		{
 			final FormComponent component = getComponent( i );
-
-			try
+			if ( component.isVisible() )
 			{
 				try
 				{
-					result = result.combineWith( component.submitData( request ) );
+					try
+					{
+						result = result.combineWith( component.submitData( request ) );
+					}
+					catch ( final NumberFormatException e )
+					{
+						//noinspection ThrowCaughtLocally
+						throw new InvalidFormDataException( e.getMessage(), InvalidFormDataException.Type.INVALID_NUMBER, e );
+					}
+					catch ( final RuntimeException e )
+					{
+						//noinspection ThrowCaughtLocally
+						throw new InvalidFormDataException( e.getMessage(), InvalidFormDataException.Type.INVALID_DATA, e );
+					}
 				}
-				catch ( final NumberFormatException e )
+				catch ( final InvalidFormDataException e )
 				{
-					//noinspection ThrowCaughtLocally
-					throw new InvalidFormDataException( e.getMessage(), InvalidFormDataException.Type.INVALID_NUMBER, e );
-				}
-				catch ( final RuntimeException e )
-				{
-					//noinspection ThrowCaughtLocally
-					throw new InvalidFormDataException( e.getMessage(), InvalidFormDataException.Type.INVALID_DATA, e );
-				}
-			}
-			catch ( final InvalidFormDataException e )
-			{
-				if ( component.isEditable() && ( component instanceof FormField ) )
-				{
-					final FormField field = (FormField)component;
-					field.setException( e );
-					result = SubmitStatus.SUBMITTED_WITH_ERRORS;
-				}
-				else
-				{
-					throw e;
+					if ( component.isEditable() && ( component instanceof FormField ) )
+					{
+						final FormField field = (FormField)component;
+						field.setException( e );
+						result = SubmitStatus.SUBMITTED_WITH_ERRORS;
+					}
+					else
+					{
+						throw e;
+					}
 				}
 			}
 		}
@@ -661,7 +685,7 @@ extends FormComponent
 			for ( int i = 0; i < getComponentCount(); i++ )
 			{
 				final FormComponent component = getComponent( i );
-				if ( component.isEditable() && ( component instanceof FormField ) )
+				if ( component.isVisible() && component.isEditable() && ( component instanceof FormField ) )
 				{
 					final FormField field = (FormField)component;
 					if ( field.getException() == null )

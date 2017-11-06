@@ -105,8 +105,19 @@ public abstract class FormComponent
 
 	/**
 	 * Editable flag of this component.
+	 *
+	 * Note that a component is only editable, if its editable flag is set, and
+	 * its parent is editable as well.
 	 */
 	private boolean _editable = true;
+
+	/**
+	 * Visible flag of this component.
+	 *
+	 * Note that a component is only visible, if its visible flag is set, and
+	 * its parent is visible as well.
+	 */
+	private boolean _visible = true;
 
 	/**
 	 * HTML/java name of field.
@@ -133,15 +144,6 @@ public abstract class FormComponent
 		_name = name;
 	}
 
-	/**
-	 * Gets editability of this component.
-	 *
-	 * Note that a component is only editable, if its editable flag is set, and
-	 * its parent is editable as well.
-	 *
-	 * @return {@code true} if component is editable; {@code false} if component
-	 * can not be edited.
-	 */
 	public boolean isEditable()
 	{
 		final boolean result;
@@ -157,16 +159,31 @@ public abstract class FormComponent
 		return result;
 	}
 
-	/**
-	 * Sets editable flag of this component.
-	 *
-	 * @param editable Editable flag of this component.
-	 *
-	 * @see #isEditable
-	 */
 	public void setEditable( final boolean editable )
 	{
 		_editable = editable;
+	}
+
+	public boolean isVisible()
+	{
+		final boolean result;
+
+		if ( !_visible )
+		{
+			result = false;
+		}
+		else
+		{
+			final FormContainer parent = getParent();
+			result = ( ( parent == null ) || parent.isVisible() );
+		}
+
+		return result;
+	}
+
+	public void setVisible( final boolean visible )
+	{
+		_visible = visible;
 	}
 
 	/**

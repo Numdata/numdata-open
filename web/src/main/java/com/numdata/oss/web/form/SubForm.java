@@ -133,7 +133,7 @@ extends FormContainer
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
-		if ( ( !isHideIfReadOnly() || isEditable() ) && ( getComponentCount() > 0 ) )
+		if ( ( !isHideIfReadOnly() || isEditable() ) && ( getVisibleComponentCount() > 0 ) )
 		{
 			final HTMLTable innerTable = _tableFactory.createTable( _title, 3 );
 			innerTable.newTable( iw, _tableAttributes );
