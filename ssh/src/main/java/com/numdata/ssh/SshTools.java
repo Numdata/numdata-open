@@ -31,12 +31,12 @@ import java.net.*;
 import java.sql.*;
 import java.text.*;
 
-import ch.ethz.ssh2.Connection;
 import com.numdata.oss.*;
 import com.numdata.oss.db.*;
 import com.numdata.oss.ensemble.*;
 import com.numdata.oss.log.*;
 import com.numdata.oss.net.*;
+import com.trilead.ssh2.Connection;
 import org.jetbrains.annotations.*;
 
 /**

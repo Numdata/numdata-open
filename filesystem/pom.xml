@@ -23,10 +23,6 @@
 			<artifactId>annotations</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>jcifs</groupId>
 			<artifactId>jcifs</artifactId>
 		</dependency>

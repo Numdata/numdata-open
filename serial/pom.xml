@@ -32,5 +32,9 @@
 			<!-- Needed to use com.numdata.oss.io.JavacommSunImpl -->
 			<!-- No longer available for download. See 'javacomm/comm.pom'. -->
 		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+		</dependency>
 	</dependencies>
 </project>

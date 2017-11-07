@@ -190,9 +190,9 @@
 				<version>20170516</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jvnet.hudson</groupId>
-				<artifactId>ganymed-ssh-2</artifactId>
-				<version>build260</version>
+				<groupId>com.trilead</groupId>
+				<artifactId>trilead-ssh2</artifactId>
+				<version>1.0.0-build221</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
