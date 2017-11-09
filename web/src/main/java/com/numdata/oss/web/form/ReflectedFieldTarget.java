@@ -29,7 +29,9 @@ package com.numdata.oss.web.form;
 import java.lang.reflect.*;
 import java.math.*;
 import java.net.*;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.*;
 
 import com.numdata.oss.*;
@@ -385,6 +387,10 @@ implements FieldTarget
 			else if ( type == Date.class )
 			{
 				result = TextTools.isEmpty( value ) ? null : new Date( Long.parseLong( value ) );
+			}
+			else if ( type == Time.class )
+			{
+				result = TextTools.isEmpty( value ) ? null : new Time( Long.parseLong( value ) );
 			}
 			else if ( type == Locale.class )
 			{
