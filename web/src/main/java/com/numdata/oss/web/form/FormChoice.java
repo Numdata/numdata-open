@@ -72,6 +72,12 @@ extends FormField
 	private boolean _nullIfEmpty = false;
 
 	/**
+	 * Link function. Called by get a link for a option value.
+	 */
+	@Nullable
+	private LinkFunction _linkFunction = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param target Target object of field.
@@ -130,81 +136,41 @@ extends FormField
 		_autoSubmit = false;
 	}
 
-	/**
-	 * Returns automatic submit mode.
-	 *
-	 * @return {@code true} to automatically submit if a selection is made.
-	 */
 	public boolean isAutoSubmit()
 	{
 		return _autoSubmit;
 	}
 
-	/**
-	 * Set automatic submit mode.
-	 *
-	 * @param autoSubmit If set, automatically submit if a selection is made.
-	 */
 	public void setAutoSubmit( final boolean autoSubmit )
 	{
 		_autoSubmit = autoSubmit;
 	}
 
-	/**
-	 * Returns whether empty values are parsed as {@code null}.
-	 *
-	 * @return {@code true} if empty values result in {@code null}.
-	 */
 	public boolean isNullIfEmpty()
 	{
 		return _nullIfEmpty;
 	}
 
-	/**
-	 * Sets whether empty values are parsed as {@code null}.
-	 *
-	 * @param nullIfEmpty {@code true} to parse empty values as {@code null}.
-	 */
 	public void setNullIfEmpty( final boolean nullIfEmpty )
 	{
 		_nullIfEmpty = nullIfEmpty;
 	}
 
-	/**
-	 * Get available option values for choice.
-	 *
-	 * @return Available option values for choice.
-	 */
 	public List<String> getOptionValues()
 	{
 		return Collections.unmodifiableList( _optionValues );
 	}
 
-	/**
-	 * Set available option values for choice.
-	 *
-	 * @param optionValues Available option values for choice.
-	 */
 	public void setOptionValues( final Collection<String> optionValues )
 	{
 		_optionValues = new ArrayList<String>( optionValues );
 	}
 
-	/**
-	 * Get available option labels for choice.
-	 *
-	 * @return Available option labels for choice.
-	 */
 	public List<String> getOptionLabels()
 	{
 		return Collections.unmodifiableList( _optionLabels );
 	}
 
-	/**
-	 * Set available option labels for choice.
-	 *
-	 * @param optionLabels Available option labels for choice.
-	 */
 	public void setOptionLabels( final Collection<String> optionLabels )
 	{
 		_optionLabels = new ArrayList<String>( optionLabels );
@@ -222,12 +188,41 @@ extends FormField
 		_optionLabels.add( label );
 	}
 
+	@Nullable
+	public LinkFunction getLinkFunction()
+	{
+		return _linkFunction;
+	}
+
+	public void setLinkFunction( @Nullable final LinkFunction linkFunction )
+	{
+		_linkFunction = linkFunction;
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
-		final Map<String, String> attributes = ( isEditable() && isAutoSubmit() ) ? Collections.singletonMap( "onchange", "document.forms['" + form.getName() + "'].submit();" ) : null;
-		formFactory.writeChoice( iw, isEditable(), getName(), getValue(), getOptionValues(), getOptionLabels(), attributes );
+		final boolean editable = isEditable();
+		final Map<String, String> attributes = ( editable && isAutoSubmit() ) ? Collections.singletonMap( "onchange", "document.forms['" + form.getName() + "'].submit();" ) : null;
+
+		final String selected = getValue();
+
+		final LinkFunction linkFunction = !editable && ( selected != null ) ? getLinkFunction() : null;
+		final String link = ( linkFunction != null ) ? linkFunction.getLink( contextPath, selected ) : null;
+		if ( link != null )
+		{
+			iw.write( "<a href=\"" );
+			iw.write( link );
+			iw.write( "\">" );
+		}
+
+		formFactory.writeChoice( iw, editable, getName(), selected, getOptionValues(), getOptionLabels(), attributes );
+
+		if ( link != null )
+		{
+			iw.write( "</a>" );
+		}
 	}
 
 	@NotNull
@@ -274,5 +269,23 @@ extends FormField
 		{
 			out.append( " (unknown value!) " );
 		}
+	}
+
+	/**
+	 * Function to get link for a selected value.
+	 */
+	public interface LinkFunction
+	{
+		/**
+		 * Returns link for selected value.
+		 *
+		 * @param contextPath Web application context path.
+		 * @param value       Selected value.
+		 *
+		 * @return Link for selected value; {@code null} if no link is
+		 * available.
+		 */
+		@Nullable
+		String getLink( @NotNull final String contextPath, @Nullable final String value );
 	}
 }
