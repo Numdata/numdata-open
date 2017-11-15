@@ -230,6 +230,52 @@ public class CalendarTools
 	}
 
 	/**
+	 * Returns a calendar instance for the given time. The date fields of the
+	 * calendar are all set to the Epoch (January 1, 1970, Gregorian calendar).
+	 *
+	 * @param hour        Hour of day (0-23).
+	 * @param minute      Minute within hour.
+	 * @param second      Second within minute.
+	 * @param millisecond Millisecond within second.
+	 *
+	 * @return Calendar for the current date, with time fields set to zero.
+	 */
+	public static Calendar getTimeInstance( final int hour, final int minute, final int second, final int millisecond )
+	{
+		final Calendar calendar = Calendar.getInstance();
+		resetDateFields( calendar );
+		calendar.set( Calendar.HOUR_OF_DAY, hour );
+		calendar.set( Calendar.MINUTE, minute );
+		calendar.set( Calendar.SECOND, second );
+		calendar.set( Calendar.MILLISECOND, millisecond );
+		return calendar;
+	}
+
+	/**
+	 * Returns second of day from {@link Date}.
+	 *
+	 * @param date Date to get second from.
+	 *
+	 * @return Second of day (hour * 3600 + minute * 60 + second).
+	 */
+	public static int getSecondOfday( @NotNull final Date date )
+	{
+		return getSecondOfday( getInstance( date ) );
+	}
+
+	/**
+	 * Returns second of day from {@link Calendar}.
+	 *
+	 * @param calendar Calendar to get second from.
+	 *
+	 * @return Second of day (hour * 3600 + minute * 60 + second).
+	 */
+	public static int getSecondOfday( @NotNull final Calendar calendar )
+	{
+		return calendar.get( Calendar.HOUR_OF_DAY ) * 3600 + calendar.get( Calendar.MINUTE ) * 60 + calendar.get( Calendar.SECOND );
+	}
+
+	/**
 	 * Sets the time fields of the given calendar to the Epoch (January 1, 1970,
 	 * Gregorian calendar).
 	 *
@@ -284,8 +330,8 @@ public class CalendarTools
 	 * Programming, 1.3.2</cite>. The algorithm only works for the Gregorian
 	 * calendar. As such, the earliest supported year is 1583.
 	 *
-	 * A lot of information about the computation of the date of Easter can
-	 * be found here: <a href="http://en.wikipedia.org/wiki/Computus">http://en.wikipedia.org/wiki/Computus</a>
+	 * A lot of information about the computation of the date of Easter can be
+	 * found here: <a href="http://en.wikipedia.org/wiki/Computus">http://en.wikipedia.org/wiki/Computus</a>
 	 *
 	 * A (slightly different) Java implementation of the algorithm used is
 	 * provided here: <a href="http://www.java2s.com/Code/Java/Development-Class/EastercomputethedayonwhichEasterfalls.htm">http://www.java2s.com/Code/Java/Development-Class/EastercomputethedayonwhichEasterfalls.htm</a>
