@@ -76,11 +76,11 @@ extends FormField
 		final String value = getValue();
 
 		return ( value == null ) ? null :
-		       Boolean.valueOf( "1".equalsIgnoreCase( value ) ||
-		                        "true".equalsIgnoreCase( value ) ||
-		                        "on".equalsIgnoreCase( value ) ||
-		                        "yes".equalsIgnoreCase( value ) ||
-		                        "y".equalsIgnoreCase( value ) );
+		       "1".equalsIgnoreCase( value ) ||
+		       "true".equalsIgnoreCase( value ) ||
+		       "on".equalsIgnoreCase( value ) ||
+		       "yes".equalsIgnoreCase( value ) ||
+		       "y".equalsIgnoreCase( value );
 	}
 
 	/**
@@ -103,23 +103,11 @@ extends FormField
 		setValue( ( value != null ) ? Boolean.toString( value ) : null );
 	}
 
-	/**
-	 * Get whether to automatically submit the form if the check box state is
-	 * changed.
-	 *
-	 * @return {@code true} if auto-submit mode is enabled.
-	 */
 	public boolean isAutoSubmit()
 	{
 		return _autoSubmit;
 	}
 
-	/**
-	 * Set whether to automatically submit the form if the check box state is
-	 * changed.
-	 *
-	 * @param autoSubmit {@code true} to enable auto-submit mode.
-	 */
 	public void setAutoSubmit( final boolean autoSubmit )
 	{
 		_autoSubmit = autoSubmit;
@@ -155,15 +143,16 @@ extends FormField
 
 		if ( isEditable() )
 		{
-			if ( request.getParameter( "hidden_" + getName() ) != null )
+			final String name = getName();
+			final boolean checked = request.getParameter( name ) != null;
+			if ( checked || request.getParameter( "hidden_" + name ) != null )
 			{
-				setValue( Boolean.toString( request.getParameter( getName() ) != null ) );
-
+				setValue( Boolean.toString( checked ) );
 				result = SubmitStatus.SUBMITTED;
 			}
 			else
 			{
-				LOG.trace( "Not submitted, because 'hidden_" + getName() + "' parameter is not set" );
+				LOG.trace( "Not submitted, because '" + name + "' nor 'hidden_" + name + "' parameter is set" );
 				result = SubmitStatus.NOT_SUBMITTED;
 			}
 		}
@@ -184,7 +173,8 @@ extends FormField
 	{
 		final String name = getName();
 		final Boolean booleanValue = getBooleanValue();
-		return UrlTools.urlEncode( "hidden_" + name ) + "=true" + ( Boolean.TRUE.equals( booleanValue ) ? '&' + name + '=' : "" );
+		final boolean checked = Boolean.TRUE.equals( booleanValue );
+		return UrlTools.urlEncode( ( checked ? "" : "hidden_" ) + name + "=true" );
 	}
 
 	@Override
