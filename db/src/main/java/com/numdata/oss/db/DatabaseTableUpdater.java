@@ -39,7 +39,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings ( "JDBCExecuteWithNonConstantString" )
+@SuppressWarnings( "JDBCExecuteWithNonConstantString" )
 public class DatabaseTableUpdater
 {
 	/**
@@ -505,7 +505,7 @@ public class DatabaseTableUpdater
 	 * Modify column of table.
 	 *
 	 * @param realUpdates    Perform real updates vs. just print queries.
-	 * @param force             Perform updates that (may) cause data loss.
+	 * @param force          Perform updates that (may) cause data loss.
 	 * @param dataSource     Database source to connect to database.
 	 * @param tableReference SQL reference to table.
 	 * @param columnName     Name of column.
@@ -531,6 +531,10 @@ public class DatabaseTableUpdater
 		     ( "bigint".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "blob".equalsIgnoreCase( oldBaseType ) && "mediumblob".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "char".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "date".equalsIgnoreCase( oldBaseType ) && "datetime".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "date".equalsIgnoreCase( oldBaseType ) && "time".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "datetime".equalsIgnoreCase( oldBaseType ) && "date".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "datetime".equalsIgnoreCase( oldBaseType ) && "time".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "decimal".equalsIgnoreCase( oldBaseType ) && "double".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "decimal".equalsIgnoreCase( oldBaseType ) && "float".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "double".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
@@ -551,6 +555,8 @@ public class DatabaseTableUpdater
 		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "tinytext".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "time".equalsIgnoreCase( oldBaseType ) && "date".equalsIgnoreCase( newBaseType ) ) ||
+		     ( "time".equalsIgnoreCase( oldBaseType ) && "datetime".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
 		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "mediumtext".equalsIgnoreCase( newBaseType ) ) ||
