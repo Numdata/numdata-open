@@ -148,17 +148,29 @@ extends FormComponent
 	/**
 	 * Convenience method to quickly add a checkbox field to this container.
 	 *
-	 * @param bundle Resource bundle containing the field label (key=name).
+	 * @param bundle Bundle containing the field label (key=name).
 	 * @param target Target object.
 	 *
 	 * @return Checkbox field that was created.
-	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 */
 	public FormCheckbox addCheckbox( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target )
 	{
+		return addCheckbox( bundle, target.getName(), target );
+	}
+
+	/**
+	 * Convenience method to quickly add a checkbox field to this container.
+	 *
+	 * @param bundle      Bundle containing the field label.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 *
+	 * @return Checkbox field that was created.
+	 */
+	public FormCheckbox addCheckbox( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target )
+	{
 		final FormCheckbox checkbox = new FormCheckbox( target );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), checkbox ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), checkbox ) );
 		addComponent( checkbox );
 		return checkbox;
 	}
@@ -168,25 +180,40 @@ extends FormComponent
 	 * available value choices must be contained within the specified resource
 	 * bundle.
 	 *
-	 * @param bundle Resource bundle containing the field label and value
-	 *               choices (key=name).
+	 * @param bundle Bundle containing the field label and value choices
+	 *               (key=name).
 	 * @param target Target object.
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 * @see ResourceBundleTools#getChoices
 	 */
 	public FormChoice addChoice( @NotNull final ResourceBundle bundle, @NotNull final FieldTarget target )
 	{
-		final String name = target.getName();
+		return addChoice( bundle, target.getName(), target );
+	}
 
-		final List<String> optionValues = Arrays.asList( ResourceBundleTools.getStringList( bundle, name + "Values" ) );
+	/**
+	 * Convenience method to quickly add a choice field to this container. The
+	 * available value choices must be contained within the specified resource
+	 * bundle.
+	 *
+	 * @param bundle      Bundle containing the field label and value choices.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 *
+	 * @return Choice field that was created.
+	 *
+	 * @see ResourceBundleTools#getChoices
+	 */
+	public FormChoice addChoice( @NotNull final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target )
+	{
+		final List<String> optionValues = Arrays.asList( ResourceBundleTools.getStringList( bundle, resourceKey + "Values" ) );
 		final List<String> optionLabels = new ArrayList<String>( optionValues.size() );
 
 		for ( final String value : optionValues )
 		{
-			String label = TextTools.isNonEmpty( name ) ? ResourceBundleTools.getString( bundle, name + '.' + value, null ) : null;
+			String label = TextTools.isNonEmpty( resourceKey ) ? ResourceBundleTools.getString( bundle, resourceKey + '.' + value, null ) : null;
 			if ( label == null )
 			{
 				label = ResourceBundleTools.getString( bundle, value, value );
@@ -196,7 +223,7 @@ extends FormComponent
 		}
 
 		final FormChoice choice = new FormChoice( target, optionValues, optionLabels );
-		addComponent( new FormLabel( bundle.getString( name ), choice ) );
+		addComponent( new FormLabel( bundle.getString( resourceKey ), choice ) );
 		addComponent( choice );
 		return choice;
 	}
@@ -205,8 +232,8 @@ extends FormComponent
 	 * Convenience method to quickly add a choice field to this container. The
 	 * available value choices are defined by the specified enumeration class.
 	 *
-	 * @param bundle   Resource bundle containing the field label and value
-	 *                 choices (key=name).
+	 * @param bundle   Bundle containing the field label and value choices
+	 *                 (key=name).
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
@@ -214,13 +241,32 @@ extends FormComponent
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 * @see ResourceBundleTools#getChoices
 	 */
 	public <T extends Enum<T>> FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
+		return addChoice( bundle, target.getName(), target, locale, enumType );
+	}
+
+	/**
+	 * Convenience method to quickly add a choice field to this container. The
+	 * available value choices are defined by the specified enumeration class.
+	 *
+	 * @param bundle      Bundle containing the field label and value choices.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param locale      Locale for enumeration value translations.
+	 * @param enumType    Enumeration type to determine choices.
+	 * @param <T>         Enumeration type.
+	 *
+	 * @return Choice field that was created.
+	 *
+	 * @see ResourceBundleTools#getChoices
+	 */
+	public <T extends Enum<T>> FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
+	{
 		final FormChoice choice = createChoice( bundle, target, locale, enumType );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), choice ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), choice ) );
 		addComponent( choice );
 		return choice;
 	}
@@ -229,8 +275,8 @@ extends FormComponent
 	 * Convenience method to quickly create a choice field. The available value
 	 * choices are defined by the specified enumeration class.
 	 *
-	 * @param bundle   Resource bundle containing the field label and value
-	 *                 choices (key=name).
+	 * @param bundle   Bundle containing the field label and value choices
+	 *                 (key=name).
 	 * @param target   Target object.
 	 * @param locale   Locale for enumeration value translations.
 	 * @param enumType Enumeration type to determine choices.
@@ -238,13 +284,32 @@ extends FormComponent
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 * @see ResourceBundleTools#getChoices
 	 */
 	@NotNull
 	public <T extends Enum<T>> FormChoice createChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
-		final String name = target.getName();
+		return createChoice( bundle, target.getName(), target, locale, enumType );
+	}
+
+	/**
+	 * Convenience method to quickly create a choice field. The available value
+	 * choices are defined by the specified enumeration class.
+	 *
+	 * @param bundle      Bundle containing the field label and value choices.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param locale      Locale for enumeration value translations.
+	 * @param enumType    Enumeration type to determine choices.
+	 * @param <T>         Enumeration type.
+	 *
+	 * @return Choice field that was created.
+	 *
+	 * @see ResourceBundleTools#getChoices
+	 */
+	@NotNull
+	public <T extends Enum<T>> FormChoice createChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
+	{
 		final T[] constants = enumType.getEnumConstants();
 
 		final List<String> optionValues = new ArrayList<String>( constants.length );
@@ -252,7 +317,7 @@ extends FormComponent
 
 		for ( final T constant : constants )
 		{
-			String label = ResourceBundleTools.getString( bundle, name + '.' + constant.name(), null );
+			String label = ResourceBundleTools.getString( bundle, resourceKey + '.' + constant.name(), null );
 			if ( label == null )
 			{
 				label = ResourceBundleTools.getString( locale, constant );
@@ -269,17 +334,34 @@ extends FormComponent
 	 * Convenience method to quickly add a choice field to this container. The
 	 * available value choices are defined by the given collection.
 	 *
-	 * @param bundle    Resource bundle containing the field label and value
-	 *                  choices (key=name).
+	 * @param bundle    Bundle containing the field label and value choices
+	 *                  (key=name).
 	 * @param target    Target object.
 	 * @param optionMap Map option values to option labels.
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 * @see ResourceBundleTools#getChoices
 	 */
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
+	{
+		return addChoice( bundle, target.getName(), target, optionMap );
+	}
+
+	/**
+	 * Convenience method to quickly add a choice field to this container. The
+	 * available value choices are defined by the given collection.
+	 *
+	 * @param bundle      Bundle containing the field label and value choices.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param optionMap   Map option values to option labels.
+	 *
+	 * @return Choice field that was created.
+	 *
+	 * @see ResourceBundleTools#getChoices
+	 */
+	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
 	{
 		final Collection<String> optionValues = new ArrayList<String>( optionMap.size() );
 		final Collection<String> optionLabels = new ArrayList<String>( optionMap.size() );
@@ -290,28 +372,46 @@ extends FormComponent
 			optionLabels.add( entry.getValue() );
 		}
 
-		return addChoice( bundle, target, optionValues, optionLabels );
+		return addChoice( bundle, resourceKey, target, optionValues, optionLabels );
 	}
 
 	/**
 	 * Convenience method to quickly add a choice field to this container. The
 	 * available value choices are defined by the given collection.
 	 *
-	 * @param bundle       Resource bundle containing the field label and value
-	 *                     choices (key=name).
+	 * @param bundle       Bundle containing the field label and value choices
+	 *                     (key=name).
 	 * @param target       Target object.
 	 * @param optionValues Available options for choice.
 	 * @param optionLabels Descriptions of options for choice.
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @throws NullPointerException if {@code bundle} if {@code null}.
 	 * @see ResourceBundleTools#getChoices
 	 */
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Collection<String> optionValues, @NotNull final Collection<String> optionLabels )
 	{
+		return addChoice( bundle, target.getName(), target, optionValues, optionLabels );
+	}
+
+	/**
+	 * Convenience method to quickly add a choice field to this container. The
+	 * available value choices are defined by the given collection.
+	 *
+	 * @param bundle       Bundle containing the field label and value choices.
+	 * @param resourceKey  Key to use in resource bundle.
+	 * @param target       Target object.
+	 * @param optionValues Available options for choice.
+	 * @param optionLabels Descriptions of options for choice.
+	 *
+	 * @return Choice field that was created.
+	 *
+	 * @see ResourceBundleTools#getChoices
+	 */
+	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Collection<String> optionValues, @NotNull final Collection<String> optionLabels )
+	{
 		final FormChoice choice = new FormChoice( target, optionValues, optionLabels );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), choice ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), choice ) );
 		addComponent( choice );
 		return choice;
 	}
@@ -320,7 +420,7 @@ extends FormComponent
 	 * Convenience method to quickly add a column to this container for
 	 * table-based forms.
 	 *
-	 * @param bundle Resource bundle containing the field label (key=name).
+	 * @param bundle Bundle containing the field label (key=name).
 	 * @param head   Column defines a header vs. a data column.
 	 * @param text   Text content of column.
 	 *
@@ -357,7 +457,7 @@ extends FormComponent
 	/**
 	 * Convenience method to quickly add a text field to this container.
 	 *
-	 * @param bundle    Resource bundle containing the field label (key=name).
+	 * @param bundle    Bundle containing the field label (key=name).
 	 * @param target    Target object.
 	 * @param size      Visible size of field (-1 = unspecified).
 	 * @param maxLength Maximum number of characters in field (-1 =
@@ -367,8 +467,25 @@ extends FormComponent
 	 */
 	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int size, final int maxLength )
 	{
+		return addTextField( bundle, target.getName(), target, size, maxLength );
+	}
+
+	/**
+	 * Convenience method to quickly add a text field to this container.
+	 *
+	 * @param bundle      Bundle containing the field label.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param size        Visible size of field (-1 = unspecified).
+	 * @param maxLength   Maximum number of characters in field (-1 =
+	 *                    unspecified).
+	 *
+	 * @return Text field that was created.
+	 */
+	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int size, final int maxLength )
+	{
 		final FormTextField field = new FormTextField( target, size, maxLength );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), field ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), field ) );
 		addComponent( field );
 		return field;
 	}
@@ -376,7 +493,7 @@ extends FormComponent
 	/**
 	 * Convenience method to quickly add a text field to this container.
 	 *
-	 * @param bundle    Resource bundle containing the field label (key=name).
+	 * @param bundle    Bundle containing the field label (key=name).
 	 * @param target    Target object.
 	 * @param size      Visible size of field (-1 = unspecified).
 	 * @param maxLength Maximum number of characters in field (-1 =
@@ -385,9 +502,27 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
-	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int size, final int maxLength, final String value )
+	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int size, final int maxLength, @Nullable final String value )
 	{
-		final FormTextField result = addTextField( bundle, target, size, maxLength );
+		return addTextField( bundle, target.getName(), target, size, maxLength, value );
+	}
+
+	/**
+	 * Convenience method to quickly add a text field to this container.
+	 *
+	 * @param bundle      Bundle containing the field label.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param size        Visible size of field (-1 = unspecified).
+	 * @param maxLength   Maximum number of characters in field (-1 =
+	 *                    unspecified).
+	 * @param value       Initial value to assign to text field.
+	 *
+	 * @return Text field that was created.
+	 */
+	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int size, final int maxLength, @Nullable final String value )
+	{
+		final FormTextField result = addTextField( bundle, resourceKey, target, size, maxLength );
 		result.setValue( value );
 		return result;
 	}
@@ -395,7 +530,7 @@ extends FormComponent
 	/**
 	 * Convenience method to quickly add a text area to this container.
 	 *
-	 * @param bundle  Resource bundle containing the field label (key=name).
+	 * @param bundle  Bundle containing the field label (key=name).
 	 * @param target  Target object.
 	 * @param rows    Number of rows (-1 = unspecified).
 	 * @param columns Number of columns (-1 = unspecified).
@@ -404,8 +539,24 @@ extends FormComponent
 	 */
 	public FormTextArea addTextArea( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int rows, final int columns )
 	{
+		return addTextArea( bundle, target.getName(), target, rows, columns );
+	}
+
+	/**
+	 * Convenience method to quickly add a text area to this container.
+	 *
+	 * @param bundle      Bundle containing the field label.
+	 * @param resourceKey Key to use in resource bundle.
+	 * @param target      Target object.
+	 * @param rows        Number of rows (-1 = unspecified).
+	 * @param columns     Number of columns (-1 = unspecified).
+	 *
+	 * @return Text area that was created.
+	 */
+	public FormTextArea addTextArea( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int rows, final int columns )
+	{
 		final FormTextArea area = new FormTextArea( target, rows, columns );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), area ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), area ) );
 		addComponent( area );
 		return area;
 	}
@@ -413,7 +564,7 @@ extends FormComponent
 	/**
 	 * Convenience method to quickly add a number field to this container.
 	 *
-	 * @param bundle                Resource bundle containing the field label
+	 * @param bundle                Bundle containing the field label
 	 *                              (key=name).
 	 * @param target                Target object.
 	 * @param allowNegative         Allow negative numbers.
@@ -424,8 +575,25 @@ extends FormComponent
 	 */
 	public FormNumberField addNumberField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final boolean allowNegative, final int maximumFractionDigits )
 	{
+		return addNumberField( bundle, target.getName(), target, allowNegative, maximumFractionDigits );
+	}
+
+	/**
+	 * Convenience method to quickly add a number field to this container.
+	 *
+	 * @param bundle                Bundle containing the field label.
+	 * @param resourceKey           Key to use in resource bundle.
+	 * @param target                Target object.
+	 * @param allowNegative         Allow negative numbers.
+	 * @param maximumFractionDigits Maximum number of fraction digits (0 &#8658;
+	 *                              integer only).
+	 *
+	 * @return Number field that was created.
+	 */
+	public FormNumberField addNumberField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final boolean allowNegative, final int maximumFractionDigits )
+	{
 		final FormNumberField field = new FormNumberField( target, maximumFractionDigits, allowNegative ? null : BigDecimal.ZERO, null );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, target.getName(), target.getName() ), field ) );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), field ) );
 		addComponent( field );
 		return field;
 	}
@@ -462,12 +630,11 @@ extends FormComponent
 	public void removeComponent( @NotNull final FormComponent component )
 	{
 		//noinspection ObjectEquality
-		if ( component.getParent() != this )
+		if ( component.getParent() == this )
 		{
-			throw new RuntimeException( "component is not owened by this container" );
+			component.setParent( null );
 		}
 
-		component.setParent( null );
 		_components.remove( component );
 	}
 
