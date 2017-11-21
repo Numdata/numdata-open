@@ -127,6 +127,7 @@ public class ResourceBundleTools
 	 * @throws MissingResourceException if no resource bundle for the specified
 	 * class can be found.
 	 */
+	@NotNull
 	@SuppressWarnings( { "CallToNativeMethodWhileLocked", "ObjectEquality" } )
 	public static ResourceBundle getBundleHierarchy( @NotNull final Class<?> clazz, @Nullable final Locale locale )
 	{
@@ -290,7 +291,8 @@ public class ResourceBundleTools
 	 *
 	 * @return Bundle names included in the bundle hierarchy.
 	 */
-	@SuppressWarnings( { "CallToNativeMethodWhileLocked", "ObjectEquality" } )
+	@NotNull
+	@SuppressWarnings( { "ObjectEquality", "unused", "WeakerAccess" } )
 	public static List<String> getBundleHierarchyNames( @NotNull final Class<?> clazz )
 	{
 		final boolean trace = LOG.isTraceEnabled();
@@ -299,8 +301,6 @@ public class ResourceBundleTools
 		{
 			LOG.debug( "getBundleHierarchyElements( " + clazz + " )" );
 		}
-
-		final String className = clazz.getName();
 
 		final List<String> result = new ArrayList<String>();
 
@@ -396,7 +396,7 @@ public class ResourceBundleTools
 
 	@SuppressWarnings( "JavaDoc" )
 	@Nullable
-	private static Class<?> getDeclaringClass( final @NotNull Class<?> clazz )
+	private static Class<?> getDeclaringClass( @NotNull final Class<?> clazz )
 	{
 		Class<?> result = clazz.getDeclaringClass();
 		if ( result == null )
@@ -447,6 +447,7 @@ public class ResourceBundleTools
 	 * @throws MissingResourceException if no resource bundle for the specified
 	 * class can be found.
 	 */
+	@NotNull
 	public static ResourceBundle getBundle( @NotNull final Class<?> clazz, @Nullable final Locale locale )
 	{
 		return getBundle( clazz.getName(), locale, clazz.getClassLoader() );
@@ -470,6 +471,7 @@ public class ResourceBundleTools
 	 * @throws MissingResourceException if no resource bundle for the specified
 	 * class can be found.
 	 */
+	@NotNull
 	public static ResourceBundle getBundle( @NotNull final String baseName, @Nullable final Locale locale, @Nullable final ClassLoader loader )
 	{
 		final Locale usedLocale = ( locale == null ) ? Locale.getDefault() : locale;
@@ -529,6 +531,7 @@ public class ResourceBundleTools
 	 *
 	 * @return {@link ResourceBundle} instance.
 	 */
+	@NotNull
 	public static ResourceBundle getBundle( @Nullable final Properties properties )
 	{
 		final Map<String, String> map;
@@ -575,6 +578,7 @@ public class ResourceBundleTools
 	 *
 	 * @return {@link ResourceBundle} instance.
 	 */
+	@NotNull
 	public static Properties getProperties( @Nullable final ResourceBundle bundle )
 	{
 		final Properties result = new Properties();
@@ -609,6 +613,7 @@ public class ResourceBundleTools
 	 * @throws MissingResourceException if no object for the given key can be
 	 * found
 	 */
+	@NotNull
 	public static String[] getStringList( @NotNull final ResourceBundle bundle, @NotNull final String key )
 	{
 		final String[] result = TextTools.tokenize( bundle.getString( key ), '|' );
@@ -638,6 +643,7 @@ public class ResourceBundleTools
 	 *
 	 * @return Array with value/label pairs for all available choices.
 	 */
+	@NotNull
 	public static String[] getChoices( @NotNull final ResourceBundle bundle, @Nullable final String propertyName )
 	{
 		return getChoices( bundle, propertyName + '.', getStringList( bundle, propertyName + "List" ) );
@@ -664,6 +670,7 @@ public class ResourceBundleTools
 	 *
 	 * @return Array with value/label pairs for all available choices.
 	 */
+	@NotNull
 	public static String[] getChoices( @Nullable final ResourceBundle bundle, @Nullable final String prefix, @NotNull final String[] values )
 	{
 		final String[] result = new String[ values.length * 2 ];
@@ -730,6 +737,7 @@ public class ResourceBundleTools
 	 *
 	 * @return String from resource bundle, or default value if undefined.
 	 */
+	@NotNull
 	public static String getString( @Nullable final Locale locale, @NotNull final Enum<?> enumerate )
 	{
 		String result;
@@ -754,6 +762,7 @@ public class ResourceBundleTools
 	 *
 	 * @return String from resource bundle, or default value if undefined.
 	 */
+	@NotNull
 	public static String getString( @Nullable final ResourceBundle bundle, @NotNull final Enum<?> enumerate )
 	{
 		String result;
@@ -796,6 +805,7 @@ public class ResourceBundleTools
 	 * @throws MissingResourceException if no resource bundle or resource entry
 	 * for the specified class can be found.
 	 */
+	@NotNull
 	public static String getString( @Nullable final Locale locale, @NotNull final Class<?> clazz, @NotNull final String key )
 	{
 		final ResourceBundle bundle = getBundleHierarchy( clazz, locale );
@@ -820,6 +830,8 @@ public class ResourceBundleTools
 	 *
 	 * @return String from resource bundle, or default value if undefined.
 	 */
+	@Contract( "_, _, !null -> !null" )
+	@Nullable
 	public static String getString( @Nullable final ResourceBundle bundle, @NotNull final String key, @Nullable final String defaultValue )
 	{
 		String result = defaultValue;
@@ -834,7 +846,6 @@ public class ResourceBundleTools
 				/* ignored, will return default value */
 			}
 		}
-		//noinspection ConstantConditions
 		return result;
 	}
 
@@ -852,6 +863,7 @@ public class ResourceBundleTools
 	 * invalid.
 	 * @see MessageFormat#format(String, Object[])
 	 */
+	@NotNull
 	public static String format( @Nullable final ResourceBundle bundle, @NotNull final String key, final long argument )
 	{
 		return MessageFormat.format( getString( bundle, key, key ), argument );
@@ -871,6 +883,7 @@ public class ResourceBundleTools
 	 * invalid.
 	 * @see MessageFormat#format(String, Object[])
 	 */
+	@NotNull
 	public static String format( @Nullable final ResourceBundle bundle, @NotNull final String key, final double argument )
 	{
 		return MessageFormat.format( getString( bundle, key, key ), argument );
@@ -890,6 +903,7 @@ public class ResourceBundleTools
 	 * invalid.
 	 * @see MessageFormat#format(String, Object[])
 	 */
+	@NotNull
 	public static String format( @Nullable final ResourceBundle bundle, @NotNull final String key, final Object... arguments )
 	{
 		return MessageFormat.format( getString( bundle, key, key ), arguments );
@@ -910,6 +924,7 @@ public class ResourceBundleTools
 	 * invalid.
 	 * @see MessageFormat#format(String, Object[])
 	 */
+	@NotNull
 	public static String format( @Nullable final Locale locale, @Nullable final ResourceBundle bundle, @NotNull final String key, final Object... arguments )
 	{
 		return new MessageFormat( getString( bundle, key, key ), locale ).format( arguments );
@@ -930,6 +945,7 @@ public class ResourceBundleTools
 	 * invalid.
 	 * @see MessageFormat#format(String, Object[])
 	 */
+	@NotNull
 	public static String format( @Nullable final Locale locale, @NotNull final Class<?> clazz, @NotNull final String key, final Object... arguments )
 	{
 		return format( locale, getBundleHierarchy( clazz, locale ), key, arguments );
