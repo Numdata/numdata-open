@@ -24,9 +24,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.numdata.oss.web;
+package com.numdata.oss;
 
-import com.numdata.oss.*;
+import com.numdata.oss.junit.*;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -96,5 +96,28 @@ public class TestHTMLTools
 		assertEquals( "test #22 failed", "javascript:go()", HTMLTools.getURI( null, "javascript:go()" ) );
 		assertEquals( "test #23 failed", "javascript:go()", HTMLTools.getURI( "", "javascript:go()" ) );
 		assertEquals( "test #24 failed", "javascript:go()", HTMLTools.getURI( "/context/", "javascript:go()" ) );
+	}
+
+	/**
+	 * Test {@link HTMLTools#cssColorToRgb} method.
+	 *
+	 * @throws Exception if the test fails.
+	 */
+	@Test
+	public void testCssColorToRgb()
+	throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testCssColorToRgb" );
+
+		ArrayTester.assertEquals( "Test #1", new int[] { 0x11, 0x22, 0x33 }, HTMLTools.cssColorToRgb( "#123" ) );
+		ArrayTester.assertEquals( "Test #2", new int[] { 0xcc, 0xbb, 0xee }, HTMLTools.cssColorToRgb( "#cbe" ) );
+		ArrayTester.assertEquals( "Test #4", new int[] { 0x11, 0x22, 0x33, 0x00 }, HTMLTools.cssColorToRgb( "#1230" ) );
+		ArrayTester.assertEquals( "Test #5", new int[] { 0x88, 0x99, 0xaa, 0x88 }, HTMLTools.cssColorToRgb( "#89a8" ) );
+		ArrayTester.assertEquals( "Test #6", new int[] { 0xcc, 0xbb, 0xee, 0xff }, HTMLTools.cssColorToRgb( "#cbef" ) );
+		ArrayTester.assertEquals( "Test #1", new int[] { 0x12, 0x34, 0x56 }, HTMLTools.cssColorToRgb( "#123456" ) );
+		ArrayTester.assertEquals( "Test #2", new int[] { 0xfe, 0xdc, 0xba }, HTMLTools.cssColorToRgb( "#fedcba" ) );
+		ArrayTester.assertEquals( "Test #4", new int[] { 0x12, 0x34, 0x56, 0x78 }, HTMLTools.cssColorToRgb( "#12345678" ) );
+		ArrayTester.assertEquals( "Test #5", new int[] { 0x9a, 0xbc, 0xde, 0xf0 }, HTMLTools.cssColorToRgb( "#9abcdef0" ) );
+		ArrayTester.assertEquals( "Test #6", new int[] { 0xcb, 0xa9, 0x87, 0x65 }, HTMLTools.cssColorToRgb( "#cba98765" ) );
 	}
 }

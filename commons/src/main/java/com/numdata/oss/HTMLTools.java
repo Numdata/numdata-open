@@ -27,6 +27,7 @@
 package com.numdata.oss;
 
 import java.io.*;
+import java.text.*;
 import java.util.*;
 
 import org.jetbrains.annotations.*;
@@ -38,6 +39,11 @@ import org.jetbrains.annotations.*;
  */
 public class HTMLTools
 {
+	/**
+	 * Floating point number format used for CSS values.
+	 */
+	public static final NumberFormat CSS_FLOAT_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 3, false );
+
 	/**
 	 * Utility class is not supposed to be instantiated.
 	 */
@@ -1207,5 +1213,95 @@ public class HTMLTools
 			escapeAttributeValue( out, entry.getValue() );
 			out.append( '"' );
 		}
+	}
+
+	/**
+	 * Convert CSS color string to R,G,B(,A) values.
+	 *
+	 * @param cssColor CSS color string (#rgb, #rgba, #rrggbb, #rrggbbaa).
+	 *
+	 * @return Array with R,G,B(,A) values (0-255 scale).
+	 */
+	public static int[] cssColorToRgb( @NotNull final String cssColor )
+	{
+		if ( cssColor.charAt( 0 ) != '#' )
+		{
+			throw new IllegalArgumentException( "Can't parse color string '" + cssColor + '\'' );
+		}
+
+		final int red;
+		final int green;
+		final int blue;
+		int alpha = -1;
+
+		switch ( cssColor.length() )
+		{
+			case 5: // #rgba
+				alpha = Integer.parseInt( cssColor.substring( 4, 5 ), 16 ) * 0x11;
+				//noinspection fallthrough
+			case 4: // #rgb
+				red = Integer.parseInt( cssColor.substring( 1, 2 ), 16 ) * 0x11;
+				green = Integer.parseInt( cssColor.substring( 2, 3 ), 16 ) * 0x11;
+				blue = Integer.parseInt( cssColor.substring( 3, 4 ), 16 ) * 0x11;
+				break;
+
+			case 9: // #rrggbbaa
+				alpha = Integer.parseInt( cssColor.substring( 7, 9 ), 16 );
+				//noinspection fallthrough
+			case 7: // #rrggbb
+				red = Integer.parseInt( cssColor.substring( 1, 3 ), 16 );
+				green = Integer.parseInt( cssColor.substring( 3, 5 ), 16 );
+				blue = Integer.parseInt( cssColor.substring( 5, 7 ), 16 );
+				break;
+
+			default:
+				throw new IllegalArgumentException( "Malformed CSS color '" + cssColor + '\'' );
+		}
+
+		return ( alpha >= 0 ) ? new int[] { red, green, blue, alpha } : new int[] { red, green, blue };
+	}
+
+	/**
+	 * Convert R,G,B(,A) value to CSS color string.
+	 *
+	 * @param color Array with R,G,B(,A) values (0-255 scale).
+	 *
+	 * @return CSS color string.
+	 */
+	public static String rgbToCssColor( final int[] color )
+	{
+		return ( color.length > 3 ) ? rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] ) : rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ] );
+	}
+
+	/**
+	 * Convert R,G,B(,A) value to CSS color string.
+	 *
+	 * @param red   Red (0-255).
+	 * @param green Green (0-255).
+	 * @param blue  Blue (0-255).
+	 *
+	 * @return CSS color string.
+	 */
+	public static String rgbToCssColor( final int red, final int green, final int blue )
+	{
+		return "#" +
+		       Character.forDigit( red / 16, 16 ) + Character.forDigit( red & 15, 16 ) +
+		       Character.forDigit( green / 16, 16 ) + Character.forDigit( green & 15, 16 ) +
+		       Character.forDigit( blue / 16, 16 ) + Character.forDigit( blue & 15, 16 );
+	}
+
+	/**
+	 * Convert R,G,B(,A) value to CSS color string.
+	 *
+	 * @param red   Red (0-255).
+	 * @param green Green (0-255).
+	 * @param blue  Blue (0-255).
+	 * @param alpha Alpha (0-255).
+	 *
+	 * @return CSS color string.
+	 */
+	public static String rgbToCssColor( final int red, final int green, final int blue, final int alpha )
+	{
+		return "rgba(" + red + ',' + green + ',' + blue + ',' + CSS_FLOAT_FORMAT.format( alpha / 255.0 ) + ')';
 	}
 }
