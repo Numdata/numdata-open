@@ -310,6 +310,7 @@ public class TextTools
 	 *
 	 * @return Fixed-length {@link String}.
 	 */
+	@NotNull
 	public static String getFixed( @Nullable final String source, final int length, final boolean rightAligned, final char fillChar )
 	{
 		final String result;
@@ -445,6 +446,7 @@ public class TextTools
 	 * null} if {@code string} is {@code null}.
 	 */
 	@Nullable
+	@Contract( value = "null -> null; !null -> !null", pure = true )
 	public static String plainTextToHTML( @Nullable final String string )
 	{
 		final String result;
@@ -640,6 +642,7 @@ public class TextTools
 	 * @return {@code true} if the string objects are equal; {@code false}
 	 * otherwise.
 	 */
+	@Contract( value = "null, null -> true", pure = true )
 	public static boolean equals( @Nullable final CharSequence cs1, @Nullable final CharSequence cs2 )
 	{
 		@SuppressWarnings( "ObjectEquality" ) boolean result = ( cs1 == cs2 );
@@ -670,6 +673,7 @@ public class TextTools
 	 * @return {@code true} if the string objects are equal; {@code false}
 	 * otherwise.
 	 */
+	@Contract( value = "null, null -> true", pure = true )
 	public static boolean equalsIgnoreCase( @Nullable final CharSequence cs1, @Nullable final CharSequence cs2 )
 	{
 		@SuppressWarnings( "ObjectEquality" ) boolean result = ( cs1 == cs2 );
@@ -703,6 +707,7 @@ public class TextTools
 	 *
 	 * @return {@code true} if the string is empty; {@code false} otherwise.
 	 */
+	@Contract( value = "null -> true", pure = true )
 	public static boolean isEmpty( @Nullable final CharSequence string )
 	{
 		boolean result = ( string == null );
@@ -732,6 +737,7 @@ public class TextTools
 	 * @return {@code true} if the string is not empty; {@code false} if the
 	 * string is {@code null} or contains no non-whitespace characters.
 	 */
+	@Contract( value = "null -> false", pure = true )
 	public static boolean isNonEmpty( @Nullable final CharSequence string )
 	{
 		return !isEmpty( string );
@@ -748,6 +754,7 @@ public class TextTools
 	 * {@code false} if the string is {@code null} or does not start with the
 	 * specified prefix.
 	 */
+	@Contract( value = "null, _ -> false", pure = true )
 	public static boolean startsWith( @Nullable final CharSequence string, final char prefix )
 	{
 		boolean result = ( string != null );
@@ -771,6 +778,7 @@ public class TextTools
 	 * {@code false} if either argument is {@code null} or the {@code string}
 	 * does not start with the specified prefix.
 	 */
+	@Contract( value = "null, _ -> false; _, null -> false", pure = true )
 	public static boolean startsWithIgnoreCase( @Nullable final String string, @Nullable final String prefix )
 	{
 		return ( string != null ) && ( prefix != null ) && string.regionMatches( true, 0, prefix, 0, prefix.length() );
@@ -786,6 +794,7 @@ public class TextTools
 	 * false} if the string is {@code null} or does not end with the specified
 	 * suffix.
 	 */
+	@Contract( value = "null, _ -> false", pure = true )
 	public static boolean endsWith( @Nullable final CharSequence string, final char suffix )
 	{
 		boolean result = ( string != null );
@@ -809,6 +818,7 @@ public class TextTools
 	 * false} if either argument is {@code null} or the {@code string} does not
 	 * end with the specified suffix.
 	 */
+	@Contract( value = "null, _ -> false; _, null -> false", pure = true )
 	public static boolean endsWithIgnoreCase( @Nullable final String string, @Nullable final String suffix )
 	{
 		return ( string != null ) && ( suffix != null ) && string.regionMatches( true, string.length() - suffix.length(), suffix, 0, suffix.length() );
@@ -1652,6 +1662,7 @@ public class TextTools
 	 * @return Result text.
 	 */
 	@Nullable
+	@Contract( value = "null, _, _ -> null; _, _, null -> null; !null, _, !null -> !null", pure = true )
 	public static String replace( @Nullable final String source, final char find, @Nullable final String replace )
 	{
 		final String result;
@@ -1790,8 +1801,9 @@ public class TextTools
 	 * @param source    Source string to be tokenized.
 	 * @param separator Separator character.
 	 *
-	 * @return String array with result (never empty).
+	 * @return String array with result.
 	 */
+	@NotNull
 	public static String[] tokenize( @Nullable final String source, final char separator )
 	{
 		final String[] result;
@@ -1845,8 +1857,9 @@ public class TextTools
 	 * @param separator Separator character.
 	 * @param trim      Trim off leading and trailing whitespace.
 	 *
-	 * @return Empty if source is empty (never {@code null}).
+	 * @return Empty if source is empty.
 	 */
+	@NotNull
 	public static List<String> tokenize( @Nullable final String source, final char separator, final boolean trim )
 	{
 		final List<String> result;
@@ -1911,6 +1924,7 @@ public class TextTools
 	 * @see #escape
 	 */
 	@Nullable
+	@Contract( value = "null -> null; !null -> !null", pure = true )
 	public static String unescape( @Nullable final CharSequence source )
 	{
 		final String result;
@@ -2138,6 +2152,7 @@ public class TextTools
 	 * same as {@code cs} if it's already a capitalized {@link String}).
 	 */
 	@Nullable
+	@Contract( value = "null -> null; !null -> !null", pure = true )
 	public static String capitalize( @Nullable final CharSequence cs )
 	{
 		return ( cs == null ) ? null : ( cs.length() == 0 ) ? "" : setFirstChar( cs, Character.toUpperCase( cs.charAt( 0 ) ) );
@@ -2185,6 +2200,7 @@ public class TextTools
 	 * String}).
 	 */
 	@Nullable
+	@Contract( value = "null -> null; !null -> !null", pure = true )
 	public static String decapitalize( @Nullable final CharSequence cs )
 	{
 		return ( cs == null ) ? null : ( cs.length() == 0 ) ? "" : setFirstChar( cs, Character.toLowerCase( cs.charAt( 0 ) ) );
@@ -2198,6 +2214,7 @@ public class TextTools
 	 *
 	 * @return Textual representation of table.
 	 */
+	@NotNull
 	public static String getTableAsText( @Nullable final List<String> headers, @Nullable final List<? extends List<?>> data )
 	{
 		return getTableAsText( headers, data, false );
@@ -2582,6 +2599,7 @@ public class TextTools
 	 * the input was {@code null}.
 	 */
 	@Nullable
+	@Contract( value = "null, _ -> null; !null, _ -> !null", pure = true )
 	public static String truncate( @Nullable final String string, final int length )
 	{
 		return ( string == null ) ? null : ( string.length() > length ) ? string.substring( 0, length ) : string;
@@ -2595,6 +2613,7 @@ public class TextTools
 	 *
 	 * @return Formatted number.
 	 */
+	@NotNull
 	public static String formatBinary( final long number )
 	{
 		return formatBinary( number, 3 );
@@ -2609,6 +2628,7 @@ public class TextTools
 	 *
 	 * @return Formatted number.
 	 */
+	@NotNull
 	public static String formatBinary( final long number, final int maxFractionDigits )
 	{
 		long quotient = number;
@@ -2642,6 +2662,7 @@ public class TextTools
 	 * @return {@code true} if the E-mail address seems to be valid; {@code
 	 * false} otherwise.
 	 */
+	@Contract( value = "null -> false", pure = true )
 	public static boolean isValidEmail( @Nullable final String email )
 	{
 		return ( ( email != null ) && !email.isEmpty() && VALID_EMAIL_ADDRESS_PATTERN.matcher( email ).matches() );
@@ -2656,6 +2677,7 @@ public class TextTools
 	 *
 	 * @return {@code true} if file name is valid.
 	 */
+	@Contract( value = "null -> false", pure = true )
 	public static boolean isSecureFilePath( @Nullable final CharSequence filePath )
 	{
 		boolean result;
@@ -2670,7 +2692,7 @@ public class TextTools
 
 			result = true;
 			int namePartLength = 0;
-			char previousCh = 0;
+			char previousCh = '\0';
 
 			for ( int i = 0; i < length; i++ )
 			{
@@ -2806,6 +2828,7 @@ public class TextTools
 	 *
 	 * @return {@code true} if file name is valid.
 	 */
+	@Contract( value = "null -> false", pure = true )
 	public static boolean isSecureFilename( @Nullable final CharSequence fileName )
 	{
 		boolean result;
