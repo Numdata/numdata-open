@@ -263,6 +263,7 @@ implements Serializable
 	 * @return String for the specified locale; {@code defaultValue} if no
 	 * suitable string was found.
 	 */
+	@Contract( value = "_, !null -> !null", pure = true )
 	@Nullable
 	public String get( @Nullable final Locale locale, @Nullable final String defaultValue )
 	{
@@ -293,6 +294,7 @@ implements Serializable
 	 * @return String for the specified locale; {@code defaultValue} if no
 	 * suitable string was found.
 	 */
+	@Contract( value = "_, !null -> !null", pure = true )
 	@Nullable
 	public String get( @Nullable final String locale, @Nullable final String defaultValue )
 	{
@@ -336,7 +338,8 @@ implements Serializable
 	/**
 	 * Get string for the specified locale and only that locale.
 	 *
-	 * @param locale Locale to get string for; {@code null} or empty string for the default locale.
+	 * @param locale Locale to get string for; {@code null} or empty string for
+	 *               the default locale.
 	 *
 	 * @return String for the specified locale; {@code null} if no entry was
 	 * found.
@@ -392,6 +395,7 @@ implements Serializable
 	 * @return Set of locale strings for which values are provided (may be
 	 * empty).
 	 */
+	@NotNull
 	public Set<String> getLocales()
 	{
 		return _values.stringPropertyNames();
@@ -510,6 +514,7 @@ implements Serializable
 	 *
 	 * @return Map strings by locale.
 	 */
+	@NotNull
 	public Map<String, String> toMap()
 	{
 		return PropertyTools.toMap( _values );
@@ -539,6 +544,7 @@ implements Serializable
 		/**
 		 * Locale to compare strings for.
 		 */
+		@NotNull
 		private final Locale _locale;
 
 		/**
