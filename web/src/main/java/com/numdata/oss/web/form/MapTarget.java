@@ -31,7 +31,7 @@ import java.util.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Provides access to a property stored in a {@link Properties} object.
+ * Provides access to a property stored in a {@link Map} object.
  *
  * @author G. Meinders
  */
@@ -39,13 +39,21 @@ public class MapTarget
 implements FieldTarget
 {
 	/**
-	 * Target {@link Properties}.
+	 * Target {@link Map}.
 	 */
+	@NotNull
 	private final Map<? super String, ? super String> _map;
+
+	/**
+	 * Key in map.
+	 */
+	@NotNull
+	private final String _key;
 
 	/**
 	 * Name of form field.
 	 */
+	@NotNull
 	private final String _name;
 
 	/**
@@ -54,10 +62,23 @@ implements FieldTarget
 	 * @param map  Target map.
 	 * @param name Name of property.
 	 */
-	@SuppressWarnings ( "AssignmentToCollectionOrArrayFieldFromParameter" )
-	public MapTarget( final Map<? super String, ? super String> map, final String name )
+	public MapTarget( @NotNull final Map<? super String, ? super String> map, @NotNull final String name )
+	{
+		this( name, map, name );
+	}
+
+	/**
+	 * Construct new map field target.
+	 *
+	 * @param name Name of property.
+	 * @param map  Target map.
+	 * @param key  Key in map.
+	 */
+	@SuppressWarnings( "AssignmentToCollectionOrArrayFieldFromParameter" )
+	public MapTarget( @NotNull final String name, @NotNull final Map<? super String, ? super String> map, @NotNull final String key )
 	{
 		_map = map;
+		_key = key;
 		_name = name;
 	}
 
@@ -72,7 +93,7 @@ implements FieldTarget
 	@Override
 	public String getValue()
 	{
-		final Object value = _map.get( _name );
+		final Object value = _map.get( _key );
 		return ( value == null ) ? null : String.valueOf( value );
 	}
 
@@ -81,11 +102,11 @@ implements FieldTarget
 	{
 		if ( value == null )
 		{
-			_map.remove( _name );
+			_map.remove( _key );
 		}
 		else
 		{
-			_map.put( _name, value );
+			_map.put( _key, value );
 		}
 	}
 }
