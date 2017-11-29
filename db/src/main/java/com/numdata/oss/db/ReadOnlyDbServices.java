@@ -100,4 +100,13 @@ extends DbServices
 	{
 		throw new AssertionError( "NOT ALLOWED IN READ-ONLY MODE" );
 	}
+
+	@Override
+	public void startTransaction()
+	throws SQLException
+	{
+		super.startTransaction();
+		final Connection transactionConnection = super.acquireConnection();
+		transactionConnection.setReadOnly( true );
+	}
 }
