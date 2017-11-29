@@ -183,12 +183,20 @@ public class HsqlDbServices
 
 		LOG.debug( "Creating HSQLDB table with statement:\n" + createStatement );
 
-		JdbcTools.executeUpdate( getDataSource(), createStatement );
+		final Connection connection = acquireConnection();
+		try
+		{
+			JdbcTools.executeUpdate( connection, createStatement );
+		}
+		finally
+		{
+			releaseConnection( connection );
+		}
 	}
 
 	@Override
 	protected long getInsertID( final Connection connection )
-		throws SQLException
+	throws SQLException
 	{
 		final long result;
 

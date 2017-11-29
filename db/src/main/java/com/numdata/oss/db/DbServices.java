@@ -256,6 +256,10 @@ public class DbServices
 	@NotNull
 	public DataSource getDataSource()
 	{
+		if ( isTransactionActive() )
+		{
+			throw new IllegalStateException( "Not allowed during a transaction." );
+		}
 		return _dataSource;
 	}
 
@@ -341,12 +345,18 @@ public class DbServices
 			LOG.debug( "createTable( " + tableClass + " )" );
 		}
 
-		final DataSource dataSource = getDataSource();
-
 		final ClassHandler handler = getClassHandler( tableClass );
 		final String createStatement = handler.getCreateStatement();
 
-		JdbcTools.executeUpdate( dataSource, createStatement );
+		final Connection connection = acquireConnection();
+		try
+		{
+			JdbcTools.executeUpdate( connection, createStatement );
+		}
+		finally
+		{
+			releaseConnection( connection );
+		}
 	}
 
 	/**
@@ -365,10 +375,17 @@ public class DbServices
 			LOG.debug( "dropTable( " + tableClass + " )" );
 		}
 
-		final DataSource dataSource = getDataSource();
 		final String tableName = getTableName( tableClass );
 
-		JdbcTools.executeUpdate( dataSource, "DROP TABLE " + tableName );
+		final Connection connection = acquireConnection();
+		try
+		{
+			JdbcTools.executeUpdate( connection, "DROP TABLE " + tableName );
+		}
+		finally
+		{
+			releaseConnection( connection );
+		}
 	}
 
 	/**
@@ -385,10 +402,17 @@ public class DbServices
 	public boolean tableExists( @NotNull final Class<?> dbClass )
 	throws SQLException
 	{
-		final DataSource dataSource = getDataSource();
 		final String tableName = getTableName( dbClass );
 
-		return JdbcTools.tableExists( dataSource, tableName );
+		final Connection connection = acquireConnection();
+		try
+		{
+			return JdbcTools.tableExists( connection, tableName );
+		}
+		finally
+		{
+			releaseConnection( connection );
+		}
 	}
 
 	/**
@@ -404,15 +428,15 @@ public class DbServices
 	public int executeDelete( @NotNull final DeleteQuery<?> deleteQuery )
 	throws SQLException
 	{
-		final DataSource dataSource = getDataSource();
 		final String tableName = getTableName( deleteQuery );
 		final String queryString = deleteQuery.getQueryString( tableName );
 		final Object[] queryParameters = deleteQuery.getQueryParameters();
 
+		final Connection connection = acquireConnection();
 		try
 		{
 			final long start = System.nanoTime();
-			final int result = JdbcTools.executeUpdate( dataSource, queryString, queryParameters );
+			final int result = JdbcTools.executeUpdate( connection, queryString, queryParameters );
 			if ( LOG.isDebugEnabled() )
 			{
 				LOG.debug( "executeDelete() time=" + ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0 + "s, query='" + queryString + "', parameters=" + Arrays.toString( queryParameters ) );
@@ -432,6 +456,10 @@ public class DbServices
 			LOG.error( "executeDelete() FAILED query '" + queryString + "' with parameters " + Arrays.toString( queryParameters ) + " => " + e.getMessage(), e );
 			throw e;
 		}
+		finally
+		{
+			releaseConnection( connection );
+		}
 	}
 
 	/**
@@ -447,15 +475,15 @@ public class DbServices
 	public int executeUpdate( @NotNull final UpdateQuery<?> updateQuery )
 	throws SQLException
 	{
-		final DataSource dataSource = getDataSource();
 		final String tableName = getTableName( updateQuery );
 		final String queryString = updateQuery.getQueryString( tableName );
 		final Object[] queryParameters = updateQuery.getQueryParameters();
 
+		final Connection connection = acquireConnection();
 		try
 		{
 			final long start = System.nanoTime();
-			final int result = JdbcTools.executeUpdate( dataSource, queryString, queryParameters );
+			final int result = JdbcTools.executeUpdate( connection, queryString, queryParameters );
 			if ( LOG.isDebugEnabled() )
 			{
 				LOG.debug( "executeUpdate() time=" + ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0 + "s, result=" + result + ", query='" + queryString + "', parameters=" + Arrays.toString( queryParameters ) );
@@ -474,6 +502,10 @@ public class DbServices
 		{
 			LOG.error( "executeUpdate() FAILED query '" + queryString + "' with parameters " + Arrays.toString( queryParameters ) + " => " + e.getMessage(), e );
 			throw e;
+		}
+		finally
+		{
+			releaseConnection( connection );
 		}
 	}
 
@@ -1549,7 +1581,7 @@ public class DbServices
 	 *
 	 * @throws SQLException if an error occurs while accessing the database.
 	 */
-	public void startTransaction( @MagicConstant( intValues = { Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, Connection.TRANSACTION_SERIALIZABLE } ) final int level )
+	public void startTransaction( @MagicConstant( valuesFromClass = Connection.class ) final int level )
 	throws SQLException
 	{
 		if ( LOG.isTraceEnabled() )
@@ -1754,7 +1786,21 @@ public class DbServices
 	public void transaction( final TransactionBody body )
 	throws SQLException
 	{
-		startTransaction( Connection.TRANSACTION_SERIALIZABLE );
+		transaction( body, Connection.TRANSACTION_SERIALIZABLE );
+	}
+
+	/**
+	 * Executes the given operations within a database transaction.
+	 *
+	 * @param body  Operations to perform within a transaction.
+	 * @param level Transaction isolation level; see {@link Connection}.
+	 *
+	 * @throws SQLException if an error occurs while accessing the database.
+	 */
+	public void transaction( final TransactionBody body, @MagicConstant( valuesFromClass = Connection.class ) final int level )
+	throws SQLException
+	{
+		startTransaction( level );
 		try
 		{
 			body.execute();
