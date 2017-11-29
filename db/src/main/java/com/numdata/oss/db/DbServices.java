@@ -510,76 +510,6 @@ public class DbServices
 	}
 
 	/**
-	 * Get auto-incremented ID value after INSERT query.
-	 *
-	 * <dl><dt>IMPORTANT:</dt><dd> This method uses/requires vendor-specific
-	 * SQL statements. Explicit support will need to be implemented for
-	 * unsupported vendors.</dd></dl>
-	 *
-	 * @param connection Connection that was used for INSERT.
-	 *
-	 * @return Auto-increment ID value.
-	 *
-	 * @throws SQLException if the auto-increment value could not be retrieved.
-	 */
-	protected long getInsertID( final Connection connection )
-	throws SQLException
-	{
-		final String query;
-
-		switch ( getSqlDialect() )
-		{
-			case MYSQL:
-				query = "SELECT LAST_INSERT_ID();";
-				break;
-
-			case HSQLDB:
-				query = "CALL IDENTITY()";
-				break;
-
-			case MSSQL:
-				query = "SELECT SCOPE_IDENTITY()";
-				break;
-
-			default:
-				throw new IllegalStateException( "Don't know how to determine auto-increment value for SQL dialect " + getSqlDialect() );
-		}
-
-		final Statement statement = connection.createStatement();
-		try
-		{
-			final ResultSet resultSet = statement.executeQuery( query );
-			try
-			{
-				resultSet.next();
-				return resultSet.getLong( 1 );
-			}
-			finally
-			{
-				try
-				{
-					resultSet.close();
-				}
-				catch ( final SQLException ignored )
-				{
-					/* ignored, would hide real exception */
-				}
-			}
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
-		}
-	}
-
-	/**
 	 * Get number result from single-column query.
 	 *
 	 * @param query SELECT query to execute.
@@ -1376,7 +1306,7 @@ public class DbServices
 				LOG.debug( "Prepare/execute: " + queryString );
 			}
 
-			final PreparedStatement preparedStatement = connection.prepareStatement( queryString );
+			final PreparedStatement preparedStatement = connection.prepareStatement( queryString, Statement.RETURN_GENERATED_KEYS );
 			try
 			{
 				int columnIndex = 1;
@@ -1400,18 +1330,19 @@ public class DbServices
 
 				if ( hasRecordId )
 				{
-					final long insertRecordId = getInsertID( connection );
-					if ( insertRecordId < 0L )
+					final ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+					try
 					{
-						throw new SQLException( "insertRecordId: " + insertRecordId + ", query: " + queryString );
+						if ( !generatedKeys.next() )
+						{
+							throw new SQLException( "Generated record id was not returned by database." );
+						}
+						classHandler.setRecordId( object, generatedKeys.getLong( 1 ) );
 					}
-
-					if ( LOG.isTraceEnabled() )
+					finally
 					{
-						LOG.trace( "object: " + object + ", insertRecordId: " + insertRecordId );
+						generatedKeys.close();
 					}
-
-					classHandler.setRecordId( object, insertRecordId );
 				}
 			}
 			finally

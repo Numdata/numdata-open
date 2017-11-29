@@ -194,34 +194,6 @@ public class HsqlDbServices
 		}
 	}
 
-	@Override
-	protected long getInsertID( final Connection connection )
-	throws SQLException
-	{
-		final long result;
-
-		final Statement statement = connection.createStatement();
-		try
-		{
-			final ResultSet resultSet = statement.executeQuery( "CALL IDENTITY()" );
-			try
-			{
-				resultSet.next();
-				result = resultSet.getLong( 1 );
-			}
-			finally
-			{
-				resultSet.close();
-			}
-		}
-		finally
-		{
-			statement.close();
-		}
-
-		return result;
-	}
-
 	/**
 	 * Get JDBC memory database services (used for test purposes).
 	 *
