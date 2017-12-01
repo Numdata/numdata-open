@@ -748,7 +748,7 @@ public class ResourceBundleTools
 		}
 		catch ( final MissingResourceException ignored )
 		{
-			result = enumerate.name();
+			result = enumerate.toString();
 		}
 
 		return result;
@@ -781,12 +781,12 @@ public class ResourceBundleTools
 			}
 			catch ( final MissingResourceException ignored )
 			{
-				result = getString( bundle, name, name );
+				result = getString( bundle, name, enumerate.toString() );
 			}
 		}
 		else
 		{
-			result = name;
+			result = enumerate.toString();
 		}
 
 		return result;
