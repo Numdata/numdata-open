@@ -338,6 +338,142 @@ public class UrlTools
 	}
 
 	/**
+	 * Returns parameter value map from an URI string. If a parameter has multiple values, only the last value is returned.
+	 *
+	 * @param uri URI to get parameters from.
+	 *
+	 * @return Map with parameter values.
+	 */
+	@NotNull
+	protected static Map<String, String> getParameterValueMapFromUri( @NotNull final String uri )
+	{
+		final Map<String, String> result;
+
+		final int qmark = uri.indexOf( '?' );
+		if ( qmark < 0 )
+		{
+			result = Collections.emptyMap();
+		}
+		else
+		{
+			final int hash = uri.indexOf( '#' );
+			if ( ( hash < 0 ) || ( qmark < hash ) )
+			{
+				result = new LinkedHashMap<String, String>();
+
+				final int start = qmark + 1;
+				final int end = ( hash < 0 ) ? uri.length() : hash;
+
+				int pos = start;
+				while ( pos < end )
+				{
+					int endParam = uri.indexOf( '&', pos );
+					if ( ( endParam < pos ) || ( endParam > end ) )
+					{
+						endParam = end;
+					}
+
+					final int equal = uri.indexOf( '=', pos );
+					final boolean hasEqual = ( equal >= pos ) && ( equal < endParam );
+
+					final int endName = hasEqual ? equal : endParam;
+					if ( endName > pos ) // skip nameless parameters
+					{
+						final String name = urlDecode( uri.substring( pos, endName ) );
+						final String value = hasEqual ? urlDecode( uri.substring( equal + 1, endParam ) ) : "";
+
+						result.put( name, value );
+					}
+
+					pos = endParam + 1;
+				}
+			}
+			else
+			{
+				result = Collections.emptyMap();
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns parameter value map from an URI string.
+	 *
+	 * @param uri URI to get parameters from.
+	 *
+	 * @return Map with parameter values.
+	 */
+	@NotNull
+	protected static Map<String, List<String>> getParameterValuesMapFromUri( @NotNull final String uri )
+	{
+		final Map<String, List<String>> result;
+
+		final int qmark = uri.indexOf( '?' );
+		if ( qmark < 0 )
+		{
+			result = Collections.emptyMap();
+		}
+		else
+		{
+			final int hash = uri.indexOf( '#' );
+			if ( ( hash < 0 ) || ( qmark < hash ) )
+			{
+				result = new LinkedHashMap<String, List<String>>();
+
+				final int start = qmark + 1;
+				final int end = ( hash < 0 ) ? uri.length() : hash;
+
+				int pos = start;
+				while ( pos < end )
+				{
+					int endParam = uri.indexOf( '&', pos );
+					if ( ( endParam < pos ) || ( endParam > end ) )
+					{
+						endParam = end;
+					}
+
+					final int equal = uri.indexOf( '=', pos );
+					final boolean hasEqual = ( equal >= pos ) && ( equal < endParam );
+
+					final int endName = hasEqual ? equal : endParam;
+					if ( endName > pos ) // skip nameless parameters
+					{
+						final String name = urlDecode( uri.substring( pos, endName ) );
+						final String value = hasEqual ? urlDecode( uri.substring( equal + 1, endParam ) ) : "";
+
+						List<String> values = result.get( name );
+						if ( values == null )
+						{
+							result.put( name, Collections.singletonList( value ) );
+						}
+						else
+						{
+							if ( values.size() == 1 )
+							{
+								final String firstValue = values.get( 0 );
+								values = new ArrayList<String>();
+								values.add( firstValue );
+								result.put( name, values );
+							}
+
+							values.add( value );
+						}
+					}
+
+					pos = endParam + 1;
+				}
+			}
+			else
+			{
+				result = Collections.emptyMap();
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * URL-encode a string using UTF-8. Spaces are converted to '+', which is
 	 * appropriate in HTML form data (including query string).
 	 *

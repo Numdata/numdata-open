@@ -183,13 +183,60 @@ public class TestUrlTools
 
 	/**
 	 * Test {@link UrlTools#urlEncode} method.
+	 */
+	@Test
+	public void testUrlEncode()
+	{
+		assertEquals( "Test #1", "a+b%26c%2Bd%2Fe%3Ff%E2%82%A0g%CE%B1h", UrlTools.urlEncode( "a b&c+d/e?f\u20A0g\u03B1h" ) );
+	}
+
+	/**
+	 * Test {@link UrlTools#getParameterValueMapFromUri} method.
 	 *
 	 * @throws Exception if the test fails.
 	 */
 	@Test
-	public void testUrlEncode()
-	throws Exception
+	public void testGetParameterValueMapFromUri()
 	{
-		assertEquals( "Test #1", "a+b%26c%2Bd%2Fe%3Ff%E2%82%A0g%CE%B1h", UrlTools.urlEncode( "a b&c+d/e?f\u20A0g\u03B1h" ) );
+		assertEquals( "Test #1", "[par1=val1, par2=, par3=val3a, par4=]", UrlTools.getParameterValueMapFromUri( "test.html?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #2", "[par1=val1, par2=, par3=val3a, par4=]", UrlTools.getParameterValueMapFromUri( "?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #3", "[]", UrlTools.getParameterValueMapFromUri( "#test.html?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #4", "[]", UrlTools.getParameterValueMapFromUri( "test.html#?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #5", "[]", UrlTools.getParameterValueMapFromUri( "test.html?#par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #6", "[par1=]", UrlTools.getParameterValueMapFromUri( "test.html?par1#=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #7", "[par1=]", UrlTools.getParameterValueMapFromUri( "test.html?par1=#val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #8", "[par1=val1]", UrlTools.getParameterValueMapFromUri( "test.html?par1=val1#&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #9", "[par1=val1]", UrlTools.getParameterValueMapFromUri( "test.html?par1=val1&#par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #10", "[par1=val1, par2=, par3=]", UrlTools.getParameterValueMapFromUri( "test.html?par1=val1&par2=&par3#=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #11", "[par1=val1, par2=, par3=val3, par4=]", UrlTools.getParameterValueMapFromUri( "test.html?par1=val1&par2=&par3=val3&par4&#par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #12", "[]", UrlTools.getParameterValueMapFromUri( "&par1=val1" ).entrySet().toString() );
+		assertEquals( "Test #13", "[]", UrlTools.getParameterValueMapFromUri( "#par1=val1" ).entrySet().toString() );
+		assertEquals( "Test #14", "[]", UrlTools.getParameterValueMapFromUri( "" ).entrySet().toString() );
+		assertEquals( "Test #15", "[]", UrlTools.getParameterValueMapFromUri( "test.html?=val1&" ).entrySet().toString() );
+	}
+
+	/**
+	 * Test {@link UrlTools#getParameterValuesMapFromUri} method.
+	 *
+	 * @throws Exception if the test fails.
+	 */
+	@Test
+	public void testGetParameterValuesMapFromUri()
+	{
+		assertEquals( "Test #1", "[par1=[val1], par2=[], par3=[val3, val3a], par4=[]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #2", "[par1=[val1], par2=[], par3=[val3, val3a], par4=[]]", UrlTools.getParameterValuesMapFromUri( "?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #3", "[]", UrlTools.getParameterValuesMapFromUri( "#test.html?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #4", "[]", UrlTools.getParameterValuesMapFromUri( "test.html#?par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #5", "[]", UrlTools.getParameterValuesMapFromUri( "test.html?#par1=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #6", "[par1=[]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1#=val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #7", "[par1=[]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=#val1&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #8", "[par1=[val1]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=val1#&par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #9", "[par1=[val1]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=val1&#par2=&par3=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #10", "[par1=[val1], par2=[], par3=[]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=val1&par2=&par3#=val3&par4&par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #11", "[par1=[val1], par2=[], par3=[val3], par4=[]]", UrlTools.getParameterValuesMapFromUri( "test.html?par1=val1&par2=&par3=val3&par4&#par3=val3a" ).entrySet().toString() );
+		assertEquals( "Test #12", "[]", UrlTools.getParameterValuesMapFromUri( "&par1=val1" ).entrySet().toString() );
+		assertEquals( "Test #13", "[]", UrlTools.getParameterValuesMapFromUri( "#par1=val1" ).entrySet().toString() );
+		assertEquals( "Test #14", "[]", UrlTools.getParameterValuesMapFromUri( "" ).entrySet().toString() );
+		assertEquals( "Test #15", "[]", UrlTools.getParameterValuesMapFromUri( "test.html?=val1&" ).entrySet().toString() );
 	}
 }
