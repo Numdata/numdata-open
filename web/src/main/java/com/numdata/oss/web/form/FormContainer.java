@@ -63,8 +63,11 @@ extends FormComponent
 	 * accordingly.
 	 *
 	 * @param component Component to add.
+	 *
+	 * @return Component that was added.
 	 */
-	public void addComponent( @NotNull final FormComponent component )
+	@NotNull
+	public <T extends FormComponent> T addComponent( @NotNull final T component )
 	{
 		final FormContainer oldContainer = component.getParent();
 		//noinspection ObjectEquality
@@ -78,6 +81,8 @@ extends FormComponent
 			component.setParent( this );
 			_components.add( component );
 		}
+
+		return component;
 	}
 
 	/**
@@ -153,6 +158,7 @@ extends FormComponent
 	 *
 	 * @return Checkbox field that was created.
 	 */
+	@NotNull
 	public FormCheckbox addCheckbox( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target )
 	{
 		return addCheckbox( bundle, target.getName(), target );
@@ -167,6 +173,7 @@ extends FormComponent
 	 *
 	 * @return Checkbox field that was created.
 	 */
+	@NotNull
 	public FormCheckbox addCheckbox( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target )
 	{
 		final FormCheckbox checkbox = new FormCheckbox( target );
@@ -188,6 +195,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @NotNull final ResourceBundle bundle, @NotNull final FieldTarget target )
 	{
 		return addChoice( bundle, target.getName(), target );
@@ -206,6 +214,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @NotNull final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target )
 	{
 		final List<String> optionValues = Arrays.asList( ResourceBundleTools.getStringList( bundle, resourceKey + "Values" ) );
@@ -243,6 +252,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public <T extends Enum<T>> FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
 		return addChoice( bundle, target.getName(), target, locale, enumType );
@@ -263,6 +273,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public <T extends Enum<T>> FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
 		final FormChoice choice = createChoice( bundle, target, locale, enumType );
@@ -343,6 +354,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
 	{
 		return addChoice( bundle, target.getName(), target, optionMap );
@@ -361,6 +373,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
 	{
 		final Collection<String> optionValues = new ArrayList<String>( optionMap.size() );
@@ -389,6 +402,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, @NotNull final Collection<String> optionValues, @NotNull final Collection<String> optionLabels )
 	{
 		return addChoice( bundle, target.getName(), target, optionValues, optionLabels );
@@ -408,6 +422,7 @@ extends FormComponent
 	 *
 	 * @see ResourceBundleTools#getChoices
 	 */
+	@NotNull
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Collection<String> optionValues, @NotNull final Collection<String> optionLabels )
 	{
 		final FormChoice choice = new FormChoice( target, optionValues, optionLabels );
@@ -426,11 +441,12 @@ extends FormComponent
 	 *
 	 * @return {@link FormColumn} that was created.
 	 */
+	@NotNull
 	public FormColumn addColumn( final boolean head, @Nullable final ResourceBundle bundle, @Nullable final String text )
 	{
 		final FormColumn column = new FormColumn();
 		column.setHead( head );
-		if ( ( text != null ) && TextTools.isNonEmpty( text ) )
+		if ( TextTools.isNonEmpty( text ) )
 		{
 			column.setText( ResourceBundleTools.getString( bundle, text, text ) );
 		}
@@ -446,6 +462,7 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
+	@NotNull
 	public FormStaticText addStaticText( @NotNull final String label, @Nullable final String text )
 	{
 		final FormStaticText result = new FormStaticText( text );
@@ -465,6 +482,7 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
+	@NotNull
 	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int size, final int maxLength )
 	{
 		return addTextField( bundle, target.getName(), target, size, maxLength );
@@ -482,6 +500,7 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
+	@NotNull
 	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int size, final int maxLength )
 	{
 		final FormTextField field = new FormTextField( target, size, maxLength );
@@ -502,6 +521,7 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
+	@NotNull
 	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int size, final int maxLength, @Nullable final String value )
 	{
 		return addTextField( bundle, target.getName(), target, size, maxLength, value );
@@ -520,6 +540,7 @@ extends FormComponent
 	 *
 	 * @return Text field that was created.
 	 */
+	@NotNull
 	public FormTextField addTextField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int size, final int maxLength, @Nullable final String value )
 	{
 		final FormTextField result = addTextField( bundle, resourceKey, target, size, maxLength );
@@ -537,6 +558,7 @@ extends FormComponent
 	 *
 	 * @return Text area that was created.
 	 */
+	@NotNull
 	public FormTextArea addTextArea( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final int rows, final int columns )
 	{
 		return addTextArea( bundle, target.getName(), target, rows, columns );
@@ -553,6 +575,7 @@ extends FormComponent
 	 *
 	 * @return Text area that was created.
 	 */
+	@NotNull
 	public FormTextArea addTextArea( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final int rows, final int columns )
 	{
 		final FormTextArea area = new FormTextArea( target, rows, columns );
@@ -573,6 +596,7 @@ extends FormComponent
 	 *
 	 * @return Number field that was created.
 	 */
+	@NotNull
 	public FormNumberField addNumberField( @Nullable final ResourceBundle bundle, @NotNull final FieldTarget target, final boolean allowNegative, final int maximumFractionDigits )
 	{
 		return addNumberField( bundle, target.getName(), target, allowNegative, maximumFractionDigits );
@@ -590,6 +614,7 @@ extends FormComponent
 	 *
 	 * @return Number field that was created.
 	 */
+	@NotNull
 	public FormNumberField addNumberField( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, final boolean allowNegative, final int maximumFractionDigits )
 	{
 		final FormNumberField field = new FormNumberField( target, maximumFractionDigits, allowNegative ? null : BigDecimal.ZERO, null );
@@ -603,10 +628,13 @@ extends FormComponent
 	 * field is not visible nor editable.
 	 *
 	 * @param target Target object of field.
+	 *
+	 * @return {@link FormHiddenField} that was added.
 	 */
-	public void addHiddenField( @NotNull final FieldTarget target )
+	@NotNull
+	public FormHiddenField addHiddenField( @NotNull final FieldTarget target )
 	{
-		addComponent( new FormHiddenField( target ) );
+		return addComponent( new FormHiddenField( target ) );
 	}
 
 	/**
@@ -615,10 +643,13 @@ extends FormComponent
 	 *
 	 * @param name  Name of field.
 	 * @param value Value to set the field to.
+	 *
+	 * @return {@link FormHiddenField} that was added.
 	 */
-	public void addHiddenField( @NotNull final String name, @NotNull final String value )
+	@NotNull
+	public FormHiddenField addHiddenField( @NotNull final String name, @NotNull final String value )
 	{
-		addComponent( new FormHiddenField( new VariableFieldTarget( name ), value ) );
+		return addComponent( new FormHiddenField( new VariableFieldTarget( name ), value ) );
 	}
 
 	/**
@@ -647,6 +678,7 @@ extends FormComponent
 	 *
 	 * @throws IndexOutOfBoundsException if the index is out of range.
 	 */
+	@NotNull
 	public FormComponent getComponent( final int index )
 	{
 		return _components.get( index );
@@ -720,6 +752,7 @@ extends FormComponent
 		return _components.indexOf( component );
 	}
 
+	@NotNull
 	public List<FormComponent> getComponents()
 	{
 		return Collections.unmodifiableList( _components );

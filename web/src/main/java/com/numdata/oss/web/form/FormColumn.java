@@ -79,102 +79,72 @@ extends FormComponent
 	private String _text = null;
 
 	/**
-	 * Test whether this column is always created on a new table row.
-	 *
-	 * @return {@code true} a new table row is always created; {@code false} if
-	 * column defines a data.
+	 * Create new instance.
 	 */
+	public FormColumn()
+	{
+
+	}
+
+	/**
+	 * Create new instance.
+	 *
+	 * @param newRow  Create a new table row.
+	 * @param head    Column defines a header vs. a data column.
+	 * @param colspan Column span to use (1 or less for unspecified).
+	 */
+	public FormColumn( final boolean newRow, final boolean head, final int colspan )
+	{
+		_newRow = newRow;
+		_head = head;
+		_colspan = colspan;
+	}
+
 	public boolean isNewRow()
 	{
 		return _newRow;
 	}
 
-	/**
-	 * Set whether this column is always created on a new table row.
-	 *
-	 * @param newRow Always create a new table row.
-	 */
 	public void setNewRow( final boolean newRow )
 	{
 		_newRow = newRow;
 	}
 
-	/**
-	 * Test whether this column is a header or a data column.
-	 *
-	 * @return {@code true} if column defines a header; {@code false} if column
-	 * defines a data.
-	 */
 	public boolean isHead()
 	{
 		return _head;
 	}
 
-	/**
-	 * Set whether this column is a header or a data column.
-	 *
-	 * @param head Column defines a header vs. a data column.
-	 */
 	public void setHead( final boolean head )
 	{
 		_head = head;
 	}
 
-	/**
-	 * Get column span to use.
-	 *
-	 * @return Column span to use (1 or less for unspecified).
-	 */
 	public int getColspan()
 	{
 		return _colspan;
 	}
 
-	/**
-	 * Set column span to use.
-	 *
-	 * @param colspan Column span to use (1 or less for unspecified).
-	 */
 	public void setColspan( final int colspan )
 	{
 		_colspan = colspan;
 	}
 
-	/**
-	 * Get horizontal alignment.
-	 *
-	 * @return Horizontal alignment.
-	 */
 	public HorizontalAlignment getAlign()
 	{
 		return _align;
 	}
 
-	/**
-	 * Set horizontal alignment.
-	 *
-	 * @param align Horizontal alignment.
-	 */
 	public void setAlign( final HorizontalAlignment align )
 	{
 		_align = align;
 	}
 
-	/**
-	 * Get additional HTML {@code &lt;td/th&gt;} element attributes.
-	 *
-	 * @return HTML-element attributes.
-	 */
 	public Properties getAttributes()
 	{
 		return new Properties( _attributes );
 	}
 
-	/**
-	 * Set additional HTML {@code &lt;td/th&gt;} element attributes.
-	 *
-	 * @param attributes Attributes to assign to HTML-element.
-	 */
 	public void setAttributes( final Properties attributes )
 	{
 		PropertyTools.copy( attributes, _attributes );
@@ -191,21 +161,11 @@ extends FormComponent
 		_attributes.setProperty( name, value );
 	}
 
-	/**
-	 * Get additional HTML {@code &lt;tr&gt;} element attributes.
-	 *
-	 * @return HTML-element attributes.
-	 */
 	public Properties getRowAttributes()
 	{
 		return new Properties( _rowAttributes );
 	}
 
-	/**
-	 * Set additional HTML {@code &lt;tr&gt;} element attributes.
-	 *
-	 * @param rowAttributes Attributes to assign to HTML-element.
-	 */
 	public void setRowAttributes( final Properties rowAttributes )
 	{
 		PropertyTools.copy( rowAttributes, _rowAttributes );
@@ -222,21 +182,11 @@ extends FormComponent
 		_rowAttributes.setProperty( name, value );
 	}
 
-	/**
-	 * Set column text content.
-	 *
-	 * @param text Column text content.
-	 */
 	public void setText( final String text )
 	{
 		_text = text;
 	}
 
-	/**
-	 * Get column text content.
-	 *
-	 * @return Column text content.
-	 */
 	public String getText()
 	{
 		return _text;
