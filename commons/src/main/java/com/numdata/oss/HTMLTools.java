@@ -306,9 +306,9 @@ public class HTMLTools
 					case 5:
 						if ( source.regionMatches( true, pos + 2, "uml", 0, 3 ) )
 						{
-						/*
-						 * uml
-						 */
+							/*
+							 * uml
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -395,9 +395,9 @@ public class HTMLTools
 					case 6:
 						if ( source.regionMatches( true, pos + 2, "circ", 0, 4 ) )
 						{
-						/*
-						 * circumflex
-						 */
+							/*
+							 * circumflex
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -434,9 +434,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "elig", 0, 4 ) )
 						{
-						/*
-						 * elig
-						 */
+							/*
+							 * elig
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -449,9 +449,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "ring", 0, 4 ) )
 						{
-						/*
-						 * ring
-						 */
+							/*
+							 * ring
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -507,9 +507,9 @@ public class HTMLTools
 					case 7:
 						if ( source.regionMatches( true, pos + 2, "acute", 0, 5 ) )
 						{
-						/*
-						 * acute
-						 */
+							/*
+							 * acute
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -552,9 +552,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "cedil", 0, 5 ) )
 						{
-						/*
-						 * cedil
-						 */
+							/*
+							 * cedil
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'C':
@@ -567,9 +567,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "grave", 0, 5 ) )
 						{
-						/*
-						 * grave
-						 */
+							/*
+							 * grave
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -606,9 +606,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "slash", 0, 5 ) )
 						{
-						/*
-						 * slash
-						 */
+							/*
+							 * slash
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'O':
@@ -621,9 +621,9 @@ public class HTMLTools
 						}
 						else if ( source.regionMatches( true, pos + 2, "tilde", 0, 5 ) )
 						{
-						/*
-						 * tilde
-						 */
+							/*
+							 * tilde
+							 */
 							switch ( source.charAt( pos + 1 ) )
 							{
 								case 'A':
@@ -1270,7 +1270,8 @@ public class HTMLTools
 	 */
 	public static String rgbToCssColor( final int[] color )
 	{
-		return ( color.length > 3 ) ? rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] ) : rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ] );
+		return ( color.length > 3 ) ? rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ], color[ 3 ] )
+		                            : rgbToCssColor( color[ 0 ], color[ 1 ], color[ 2 ] );
 	}
 
 	/**
@@ -1284,10 +1285,13 @@ public class HTMLTools
 	 */
 	public static String rgbToCssColor( final int red, final int green, final int blue )
 	{
-		return "#" +
-		       Character.forDigit( red / 16, 16 ) + Character.forDigit( red & 15, 16 ) +
-		       Character.forDigit( green / 16, 16 ) + Character.forDigit( green & 15, 16 ) +
-		       Character.forDigit( blue / 16, 16 ) + Character.forDigit( blue & 15, 16 );
+		final char r1 = Character.forDigit( red / 16, 16 );
+		final char r2 = Character.forDigit( red & 15, 16 );
+		final char g1 = Character.forDigit( green / 16, 16 );
+		final char g2 = Character.forDigit( green & 15, 16 );
+		final char b1 = Character.forDigit( blue / 16, 16 );
+		final char b2 = Character.forDigit( blue & 15, 16 );
+		return ( ( r1 == r2 ) && ( g1 == g2 ) && ( b1 == b2 ) ) ? "#" + r1 + g1 + b1 : "#" + r1 + r2 + g1 + g2 + b1 + b2;
 	}
 
 	/**
