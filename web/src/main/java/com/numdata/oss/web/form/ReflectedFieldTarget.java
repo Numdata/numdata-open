@@ -267,6 +267,10 @@ implements FieldTarget
 		{
 			result = Long.toString( ( (Date)value ).getTime() );
 		}
+		else if ( value instanceof Enum )
+		{
+			result = ( (Enum<?>)value ).name();
+		}
 		else if ( value instanceof BigDecimal )
 		{
 			result = ( (BigDecimal)value ).toPlainString();
