@@ -34,9 +34,8 @@ import org.jetbrains.annotations.*;
 /**
  * This class wraps a {@link DbServices} object and makes it read-only.
  *
+ * @author G.B.M. Rupert
  * @TODO Create a 'DbServices' interface and implement this wrapper the proper way!!
- *
- * @author  G.B.M. Rupert
  */
 public class ReadOnlyDbServices
 extends DbServices
@@ -106,7 +105,7 @@ extends DbServices
 	throws SQLException
 	{
 		super.startTransaction();
-		final Connection transactionConnection = super.acquireConnection();
+		final Connection transactionConnection = acquireConnection( true );
 		transactionConnection.setReadOnly( true );
 	}
 }

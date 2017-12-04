@@ -183,7 +183,7 @@ public class HsqlDbServices
 
 		LOG.debug( "Creating HSQLDB table with statement:\n" + createStatement );
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
 			JdbcTools.executeUpdate( connection, createStatement );

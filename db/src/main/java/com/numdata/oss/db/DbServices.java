@@ -348,7 +348,7 @@ public class DbServices
 		final ClassHandler handler = getClassHandler( tableClass );
 		final String createStatement = handler.getCreateStatement();
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
 			JdbcTools.executeUpdate( connection, createStatement );
@@ -377,7 +377,7 @@ public class DbServices
 
 		final String tableName = getTableName( tableClass );
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
 			JdbcTools.executeUpdate( connection, "DROP TABLE " + tableName );
@@ -404,7 +404,7 @@ public class DbServices
 	{
 		final String tableName = getTableName( dbClass );
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( true );
 		try
 		{
 			return JdbcTools.tableExists( connection, tableName );
@@ -432,7 +432,7 @@ public class DbServices
 		final String queryString = deleteQuery.getQueryString( tableName );
 		final Object[] queryParameters = deleteQuery.getQueryParameters();
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
 			final long start = System.nanoTime();
@@ -479,7 +479,7 @@ public class DbServices
 		final String queryString = updateQuery.getQueryString( tableName );
 		final Object[] queryParameters = updateQuery.getQueryParameters();
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
 			final long start = System.nanoTime();
@@ -589,7 +589,7 @@ public class DbServices
 
 		final ObjectListConverter<DbObject> processor = new ObjectListConverter<DbObject>( dbClass );
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( true );
 		try
 		{
 			if ( !isTransactionActive() )
@@ -670,14 +670,9 @@ public class DbServices
 			LOG.trace( "executeQuery() query='" + query + "', arguments: " + Arrays.toString( arguments ) );
 		}
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( true );
 		try
 		{
-			if ( !isTransactionActive() )
-			{
-				connection.setReadOnly( true );
-			}
-
 			final long start = System.nanoTime();
 			final R result = JdbcTools.executeQuery( connection, processor, query, arguments );
 			if ( LOG.isDebugEnabled() )
@@ -734,14 +729,9 @@ public class DbServices
 			LOG.trace( "executeQueryStreaming() query='" + query + "', arguments: " + Arrays.toString( arguments ) );
 		}
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( true );
 		try
 		{
-			if ( !isTransactionActive() )
-			{
-				connection.setReadOnly( true );
-			}
-
 			final long start = System.nanoTime();
 			final R result = JdbcTools.executeQueryStreaming( connection, processor, query, arguments );
 			if ( LOG.isDebugEnabled() )
@@ -806,14 +796,9 @@ public class DbServices
 
 		final SingleObjectConverter<DbObject> result;
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( true );
 		try
 		{
-			if ( !isTransactionActive() )
-			{
-				connection.setReadOnly( true );
-			}
-
 			final long start = System.nanoTime();
 			result = JdbcTools.executeQuery( connection, processor, query, arguments );
 			if ( LOG.isDebugEnabled() )
@@ -885,14 +870,9 @@ public class DbServices
 
 		try
 		{
-			final Connection connection = acquireConnection();
+			final Connection connection = acquireConnection( true );
 			try
 			{
-				if ( !isTransactionActive() )
-				{
-					connection.setReadOnly( true );
-				}
-
 				final Statement statement = connection.prepareStatement( query );
 
 				try
@@ -1151,14 +1131,9 @@ public class DbServices
 			throw new IllegalArgumentException( "Nothing to update: object=" + object + ", fieldHandlers=" + fieldHandlers );
 		}
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
-			if ( !isTransactionActive() )
-			{
-				connection.setReadOnly( false );
-			}
-
 			final String queryString = query.toString();
 			if ( LOG.isDebugEnabled() )
 			{
@@ -1292,14 +1267,9 @@ public class DbServices
 
 		query.append( ')' );
 
-		final Connection connection = acquireConnection();
+		final Connection connection = acquireConnection( false );
 		try
 		{
-			if ( !isTransactionActive() )
-			{
-				connection.setReadOnly( false );
-			}
-
 			final String queryString = query.toString();
 			if ( LOG.isDebugEnabled() )
 			{
@@ -1444,13 +1414,15 @@ public class DbServices
 	 * Acquires a connection for the current transaction or a single query (if
 	 * no transaction is active).
 	 *
+	 * @param readOnly Whether to get a read-only connection.
+	 *
 	 * @return Database connection.
 	 *
 	 * @throws SQLException if an error occurs while accessing the database.
 	 */
 	@SuppressWarnings( "JDBCResourceOpenedButNotSafelyClosed" )
 	@NotNull
-	protected Connection acquireConnection()
+	protected Connection acquireConnection( final boolean readOnly )
 	throws SQLException
 	{
 		Connection result = getTransactionConnection();
@@ -1458,6 +1430,7 @@ public class DbServices
 		{
 			final DataSource dataSource = getDataSource();
 			result = dataSource.getConnection();
+			result.setReadOnly( readOnly );
 		}
 		return result;
 	}
