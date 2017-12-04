@@ -301,25 +301,8 @@ public abstract class AbstractQuery<T>
 	@NotNull
 	public StringBuilder getWhereBuilder()
 	{
-		final StringBuilder result;
-
-		final CharSequence where = _where;
-
-		if ( where instanceof StringBuilder )
-		{
-			result = (StringBuilder)where;
-		}
-		else
-		{
-			result = new StringBuilder();
-			_where = result;
-
-			if ( TextTools.isNonEmpty( where ) )
-			{
-				result.append( where );
-			}
-		}
-
+		final StringBuilder result = getStringBuilder( _where );
+		_where = result;
 		return result;
 	}
 
@@ -1404,30 +1387,39 @@ public abstract class AbstractQuery<T>
 	@NotNull
 	public StringBuilder getJoinBuilder()
 	{
-		final StringBuilder result;
-
-		final CharSequence join = _join;
-
-		if ( join instanceof StringBuilder )
-		{
-			result = (StringBuilder)join;
-		}
-		else
-		{
-			result = new StringBuilder();
-			_join = result;
-
-			if ( TextTools.isNonEmpty( join ) )
-			{
-				result.append( join );
-			}
-		}
+		final StringBuilder result = getStringBuilder( _join );
+		_join = result;
 
 		if ( result.length() > 0 )
 		{
 			result.append( getSeparator() );
 		}
 
+		return result;
+	}
+
+	/**
+	 * Returns a string builder from the given character sequence.
+	 *
+	 * @param charSequence Character sequence.
+	 *
+	 * @return String builder.
+	 */
+	protected StringBuilder getStringBuilder( final CharSequence charSequence )
+	{
+		final StringBuilder result;
+		if ( charSequence instanceof StringBuilder )
+		{
+			result = (StringBuilder)charSequence;
+		}
+		else
+		{
+			result = new StringBuilder();
+			if ( TextTools.isNonEmpty( charSequence ) )
+			{
+				result.append( charSequence );
+			}
+		}
 		return result;
 	}
 

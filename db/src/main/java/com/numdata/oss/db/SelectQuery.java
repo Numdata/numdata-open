@@ -26,6 +26,8 @@
  */
 package com.numdata.oss.db;
 
+import java.util.*;
+
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
@@ -61,6 +63,11 @@ extends AbstractQuery<T>
 	 * SELECT fields.
 	 */
 	private CharSequence _select = null;
+
+	/**
+	 * Parameters for WHERE clause.
+	 */
+	private final List<Object> _selectParameters = new LinkedList<Object>();
 
 	/**
 	 * GROUP BY clause of query.
@@ -189,11 +196,17 @@ extends AbstractQuery<T>
 		return sb.toString();
 	}
 
+	@NotNull
+	public List<Object> getSelectParameters()
+	{
+		return new ArrayList<Object>( _selectParameters );
+	}
+
 	@Override
 	@NotNull
 	public Object[] getQueryParameters()
 	{
-		return toArray( getJoinParameters(), getWhereParameters() );
+		return toArray( getSelectParameters(), getJoinParameters(), getWhereParameters() );
 	}
 
 	@Nullable
@@ -205,6 +218,55 @@ extends AbstractQuery<T>
 	public void setSelect( @Nullable final CharSequence select )
 	{
 		_select = select;
+	}
+
+	/**
+	 * Get {@link StringBuilder} for appending text to the SELECT clause.
+	 *
+	 * @return String builder for SELECT clause.
+	 */
+	@NotNull
+	public StringBuilder getSelectBuilder()
+	{
+		final StringBuilder result = getStringBuilder( _select );
+		_select = result;
+		return result;
+	}
+
+	/**
+	 * Add parameter value to SELECT clause of prepared statement.
+	 *
+	 * @param value Value to add.
+	 */
+	public void addSelectParameter( @NotNull final Object value )
+	{
+		_selectParameters.add( value );
+	}
+
+	/**
+	 * Add parameter values to SELECT clause of prepared statement.
+	 *
+	 * @param values Values to add.
+	 */
+	public void addSelectParameters( @NotNull final Object... values )
+	{
+		for ( final Object value : values )
+		{
+			addSelectParameter( value );
+		}
+	}
+
+	/**
+	 * Add parameter values to SELECT clause of prepared statement.
+	 *
+	 * @param values Values to add.
+	 */
+	public void addSelectParameters( @NotNull final Iterable<Object> values )
+	{
+		for ( final Object value : values )
+		{
+			addSelectParameter( value );
+		}
 	}
 
 	/**
@@ -278,6 +340,29 @@ extends AbstractQuery<T>
 	public void select( @NotNull final CharSequence function, @Nullable final CharSequence alias )
 	{
 		select( ( alias != null ) ? ( function + " AS " + alias ) : function );
+	}
+
+	/**
+	 * Adds a sub-select to the SELECT clause. A comma is inserted before the element
+	 * when the existing SELECT clause is non-empty.
+	 *
+	 * @param selectQuery Sub-select that provides the value.
+	 * @param alias       Alias assigned to value.
+	 */
+	public void select( @NotNull final SelectQuery<?> selectQuery, @NotNull final CharSequence alias )
+	{
+		final StringBuilder sb = getSelectBuilder();
+		if ( !TextTools.isEmpty( sb ) )
+		{
+			sb.append( ',' );
+		}
+
+		sb.append( '(' );
+		sb.append( selectQuery.getQueryString() );
+		sb.append( ") AS " );
+		sb.append( alias );
+
+		addSelectParameters( selectQuery.getQueryParameters() );
 	}
 
 	/**
