@@ -699,6 +699,65 @@ public class TextTools
 	}
 
 	/**
+	 * Test whether a string contains another string while ignoring lower/upper
+	 * case differences.
+	 *
+	 * @param text     First {@link CharSequence} (may be {@code null}).
+	 * @param sequence Second {@link CharSequence} (may be {@code null}).
+	 *
+	 * @return {@code true} if the string objects are equal; {@code false}
+	 * otherwise.
+	 */
+	@Contract( value = "null, _ -> false; _, null -> false", pure = true )
+	public static boolean containsIgnoreCase( @Nullable final CharSequence text, @Nullable final CharSequence sequence )
+	{
+		return ( indexOfIgnoreCase( text, sequence ) >= 0 );
+	}
+
+	/**
+	 * Test whether a string contains another string while ignoring lower/upper
+	 * case differences.
+	 *
+	 * @param text     First {@link CharSequence} (may be {@code null}).
+	 * @param sequence Second {@link CharSequence} (may be {@code null}).
+	 *
+	 * @return {@code true} if the string objects are equal; {@code false}
+	 * otherwise.
+	 */
+	@Contract( pure = true )
+	public static int indexOfIgnoreCase( @Nullable final CharSequence text, @Nullable final CharSequence sequence )
+	{
+		int result = -1;
+
+		if ( ( text != null ) && ( sequence != null ) )
+		{
+			final int textLength = text.length();
+			final int sequenceLength = sequence.length();
+
+			final int maxIndex = textLength - sequenceLength;
+			for ( int index = 0; index <= maxIndex && result < 0; index++ )
+			{
+				result = index;
+				for ( int j = 0; j < sequenceLength; j++ )
+				{
+					final char c1 = sequence.charAt( j );
+					final char c2 = text.charAt( index + j );
+
+					/* Read {@link String#equalsIgnoreCase} implementation for reason why we test lower AND upper case */
+					if ( ( Character.toUpperCase( c1 ) != Character.toUpperCase( c2 ) ) ||
+					     ( Character.toLowerCase( c1 ) != Character.toLowerCase( c2 ) ) )
+					{
+						result = -1;
+						break;
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * This method tests whether the specified string is {@code null}, is zero
 	 * length, or consists only of whitespace characters (as classified per
 	 * {@link Character#isWhitespace(char)}.
