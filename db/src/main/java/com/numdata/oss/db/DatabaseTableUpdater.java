@@ -579,7 +579,7 @@ public class DatabaseTableUpdater
 					throw new RuntimeException( message );
 				}
 
-				System.err.println( message );
+				System.err.println( "WARNING: " + message );
 			}
 
 			executeUpdate( realUpdates && ( !possibleDataLoss || ( dataLossHandling == DataLossHandling.FORCE ) ), dataSource, updatePrefix + newCreateLine + ';' );
@@ -610,7 +610,12 @@ public class DatabaseTableUpdater
 		}
 		else
 		{
-			throw new RuntimeException( "Don't know how to convert '" + oldType + "' to '" + newType + "'\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference );
+			final String message = "Don't know how to convert '" + oldType + "' to '" + newType + "'\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference;
+			if ( dataLossHandling != DataLossHandling.SKIP )
+			{
+				throw new RuntimeException( message );
+			}
+			System.err.println( "WARNING: " + message );
 		}
 	}
 
