@@ -43,6 +43,27 @@ import org.jetbrains.annotations.*;
 public class DatabaseTableUpdater
 {
 	/**
+	 * Handling for situations where data loss may/will occur.
+	 */
+	public enum DataLossHandling
+	{
+		/**
+		 * Refuse to perform update.
+		 */
+		REFUSE,
+
+		/**
+		 * Skip the update. Leave the subject data as is.
+		 */
+		SKIP,
+
+		/**
+		 * Perform the update regardless of possible data loss.
+		 */
+		FORCE
+	}
+
+	/**
 	 * Character set to use for all tables.
 	 */
 	private static final String CHARACTER_SET = "utf8";
@@ -53,21 +74,21 @@ public class DatabaseTableUpdater
 	 * @param verbose           Be verbose about updates.
 	 * @param realUpdates       Perform real updates vs. just print queries.
 	 * @param createIfNecessary Create table if it does not exist.
-	 * @param force             Perform updates that (may) cause data loss.
+	 * @param dataLossHandling  How to handle updates that (may) cause data loss.
 	 * @param dataSource        Database source to connect to database.
 	 * @param dbName            Name of database ({@code null} if unknown).
 	 * @param tableClasses      Tables to be updated.
 	 *
 	 * @throws Exception if the update fails.
 	 */
-	public static void updateTables( final boolean verbose, final boolean realUpdates, final boolean createIfNecessary, final boolean force, @NotNull final DataSource dataSource, @Nullable final String dbName, @NotNull final Iterable<Class<?>> tableClasses )
+	public static void updateTables( final boolean verbose, final boolean realUpdates, final boolean createIfNecessary, @NotNull final DataLossHandling dataLossHandling, @NotNull final DataSource dataSource, @Nullable final String dbName, @NotNull final Iterable<Class<?>> tableClasses )
 	throws Exception
 	{
 		for ( final Class<?> tableClass : tableClasses )
 		{
 			try
 			{
-				updateTable( verbose, realUpdates, createIfNecessary, force, dataSource, dbName, tableClass );
+				updateTable( verbose, realUpdates, createIfNecessary, dataLossHandling, dataSource, dbName, tableClass );
 			}
 			catch ( final SQLException e )
 			{
@@ -82,7 +103,7 @@ public class DatabaseTableUpdater
 	 * @param verbose           Be verbose about updates.
 	 * @param realUpdates       Perform real updates vs. just print queries.
 	 * @param createIfNecessary Create table if it does not exist.
-	 * @param force             Perform updates that (may) cause data loss.
+	 * @param dataLossHandling  How to handle updates that (may) cause data loss.
 	 * @param dataSource        Database source to connect to database.
 	 * @param dbName            Name of database ({@code null} if unknown).
 	 * @param tableClass        Database table record class.
@@ -90,7 +111,7 @@ public class DatabaseTableUpdater
 	 * @throws SQLException if there was a problem accessing the database.
 	 * @throws IllegalArgumentException if something bad was given as argument.
 	 */
-	public static void updateTable( final boolean verbose, final boolean realUpdates, final boolean createIfNecessary, final boolean force, @NotNull final DataSource dataSource, @Nullable final String dbName, @NotNull final Class<?> tableClass )
+	public static void updateTable( final boolean verbose, final boolean realUpdates, final boolean createIfNecessary, @NotNull final DataLossHandling dataLossHandling, @NotNull final DataSource dataSource, @Nullable final String dbName, @NotNull final Class<?> tableClass )
 	throws SQLException
 	{
 		final DbServices db = new DbServices( dataSource );
@@ -174,17 +195,17 @@ public class DatabaseTableUpdater
 									final String javaCreateLine = getColumnDefinition( javaCreateLines, id );
 									if ( javaCreateLine != null )
 									{
-										modifyColumn( realUpdates, force, dataSource, tableReference, id, dbCreateLine, javaCreateLine );
+										modifyColumn( realUpdates, dataLossHandling, dataSource, tableReference, id, dbCreateLine, javaCreateLine );
 									}
 									else
 									{
-										if ( realUpdates && !force )
+										if ( realUpdates && ( dataLossHandling == DataLossHandling.REFUSE ) )
 										{
 											System.out.print( "     ALTER TABLE " + tableReference + " DROP `" + id + "`;" );
 											throw new RuntimeException( "Refusing to drop " + tableReference + ".`" + id + "` column" );
 										}
 
-										dropColumn( realUpdates, dataSource, tableReference, id );
+										dropColumn( realUpdates && ( dataLossHandling == DataLossHandling.FORCE ), dataSource, tableReference, id );
 									}
 								}
 								else if ( isKeyDefinition( dbCreateLine ) )
@@ -504,17 +525,17 @@ public class DatabaseTableUpdater
 	/**
 	 * Modify column of table.
 	 *
-	 * @param realUpdates    Perform real updates vs. just print queries.
-	 * @param force          Perform updates that (may) cause data loss.
-	 * @param dataSource     Database source to connect to database.
-	 * @param tableReference SQL reference to table.
-	 * @param columnName     Name of column.
-	 * @param oldCreateLine  Old CREATE line for column (from database).
-	 * @param newCreateLine  New CREATE line for key (from specification).
+	 * @param realUpdates      Perform real updates vs. just print queries.
+	 * @param dataLossHandling How to handle updates that (may) cause data loss.
+	 * @param dataSource       Database source to connect to database.
+	 * @param tableReference   SQL reference to table.
+	 * @param columnName       Name of column.
+	 * @param oldCreateLine    Old CREATE line for column (from database).
+	 * @param newCreateLine    New CREATE line for key (from specification).
 	 *
 	 * @throws SQLException if an error occurred while accessing the database.
 	 */
-	private static void modifyColumn( final boolean realUpdates, final boolean force, final DataSource dataSource, final String tableReference, final String columnName, final String oldCreateLine, final String newCreateLine )
+	private static void modifyColumn( final boolean realUpdates, @NotNull final DataLossHandling dataLossHandling, final DataSource dataSource, final String tableReference, final String columnName, final String oldCreateLine, final String newCreateLine )
 	throws SQLException
 	{
 		final List<String> oldTokens = TextTools.tokenize( oldCreateLine, ' ', true );
@@ -583,18 +604,22 @@ public class DatabaseTableUpdater
 		}
 		else if ( "enum".equalsIgnoreCase( oldBaseType ) && "enum".equalsIgnoreCase( newBaseType ) )
 		{
-			if ( !force )
-			{
-				final Set<String> oldValues = getEnumValues( oldType );
-				final Set<String> newValues = getEnumValues( newType );
+			final Set<String> oldValues = getEnumValues( oldType );
+			final Set<String> newValues = getEnumValues( newType );
+			final boolean possibleDataLoss = !newValues.containsAll( oldValues );
 
-				if ( !newValues.containsAll( oldValues ) )
+			if ( possibleDataLoss )
+			{
+				final String message = "Possible data loss due to modified enumeration type\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference;
+				if ( realUpdates && ( dataLossHandling == DataLossHandling.REFUSE ) )
 				{
-					throw new RuntimeException( "Possible data loss due to modified enumeration type\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference );
+					throw new RuntimeException( message );
 				}
+
+				System.err.println( message );
 			}
 
-			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
+			executeUpdate( realUpdates && ( !possibleDataLoss || ( dataLossHandling == DataLossHandling.FORCE ) ), dataSource, updatePrefix + newCreateLine + ';' );
 		}
 		else if ( ( "tinytext".equalsIgnoreCase( oldBaseType ) && "tinyblob".equalsIgnoreCase( newBaseType ) ) ||
 		          ( "text".equalsIgnoreCase( oldBaseType ) && "blob".equalsIgnoreCase( newBaseType ) ) ||
