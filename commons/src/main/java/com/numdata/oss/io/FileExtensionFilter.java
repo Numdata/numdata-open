@@ -28,7 +28,6 @@ package com.numdata.oss.io;
 
 import java.io.*;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.*;
 
 /**
  * This class filters files with a given extension. It can be used by a {@code
@@ -36,7 +35,7 @@ import javax.swing.filechooser.*;
  *
  * @author H.B.J. te Lintelo
  */
-public final class FileExtensionFilter
+public class FileExtensionFilter
 extends FileFilter
 implements java.io.FileFilter, FilenameFilter
 {
@@ -86,40 +85,19 @@ implements java.io.FileFilter, FilenameFilter
 		       && ( filename.regionMatches( true, fl - el, _extension, 0, el ) );
 	}
 
-	/**
-	 * Accept method for the {@code FilenameFilter} interface. Tests if a
-	 * specified file should be included in a file list.
-	 *
-	 * @param dir  the directory in which the file was found.
-	 * @param name the name of the file.
-	 *
-	 * @return {@code true} if and only if the name should be included in the
-	 * file list; {@code false} otherwise.
-	 */
+	@Override
 	public boolean accept( final File dir, final String name )
 	{
-		return isFilenameMatch( name ) || ( _includeDirectories || !new File( dir, name ).isDirectory() );
+		return isFilenameMatch( name ) && ( _includeDirectories || !new File( dir, name ).isDirectory() );
 	}
 
-	/**
-	 * Whether the given file is accepted by this filter.
-	 *
-	 * @param f The file to check.
-	 *
-	 * @return {@code true} when the given file is accepted.
-	 */
-	public boolean accept( final File f )
+	@Override
+	public boolean accept( final File file )
 	{
-		return isFilenameMatch( f.getName() ) || ( _includeDirectories || !f.isDirectory() );
+		return isFilenameMatch( file.getName() ) && ( _includeDirectories || !file.isDirectory() );
 	}
 
-	/**
-	 * The description of this filter. For example: "JPG and GIF Images"
-	 *
-	 * @return String containing the description of the filter.
-	 *
-	 * @see FileView#getName
-	 */
+	@Override
 	public String getDescription()
 	{
 		return _description;
