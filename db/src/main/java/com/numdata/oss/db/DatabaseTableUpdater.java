@@ -74,7 +74,8 @@ public class DatabaseTableUpdater
 	 * @param verbose           Be verbose about updates.
 	 * @param realUpdates       Perform real updates vs. just print queries.
 	 * @param createIfNecessary Create table if it does not exist.
-	 * @param dataLossHandling  How to handle updates that (may) cause data loss.
+	 * @param dataLossHandling  How to handle updates that (may) cause data
+	 *                          loss.
 	 * @param dataSource        Database source to connect to database.
 	 * @param dbName            Name of database ({@code null} if unknown).
 	 * @param tableClasses      Tables to be updated.
@@ -103,7 +104,8 @@ public class DatabaseTableUpdater
 	 * @param verbose           Be verbose about updates.
 	 * @param realUpdates       Perform real updates vs. just print queries.
 	 * @param createIfNecessary Create table if it does not exist.
-	 * @param dataLossHandling  How to handle updates that (may) cause data loss.
+	 * @param dataLossHandling  How to handle updates that (may) cause data
+	 *                          loss.
 	 * @param dataSource        Database source to connect to database.
 	 * @param dbName            Name of database ({@code null} if unknown).
 	 * @param tableClass        Database table record class.
@@ -526,7 +528,8 @@ public class DatabaseTableUpdater
 	 * Modify column of table.
 	 *
 	 * @param realUpdates      Perform real updates vs. just print queries.
-	 * @param dataLossHandling How to handle updates that (may) cause data loss.
+	 * @param dataLossHandling How to handle updates that (may) cause data
+	 *                         loss.
 	 * @param dataSource       Database source to connect to database.
 	 * @param tableReference   SQL reference to table.
 	 * @param columnName       Name of column.
@@ -548,49 +551,9 @@ public class DatabaseTableUpdater
 		final String updatePrefix = "ALTER TABLE " + tableReference + " MODIFY ";
 		System.out.println( "     (" + TextTools.getFixed( "old definition:", updatePrefix.length() - 2, true, '.' ) + ' ' + oldCreateLine + ')' );
 
-		if ( oldType.equalsIgnoreCase( newType ) ||
-		     ( "bigint".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "blob".equalsIgnoreCase( oldBaseType ) && "mediumblob".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "char".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "date".equalsIgnoreCase( oldBaseType ) && "datetime".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "date".equalsIgnoreCase( oldBaseType ) && "time".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "datetime".equalsIgnoreCase( oldBaseType ) && "date".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "datetime".equalsIgnoreCase( oldBaseType ) && "time".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "decimal".equalsIgnoreCase( oldBaseType ) && "double".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "decimal".equalsIgnoreCase( oldBaseType ) && "float".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "double".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "double".equalsIgnoreCase( oldBaseType ) && "float".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "double".equalsIgnoreCase( oldBaseType ) && "decimal".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "enum".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "float".equalsIgnoreCase( oldBaseType ) && "double".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "float".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "float".equalsIgnoreCase( oldBaseType ) && "decimal".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "int".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "int".equalsIgnoreCase( oldBaseType ) && "double".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "int".equalsIgnoreCase( oldBaseType ) && "float".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "smallint".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "tinyint".equalsIgnoreCase( oldBaseType ) && "int".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "text".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "text".equalsIgnoreCase( oldBaseType ) && "mediumtext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "text".equalsIgnoreCase( oldBaseType ) && "tinytext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "tinytext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "time".equalsIgnoreCase( oldBaseType ) && "date".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "time".equalsIgnoreCase( oldBaseType ) && "datetime".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "tinytext".equalsIgnoreCase( oldBaseType ) && "mediumtext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "longtext".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "longtext".equalsIgnoreCase( oldBaseType ) && "mediumtext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "char".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "enum".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "text".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "mediumtext".equalsIgnoreCase( newBaseType ) ) ||
-		     ( "varchar".equalsIgnoreCase( oldBaseType ) && "tinytext".equalsIgnoreCase( newBaseType ) ) )
+		if ( oldType.equalsIgnoreCase( newType ) )
 		{
-			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
+			// column is not updated
 		}
 		else if ( "enum('true','false')".equalsIgnoreCase( oldType ) && "tinyint(1)".equalsIgnoreCase( newType ) )
 		{
@@ -630,6 +593,19 @@ public class DatabaseTableUpdater
 				// Convert to default character set first.
 				executeUpdate( realUpdates, dataSource, updatePrefix + '`' + columnName + "` " + oldBaseType + ';' );
 			}
+			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
+		}
+		else if ( ( ( "blob".equalsIgnoreCase( oldBaseType ) || "mediumblob".equalsIgnoreCase( oldBaseType ) ) &&
+		            ( "blob".equalsIgnoreCase( newBaseType ) || "mediumblob".equalsIgnoreCase( newBaseType ) ) ) ||
+		          ( ( "date".equalsIgnoreCase( oldBaseType ) || "datetime".equalsIgnoreCase( oldBaseType ) || "time".equalsIgnoreCase( oldBaseType ) ) &&
+		            ( "date".equalsIgnoreCase( newBaseType ) || "datetime".equalsIgnoreCase( newBaseType ) || "time".equalsIgnoreCase( newBaseType ) ) ) ||
+		          ( ( "bigint".equalsIgnoreCase( oldBaseType ) || "decimal".equalsIgnoreCase( oldBaseType ) || "double".equalsIgnoreCase( oldBaseType ) || "float".equalsIgnoreCase( oldBaseType ) || "int".equalsIgnoreCase( oldBaseType ) || "smallint".equalsIgnoreCase( oldBaseType ) || "tinyint".equalsIgnoreCase( oldBaseType ) ) &&
+		            ( "bigint".equalsIgnoreCase( newBaseType ) || "decimal".equalsIgnoreCase( newBaseType ) || "double".equalsIgnoreCase( newBaseType ) || "float".equalsIgnoreCase( newBaseType ) || "int".equalsIgnoreCase( newBaseType ) || "smallint".equalsIgnoreCase( newBaseType ) || "tinyint".equalsIgnoreCase( newBaseType ) ) ) ||
+		          ( ( "char".equalsIgnoreCase( oldBaseType ) || "longtext".equalsIgnoreCase( oldBaseType ) || "mediumtext".equalsIgnoreCase( oldBaseType ) || "text".equalsIgnoreCase( oldBaseType ) || "tinytext".equalsIgnoreCase( oldBaseType ) || "varchar".equalsIgnoreCase( oldBaseType ) ) &&
+		            ( "char".equalsIgnoreCase( newBaseType ) || "longtext".equalsIgnoreCase( newBaseType ) || "mediumtext".equalsIgnoreCase( newBaseType ) || "text".equalsIgnoreCase( newBaseType ) || "tinytext".equalsIgnoreCase( newBaseType ) || "varchar".equalsIgnoreCase( newBaseType ) ) ) ||
+		          ( "enum".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
+		          ( "varchar".equalsIgnoreCase( oldBaseType ) && "enum".equalsIgnoreCase( newBaseType ) ) )
+		{
 			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
 		}
 		else
