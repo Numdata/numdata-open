@@ -553,7 +553,7 @@ public class DatabaseTableUpdater
 
 		if ( oldType.equalsIgnoreCase( newType ) )
 		{
-			// column is not updated
+			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
 		}
 		else if ( "enum('true','false')".equalsIgnoreCase( oldType ) && "tinyint(1)".equalsIgnoreCase( newType ) )
 		{
