@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,6 +121,12 @@ public class ImageTools
 	 * system property.
 	 */
 	public static boolean presetIconSizeWarningsEnabled = true;
+
+	/**
+	 * Show warnings when using methods that are not suitable for server-side
+	 * use, e.g. due to permanent caching.
+	 */
+	public static boolean serverSideWarningsEnabled = false;
 
 	/**
 	 * Search path to use for loading image resources.
@@ -431,6 +437,11 @@ public class ImageTools
 
 			if ( needToLoad )
 			{
+				if ( serverSideWarningsEnabled )
+				{
+					new Throwable( "[ImageTools.getImage] Unsafe use of 'getImage'; '" + url + "' will be cached permanently." ).printStackTrace();
+				}
+
 				try
 				{
 					result = load( url );
@@ -487,6 +498,11 @@ public class ImageTools
 
 			if ( needToLoad )
 			{
+				if ( serverSideWarningsEnabled )
+				{
+					new Throwable( "[ImageTools.getImage] Unsafe use of 'getImage'; '" + path + "' will be cached permanently." ).printStackTrace();
+				}
+
 				result = load( path );
 
 				synchronized ( cache )
