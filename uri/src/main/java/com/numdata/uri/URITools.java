@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,6 +136,7 @@ public class URITools
 		/*
 		 * Implement resolving against 'jar:<url>!/<path>' URI.
 		 */
+		//noinspection ObjectEquality
 		if ( ( result == uri ) && !uri.isOpaque() && context.isOpaque() && "jar".equals( context.getScheme() ) )
 		{
 			final String schemeSpecific = context.getRawSchemeSpecificPart();
@@ -145,6 +146,7 @@ public class URITools
 				final URI path = URI.create( schemeSpecific.substring( separator + 1 ) );
 
 				final URI resolvedPath = resolve( path, uri );
+				//noinspection ObjectEquality
 				if ( resolvedPath != uri )
 				{
 					result = URI.create( context.getScheme() + ':' + schemeSpecific.substring( 0, separator + 1 ) + resolvedPath );
@@ -188,12 +190,11 @@ public class URITools
 				throw new FileNotFoundException( uri.toString() );
 			}
 
-			final long fileSize = file.length();
-
 			try
 			{
-				final InputStream in = new FileInputStream( file );
+				final long fileSize = file.length();
 				result = new byte[ (int)fileSize ];
+				final InputStream in = new FileInputStream( file );
 				try
 				{
 					int done = 0;
@@ -207,7 +208,7 @@ public class URITools
 					in.close();
 				}
 			}
-			catch ( SecurityException e )
+			catch ( final SecurityException e )
 			{
 				throw new IOException( String.valueOf( e ) );
 			}
@@ -235,6 +236,7 @@ public class URITools
 			try
 			{
 				final String type = parameters.get( "type" );
+				//noinspection Duplicates
 				if ( type != null )
 				{
 					if ( "a".equals( type ) )
@@ -247,12 +249,9 @@ public class URITools
 					}
 				}
 
-				if ( directory.length() > 0 )
+				if ( !directory.isEmpty() && !ftpClient.changeWorkingDirectory( directory ) )
 				{
-					if ( !ftpClient.changeWorkingDirectory( directory ) )
-					{
-						throw new FileNotFoundException( "Failed to access directory for URI: " + uri + " (" + ftpClient.getReplyCode() + ": " + ftpClient.getReplyString() + ')' );
-					}
+					throw new FileNotFoundException( "Failed to access directory for URI: " + uri + " (" + ftpClient.getReplyCode() + ": " + ftpClient.getReplyString() + ')' );
 				}
 
 				final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -286,11 +285,11 @@ public class URITools
 					throw new FileNotFoundException( uri.toString() );
 				}
 			}
-			catch ( SmbException e )
+			catch ( final SmbException e )
 			{
 				throw new IOException( uri + " => " + e.getMessage(), e );
 			}
-			catch ( ExceptionInInitializerError e )
+			catch ( final ExceptionInInitializerError e )
 			{
 				throw new IOException( uri + " => " + e.getMessage(), e );
 			}
@@ -365,10 +364,9 @@ public class URITools
 		{
 			if ( "file".equals( scheme ) )
 			{
-				final File file = new File( uri );
-
 				try
 				{
+					final File file = new File( uri );
 					final File parent = file.getParentFile();
 					if ( parent != null )
 					{
@@ -385,7 +383,7 @@ public class URITools
 						out.close();
 					}
 				}
-				catch ( SecurityException e )
+				catch ( final SecurityException e )
 				{
 					throw new IOException( String.valueOf( e ) );
 				}
@@ -412,7 +410,7 @@ public class URITools
 				final FTPClient ftpClient = openFtpConnection( uri );
 				try
 				{
-					if ( directory.length() > 0 )
+					if ( !directory.isEmpty() )
 					{
 						if ( LOG.isTraceEnabled() )
 						{
@@ -454,7 +452,7 @@ public class URITools
 						{
 							ftpClient.deleteFile( filename );
 						}
-						catch ( IOException e )
+						catch ( final IOException e )
 						{
 							if ( LOG.isDebugEnabled() )
 							{
@@ -506,14 +504,14 @@ public class URITools
 						parent.mkdirs();
 					}
 				}
-				catch ( MalformedURLException e )
+				catch ( final MalformedURLException e )
 				{
 					/*
 					 * We couldn't get a parent, so we don't need to create one,
 					 * and can safely ignore this exception.
 					 */
 				}
-				catch ( SmbException e )
+				catch ( final SmbException e )
 				{
 					/*
 					 * We may not have been able to access the parent here, or
@@ -571,7 +569,7 @@ public class URITools
 				}
 			}
 		}
-		catch ( SecurityException e )
+		catch ( final SecurityException e )
 		{
 			throw new IOException( String.valueOf( e ) );
 		}
@@ -680,7 +678,7 @@ public class URITools
 				{
 					result.quit();
 				}
-				catch ( Throwable t )
+				catch ( final Throwable t )
 				{
 					/* we don't care if we already have a problem */
 				}
@@ -689,7 +687,7 @@ public class URITools
 				{
 					result.disconnect();
 				}
-				catch ( Throwable t )
+				catch ( final Throwable t )
 				{
 					/* we don't care if we already have a problem */
 				}
@@ -730,25 +728,35 @@ public class URITools
 	public static class URIPath
 	{
 		/**
-		 * Whether the path is absolute.
+		 * Whether the path is absolute. Absolute paths start with a
+		 * slash.
+		 *
+		 * Note that a URI with authority and an empty path is defined to be
+		 * absolute, but since the path is empty (and contains no slash), this
+		 * method will return {@code false}.
 		 */
-		private boolean _absolute;
+		private final boolean _absolute;
 
 		/**
-		 * Whether the path is a directory.
+		 * Whether the path is a directory. A path is understood to
+		 * denote a directory if and only if it ends with a slash.
 		 */
-		private boolean _directory;
+		private final boolean _directory;
 
 		/**
-		 * Path segments without scheme-specific parameters and
-		 * percent-decoded.
+		 * Percent-decoded path segments without scheme-specific parameters.
 		 */
-		private List<String> _segments;
+		private final List<String> _segments;
 
 		/**
-		 * Scheme-specific parameters, extracted from all path segments.
+		 * Scheme-specific parameters, extracted from all path segments. Used by
+		 * common Internet schemas such as FTP and HTTP. The following syntax is
+		 * used:
+		 * <pre>
+		 * segment = name ( ";" key ( "=" value )? )*
+		 * </pre>
 		 */
-		private Map<String, String> _parameters;
+		private final Map<String, String> _parameters;
 
 		/**
 		 * Constructs a new URI path.
@@ -819,53 +827,23 @@ public class URITools
 			_parameters = ( parameters == null ) ? Collections.<String, String>emptyMap() : parameters;
 		}
 
-		/**
-		 * Returns the path as a list of percent-decoded path segments, with
-		 * parameters stripped from each path segment.
-		 *
-		 * @return Path segments, not including any parameters.
-		 */
+		@NotNull
 		public List<String> getSegments()
 		{
 			return Collections.unmodifiableList( _segments );
 		}
 
-		/**
-		 * Parses parameters specified in path segments, as used by common
-		 * Internet schemas such as FTP and HTTP. The following syntax is used:
-		 *
-		 * <pre>
-		 * segment = name ( ";" key ( "=" value )? )*
-		 * </pre>
-		 *
-		 * @return Parameters for all path segments.
-		 */
+		@NotNull
 		public Map<String, String> getParameters()
 		{
 			return Collections.unmodifiableMap( _parameters );
 		}
 
-		/**
-		 * Returns whether the path is absolute. Absolute paths start with a
-		 * slash.
-		 *
-		 * Note that a URI with authority and an empty path is defined to be
-		 * absolute, but since the path is empty (and contains no slash), this
-		 * method will return {@code false}.
-		 *
-		 * @return {@code true} if the path is absolute.
-		 */
 		public boolean isAbsolute()
 		{
 			return _absolute;
 		}
 
-		/**
-		 * Returns whether the path denotes a directory. A path is understood to
-		 * denote a directory if and only if it ends with a slash.
-		 *
-		 * @return {@code true} if the path denotes a directory.
-		 */
 		public boolean isDirectory()
 		{
 			return _directory;
@@ -881,34 +859,32 @@ public class URITools
 		@NotNull
 		public String getDirectory()
 		{
-			final StringBuilder result = new StringBuilder();
+			final String result;
 
-			if ( isEmpty() )
+			final List<String> segments = getSegments();
+			final int segmentCount = isDirectory() ? segments.size() : segments.size() - 1;
+			if ( segmentCount <= 0 )
 			{
-				if ( isDirectory() )
-				{
-					result.append( '/' );
-				}
+				result = isAbsolute() ? "/" : "";
 			}
 			else
 			{
-				if ( isAbsolute() )
-				{
-					result.append( '/' );
-				}
+				final StringBuilder sb = new StringBuilder();
 
-				final List<String> segments = getSegments();
-
-				final int segmentCount = isDirectory() ? segments.size() : segments.size() - 1;
 				for ( int i = 0; i < segmentCount; i++ )
 				{
-					final String segment = segments.get( i );
-					result.append( segment );
-					result.append( '/' );
+					if ( ( i > 0 ) || isAbsolute() )
+					{
+						sb.append( '/' );
+					}
+					sb.append( segments.get( i ) );
 				}
+
+				sb.append( '/' );
+				result = sb.toString();
 			}
 
-			return result.toString();
+			return result;
 		}
 
 		/**
@@ -921,30 +897,31 @@ public class URITools
 		@NotNull
 		public String getDirectoryWithoutSlash()
 		{
-			final StringBuilder result = new StringBuilder();
+			final String result;
 
-			if ( isAbsolute() )
+			final List<String> segments = getSegments();
+			final int segmentCount = isDirectory() ? segments.size() : segments.size() - 1;
+			if ( segmentCount <= 0 )
 			{
-				result.append( '/' );
+				result = "";
 			}
-
-			if ( !isEmpty() )
+			else
 			{
-				final List<String> segments = getSegments();
+				final StringBuilder sb = new StringBuilder();
 
-				final int segmentCount = isDirectory() ? segments.size() : segments.size() - 1;
 				for ( int i = 0; i < segmentCount; i++ )
 				{
-					if ( i > 0 )
+					if ( ( i > 0 ) || isAbsolute() )
 					{
-						result.append( '/' );
+						sb.append( '/' );
 					}
-					final String segment = segments.get( i );
-					result.append( segment );
+					sb.append( segments.get( i ) );
 				}
+
+				result = sb.toString();
 			}
 
-			return result.toString();
+			return result;
 		}
 
 		/**
@@ -953,9 +930,11 @@ public class URITools
 		 *
 		 * @return File name; empty for a path denoting a directory.
 		 */
+		@NotNull
 		public String getFile()
 		{
 			final String result;
+
 			if ( isDirectory() || isEmpty() )
 			{
 				result = "";
@@ -965,6 +944,48 @@ public class URITools
 				final List<String> segments = getSegments();
 				result = segments.get( segments.size() - 1 );
 			}
+
+			return result;
+		}
+
+		/**
+		 * Returns the path as string. Any parameters that the path may contain
+		 * are not included in the result.
+		 *
+		 * @return Directory name.
+		 */
+		@NotNull
+		public String getPath()
+		{
+			final String result;
+
+			final List<String> segments = getSegments();
+			final int segmentCount = segments.size();
+			if ( segmentCount == 0 )
+			{
+				result = isDirectory() ? "/" : "";
+			}
+			else
+			{
+				final StringBuilder sb = new StringBuilder();
+
+				for ( int i = 0; i < segmentCount; i++ )
+				{
+					if ( ( i > 0 ) || isAbsolute() )
+					{
+						sb.append( '/' );
+					}
+					sb.append( segments.get( i ) );
+				}
+
+				if ( isDirectory() )
+				{
+					sb.append( '/' );
+				}
+
+				result = sb.toString();
+			}
+
 			return result;
 		}
 
@@ -995,10 +1016,10 @@ public class URITools
 
 			try
 			{
-				for ( final Iterator<String> i = segments.iterator(); i.hasNext(); )
+				for ( final Iterator<String> it = segments.iterator(); it.hasNext(); )
 				{
-					percentEncode( result, i.next(), noColon ? PATH_DELIMS : PATH_DELIMS_COLON );
-					if ( i.hasNext() )
+					percentEncode( result, it.next(), noColon ? PATH_DELIMS : PATH_DELIMS_COLON );
+					if ( it.hasNext() )
 					{
 						result.append( '/' );
 					}
@@ -1019,7 +1040,7 @@ public class URITools
 					noColon = false;
 				}
 			}
-			catch ( IOException e )
+			catch ( final IOException e )
 			{
 				// Never thrown by string builder.
 				throw new AssertionError( e );
@@ -1131,6 +1152,9 @@ public class URITools
 	}
 
 	/**
+	 * Percent-encodes the given byte and appends the result to the given
+	 * appendable.
+	 *
 	 * @param out Character sequence to append the result to.
 	 * @param b   Byte to be encoded.
 	 *
@@ -1175,7 +1199,7 @@ public class URITools
 		{
 			return URLDecoder.decode( s, "UTF-8" );
 		}
-		catch ( UnsupportedEncodingException e )
+		catch ( final UnsupportedEncodingException e )
 		{
 			// Never thrown for UTF-8 encoding.
 			throw new AssertionError( e );
