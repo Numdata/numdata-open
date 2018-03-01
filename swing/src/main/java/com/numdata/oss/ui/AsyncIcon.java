@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -400,6 +400,10 @@ implements Icon
 		 */
 		private Worker( @NotNull final Callable<Image> imageLoader )
 		{
+			if ( ImageTools.serverSideWarningsEnabled )
+			{
+				new Throwable( "WARNING: Server-side creation of AsyncIcon.Worker should be avoided." ).printStackTrace();
+			}
 			_imageLoader = imageLoader;
 		}
 
