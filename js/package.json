@@ -9,6 +9,7 @@
     "name": "Gerrit Meinders",
     "email": "meinders@numdata.com"
   },
+  "module": "./module.js",
   "dependencies": {
     "big-rational": "^0.10.7",
     "bigdecimal": "^0.6.1"
