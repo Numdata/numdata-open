@@ -25,15 +25,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import clamp from './lib/clamp';
-import naturalOrder from './lib/naturalOrder';
-import scrollToElement from './lib/scrollToElement';
-import toDegrees from './lib/com.numdata.oss/toDegrees';
-import toRadians from './lib/com.numdata.oss/toRadians';
-export {
-	clamp,
-	naturalOrder,
-	scrollToElement,
-	toDegrees,
-	toRadians
-};
+/**
+ * Limits the given value to the specified range. If the given value is
+ * <code>NaN</code>, the result will be <code>minimum</code>.
+ *
+ * @author Gerrit Meinders
+ *
+ * @param {number} value Value.
+ * @param {number} minimum Minimum value in the range.
+ * @param {number} maximum Maximum value in the range.
+ *
+ * @return {number} Value from the specified range.
+ */
+export default function clamp( value, minimum, maximum )
+{
+	return value >= minimum ? value <= maximum ? value : maximum : minimum;
+}
