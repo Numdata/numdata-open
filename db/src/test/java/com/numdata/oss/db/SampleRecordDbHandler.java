@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,7 @@
 package com.numdata.oss.db;
 
 import java.lang.reflect.*;
-import java.sql.*;
-import java.util.*;
 
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -81,7 +78,7 @@ public class SampleRecordDbHandler
 
 		if ( SampleRecord.STRING_LIST.equals( name ) )
 		{
-			result = new StringListFieldHandler();
+			result = new StringCollectionFieldHandler( _clazz, name );
 		}
 		else
 		{
@@ -89,57 +86,5 @@ public class SampleRecordDbHandler
 		}
 
 		return result;
-	}
-
-	/**
-	 * {@link FieldHandler} implementation for {@link SampleRecord#stringList}.
-	 */
-	private static class StringListFieldHandler
-		implements FieldHandler
-	{
-		@NotNull
-		@Override
-		public String getName()
-		{
-			return SampleRecord.STRING_LIST;
-		}
-
-		@NotNull
-		@Override
-		public Class<?> getJavaType()
-		{
-			return Map.class;
-		}
-
-		@NotNull
-		@Override
-		public Class<?> getSqlType()
-		{
-			return String.class;
-		}
-
-		@Override
-		public List<String> getFieldValue( @NotNull final Object object )
-		{
-			final SampleRecord testRecord = (SampleRecord)object;
-			return testRecord.stringList;
-		}
-
-		@Override
-		public void getColumnData( @NotNull final Object object, @NotNull final ResultSet resultSet, final int columnIndex )
-			throws SQLException
-		{
-			final List<String> stringList = getFieldValue( object );
-			stringList.clear();
-			stringList.addAll( TextTools.tokenize( resultSet.getString( columnIndex ), ',', false ) );
-		}
-
-		@Override
-		public void setColumnData( @NotNull final Object object, @NotNull final PreparedStatement preparedStatement, final int columnIndex )
-			throws SQLException
-		{
-			final List<String> stringList = getFieldValue( object );
-			preparedStatement.setString( columnIndex, TextTools.getList( stringList, ',' ) );
-		}
 	}
 }

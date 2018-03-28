@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,20 +35,46 @@ import org.jetbrains.annotations.*;
 /**
  * Field handler for a collection of strings.
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
 public class StringCollectionFieldHandler
-	extends ReflectedFieldHandler
+extends ReflectedFieldHandler
 {
 	/**
-	 * Constructs a new instance.
+	 * Separator character.
+	 */
+	private final char _separator;
+
+	/**
+	 * Whether to use {@code null} for an empty collection.
+	 */
+	private final boolean _nullIfEmpty;
+
+	/**
+	 * Constructs a new instance using comma (',') as a separator and the empty
+	 * string to represent an empty collection.
 	 *
-	 * @param   recordClass     Table record class.
-	 * @param   fieldName       Field name.
+	 * @param recordClass Table record class.
+	 * @param fieldName   Field name.
 	 */
 	public StringCollectionFieldHandler( @NotNull final Class<?> recordClass, @NotNull final String fieldName )
 	{
+		this( recordClass, fieldName, ',', false );
+	}
+
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param recordClass Table record class.
+	 * @param fieldName   Field name.
+	 * @param separator   Separator character.
+	 * @param nullIfEmpty Whether to use {@code null} for an empty collection.
+	 */
+	public StringCollectionFieldHandler( @NotNull final Class<?> recordClass, @NotNull final String fieldName, final char separator, final boolean nullIfEmpty )
+	{
 		super( recordClass, fieldName );
+		_separator = separator;
+		_nullIfEmpty = nullIfEmpty;
 	}
 
 	@Override
@@ -63,7 +89,7 @@ public class StringCollectionFieldHandler
 	{
 		final Collection<String> strings = getFieldValue( object );
 		strings.clear();
-		strings.addAll( TextTools.tokenize( resultSet.getString( columnIndex ), ',', false ) );
+		strings.addAll( TextTools.tokenize( resultSet.getString( columnIndex ), _separator, false ) );
 	}
 
 	@Override
@@ -71,6 +97,6 @@ public class StringCollectionFieldHandler
 	throws SQLException
 	{
 		final Collection<String> strings = getFieldValue( object );
-		preparedStatement.setString( columnIndex, TextTools.getList( strings, ',' ) );
+		preparedStatement.setString( columnIndex, _nullIfEmpty && strings.isEmpty() ? null : TextTools.getList( strings, _separator ) );
 	}
 }
