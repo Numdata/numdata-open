@@ -16,9 +16,29 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-toolchains-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>toolchain</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<toolchains>
+						<paths>
+							<id>bash</id>
+						</paths>
+					</toolchains>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.6.0</version>
+				<extensions>true</extensions>
 				<executions>
 					<execution>
 						<id>clean-js</id>
@@ -33,6 +53,7 @@
 								<argument>build.sh</argument>
 								<argument>clean</argument>
 							</arguments>
+							<toolchain>paths</toolchain>
 						</configuration>
 					</execution>
 					<execution>
@@ -48,6 +69,7 @@
 								<argument>build.sh</argument>
 								<argument>build</argument>
 							</arguments>
+							<toolchain>paths</toolchain>
 						</configuration>
 					</execution>
 					<execution>
@@ -63,6 +85,7 @@
 								<argument>build.sh</argument>
 								<argument>test</argument>
 							</arguments>
+							<toolchain>paths</toolchain>
 						</configuration>
 					</execution>
 				</executions>
