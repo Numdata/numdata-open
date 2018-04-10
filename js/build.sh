@@ -9,7 +9,7 @@ function run()
 
     case "$1" in
     clean)
-        rm -rf lib dist generated-sources/test*
+        rm -rf lib dist generated-sources
         ;;
 
     *)

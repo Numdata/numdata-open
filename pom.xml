@@ -54,6 +54,7 @@
 		<module>email</module>
 		<module>filesystem</module>
 		<module>jnlp</module>
+		<module>js</module>
 		<module>micro-editor</module>
 		<module>printer</module>
 		<module>serial</module>
