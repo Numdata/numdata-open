@@ -53,6 +53,7 @@
 		<module>deployment</module>
 		<module>email</module>
 		<module>filesystem</module>
+		<module>icons</module>
 		<module>jnlp</module>
 		<module>js</module>
 		<module>micro-editor</module>
