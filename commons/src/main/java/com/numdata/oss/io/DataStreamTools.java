@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1021,13 +1021,13 @@ public class DataStreamTools
 	throws IOException
 	{
 		/*
-		 * We use a Fibonaci growing buffer in this algorithm to read as
+		 * We use a Fibonacci growing buffer in this algorithm to read as
 		 * efficient as possible. We start with a relatively small buffer. After
 		 * reading a block of data, we create a new array to fit the data we've
-		 * read sofar. The old array is then reused on the next iteration.
+		 * read so far. The old array is then reused on the next iteration.
 		 *
 		 * NOTICE:
-		 *    The algorithm has a difficiency: if we get a reliable available()
+		 *    The algorithm has a deficiency: if we get a reliable available()
 		 *    count (actually the correct number of bytes left in the stream), we
 		 *    create one unnecessary buffer. We could actually return the buffer
 		 *    on the first iteration without ever creating a new one.
@@ -1035,58 +1035,48 @@ public class DataStreamTools
 		byte[] total = null;
 		byte[] buffer = new byte[ Math.max( is.available(), 1024 ) ]; // initial buffer size
 
-		while ( true )
+		boolean done = false;
+		while ( !done )
 		{
 			/*
-			 * Read data into current buffer.
+			 * Read data into current buffer until it's full.
 			 */
-			//try {
-			final int numberRead = is.read( buffer );
-			//} catch ( ArrayIndexOutOfBoundsException e )
-			//{
-			//System.out.println( e );
-
-			////System.out.println( "Numberread = " + numberRead );
-			////System.out.println( "Buffersize = " + buffer.length );
-			////System.out.println( "Available  = " + is.available() );
-
-			////e.printStackTrace();
-			//}
-			//System.err.println( "readByteArray: received " + numberRead + " byte(s)" );
-			//System.out.println( "Received : " );
-			//for ( int i = 0 ; i < numberRead ; i++ )
-			//{
-			//System.out.print( buffer[i] + "   " );
-			//if ( i % 10 == 0 ) System.out.println( "" );
-			//}
-
-			/*
-			 * If nothing was read, return the previous result.
-			 */
-			if ( numberRead <= 0 )
+			int totalRead = 0;
+			while ( totalRead < buffer.length )
 			{
-				return ( total != null ) ? total : NO_BYTES;
+				final int read = is.read( buffer, totalRead, buffer.length - totalRead );
+				if ( read == -1 )
+				{
+					done = true;
+					break;
+				}
+				totalRead += read;
 			}
 
 			/*
 			 * Create next buffer
 			 */
-			if ( total != null )
+			if ( totalRead > 0 )
 			{
-				final byte[] newTotal = new byte[ total.length + numberRead ];
+				if ( total != null )
+				{
+					final byte[] newTotal = new byte[ total.length + totalRead ];
 
-				System.arraycopy( total, 0, newTotal, 0, total.length );
-				System.arraycopy( buffer, 0, newTotal, total.length, numberRead );
+					System.arraycopy( total, 0, newTotal, 0, total.length );
+					System.arraycopy( buffer, 0, newTotal, total.length, totalRead );
 
-				buffer = total;
-				total = newTotal;
-			}
-			else
-			{
-				total = new byte[ numberRead ];
-				System.arraycopy( buffer, 0, total, 0, numberRead );
+					buffer = total;
+					total = newTotal;
+				}
+				else
+				{
+					total = new byte[ totalRead ];
+					System.arraycopy( buffer, 0, total, 0, totalRead );
+				}
 			}
 		}
+
+		return total == null ? NO_BYTES : total;
 	}
 
 	/**

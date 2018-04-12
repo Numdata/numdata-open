@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 package com.numdata.oss.io;
 
 import java.io.*;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -438,5 +439,64 @@ public class TestDataStreamTools
 			assertEquals( "read/writeLong test #" + i + " mismatch", test, read );
 			assertEquals( "should be at end of stream after read/writeLong test #" + i, -1, is.read() );
 		}
+	}
+
+	/**
+	 * Tests that {@link DataStreamTools#readByteArray(InputStream)} can handle
+	 * an empty input stream.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	@Test
+	public void readByteArrayFromEmptyStream()
+	throws IOException
+	{
+		final String where = CLASS_NAME + ".readByteArrayFromEmptyStream()";
+		System.out.println( where );
+
+		final byte[] actual = DataStreamTools.readByteArray( new ByteArrayInputStream( new byte[ 0 ] ) );
+		assertEquals( "Unexpected length.", 0, actual.length );
+	}
+
+	/**
+	 * Tests that {@link DataStreamTools#readByteArray(InputStream)} can handle
+	 * a large input stream that produces many small chunks of data.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	@Test
+	public void readByteArrayFromLargeChunkedStream()
+	throws IOException
+	{
+		final String where = CLASS_NAME + ".readByteArrayFromLargeChunkedStream()";
+		System.out.println( where );
+
+		final PipedOutputStream out = new PipedOutputStream();
+		new Thread( new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					final byte[] buffer = new byte[ 1000 ];
+					final Random random = new Random();
+					for ( int i = 0; i < 10000; i++ )
+					{
+						random.nextBytes( buffer );
+						out.write( buffer );
+						out.flush();
+					}
+					out.close();
+				}
+				catch ( IOException e )
+				{
+					throw new AssertionError( e );
+				}
+			}
+		} ).start();
+
+		final byte[] actual = DataStreamTools.readByteArray( new PipedInputStream( out ) );
+		assertEquals( "Unexpected length.", 10000000, actual.length );
 	}
 }
