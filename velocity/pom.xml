@@ -27,7 +27,19 @@
 			<artifactId>velocity-tools</artifactId>
 			<exclusions>
 				<exclusion>
+					<groupId>dom4j</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.apache.struts</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>oro</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>sslext</groupId>
 					<artifactId>*</artifactId>
 				</exclusion>
 			</exclusions>
