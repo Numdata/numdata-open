@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ public abstract class AbstractCommandLineTool
 	/**
 	 * Command-line argument definitions.
 	 */
-	private final List<ToolOption> _argumentDefintions = new ArrayList<ToolOption>();
+	private final List<ToolOption> _argumentDefinitions = new ArrayList<ToolOption>();
 
 	/**
 	 * Command-line argument definitions.
@@ -54,7 +54,7 @@ public abstract class AbstractCommandLineTool
 	/**
 	 * Program option definitions.
 	 */
-	private final List<ToolOption> _optionDefintions = new ArrayList<ToolOption>();
+	private final List<ToolOption> _optionDefinitions = new ArrayList<ToolOption>();
 
 	/**
 	 * Program option argument values.
@@ -98,7 +98,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void defineArgument( @NotNull final ToolOption definition )
 	{
-		_argumentDefintions.add( definition );
+		_argumentDefinitions.add( definition );
 	}
 
 	/**
@@ -109,7 +109,7 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	protected List<ToolOption> getArgumentDefinitions()
 	{
-		return Collections.unmodifiableList( _argumentDefintions );
+		return Collections.unmodifiableList( _argumentDefinitions );
 	}
 
 	/**
@@ -125,7 +125,7 @@ public abstract class AbstractCommandLineTool
 	{
 		ToolOption result = null;
 
-		for ( final ToolOption definition : _argumentDefintions )
+		for ( final ToolOption definition : _argumentDefinitions )
 		{
 			if ( name.equals( definition.getName() ) )
 			{
@@ -144,7 +144,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeArgumentDefinition( @NotNull final String name )
 	{
-		for ( final Iterator<ToolOption> it = _argumentDefintions.iterator(); it.hasNext(); )
+		for ( final Iterator<ToolOption> it = _argumentDefinitions.iterator(); it.hasNext(); )
 		{
 			final ToolOption definition = it.next();
 			if ( name.equals( definition.getName() ) )
@@ -159,7 +159,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeAllArgumentDefinitions()
 	{
-		_argumentDefintions.clear();
+		_argumentDefinitions.clear();
 	}
 
 	/**
@@ -244,10 +244,10 @@ public abstract class AbstractCommandLineTool
 	{
 		ToolOption argument = null;
 		int index = -1;
-		final List<ToolOption> argumentDefintions = getArgumentDefinitions();
-		for ( int i = 0; i < argumentDefintions.size(); i++ )
+		final List<ToolOption> argumentDefinitions = getArgumentDefinitions();
+		for ( int i = 0; i < argumentDefinitions.size(); i++ )
 		{
-			final ToolOption candidate = argumentDefintions.get( i );
+			final ToolOption candidate = argumentDefinitions.get( i );
 			if ( argumentName.equals( candidate.getName() ) )
 			{
 				argument = candidate;
@@ -293,9 +293,9 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	public List<String> getExtraArguments()
 	{
-		final List<ToolOption> argumentDefintions = getArgumentDefinitions();
+		final List<ToolOption> argumentDefinitions = getArgumentDefinitions();
 		final List<String> argumentValues = _argumentValues;
-		return new ArrayList<String>( argumentValues.subList( argumentDefintions.size(), argumentValues.size() ) );
+		return new ArrayList<String>( argumentValues.subList( argumentDefinitions.size(), argumentValues.size() ) );
 	}
 
 	/**
@@ -306,7 +306,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void defineOption( @NotNull final String name, @NotNull final String description )
 	{
-		_optionDefintions.add( new ToolOption( name, '-' + name, description, false ) );
+		_optionDefinitions.add( new ToolOption( name, '-' + name, description, false ) );
 	}
 
 	/**
@@ -319,7 +319,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void defineOption( @NotNull final String name, final boolean requiresArgument, @NotNull final String label, @NotNull final String description )
 	{
-		_optionDefintions.add( new ToolOption( name, label, description, requiresArgument ) );
+		_optionDefinitions.add( new ToolOption( name, label, description, requiresArgument ) );
 	}
 
 	/**
@@ -330,7 +330,7 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	protected List<ToolOption> getOptionDefinitions()
 	{
-		return Collections.unmodifiableList( _optionDefintions );
+		return Collections.unmodifiableList( _optionDefinitions );
 	}
 
 	/**
@@ -346,7 +346,7 @@ public abstract class AbstractCommandLineTool
 	{
 		ToolOption result = null;
 
-		for ( final ToolOption definition : _optionDefintions )
+		for ( final ToolOption definition : _optionDefinitions )
 		{
 			if ( name.equals( definition.getName() ) )
 			{
@@ -365,7 +365,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeOptionDefinition( @NotNull final String name )
 	{
-		for ( final Iterator<ToolOption> it = _optionDefintions.iterator(); it.hasNext(); )
+		for ( final Iterator<ToolOption> it = _optionDefinitions.iterator(); it.hasNext(); )
 		{
 			final ToolOption definition = it.next();
 			if ( name.equals( definition.getName() ) )
@@ -380,7 +380,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeAllOptionDefinitions()
 	{
-		_optionDefintions.clear();
+		_optionDefinitions.clear();
 	}
 
 	/**
@@ -584,8 +584,8 @@ public abstract class AbstractCommandLineTool
 		if ( profileFile.exists() )
 		{
 			// Add nulls for any missing arguments.
-			final List<String> argumentValues = _argumentValues;
-			while ( argumentValues.size() < _argumentDefintions.size() )
+			final List<String> argumentValues = new ArrayList<String>( _argumentDefinitions.size() );
+			while ( argumentValues.size() < _argumentDefinitions.size() )
 			{
 				argumentValues.add( null );
 			}
@@ -597,41 +597,39 @@ public abstract class AbstractCommandLineTool
 				properties.load( in );
 
 				System.err.println( "Applying arguments/options from configuration file" );
-				for ( final ToolOption argument : getArgumentDefinitions() )
+				final List<ToolOption> argumentDefinitions = getArgumentDefinitions();
+				for ( int index = 0; index < argumentDefinitions.size(); index++ )
 				{
-					final int index = getArgumentIndex( argument.getName() );
-					if ( argumentValues.get( index ) == null )
+					final ToolOption argument = argumentDefinitions.get( index );
+					if ( properties.containsKey( argument.getName() ) )
 					{
-						if ( properties.containsKey( argument.getName() ) )
+						final String value = properties.getProperty( argument.getName() );
+						System.err.println( " - Argument " + argument.getName() + " = " + value );
+						argumentValues.set( index, value );
+					}
+					else if ( properties.containsKey( argument.getName() + "*" ) )
+					{
+						if ( index == argumentValues.size() - 1 )
 						{
-							final String value = properties.getProperty( argument.getName() );
-							System.err.println( " - Argument " + argument.getName() + " = " + value );
-							argumentValues.set( index, value );
-						}
-						else if ( properties.containsKey( argument.getName() + "*" ) )
-						{
-							if ( index == argumentValues.size() - 1 )
+							final String values = properties.getProperty( argument.getName() + "*" );
+							final String[] valueArray = values.split( "\\s+" );
+							System.err.println( " - Variable argument " + argument.getName() + " = " + Arrays.toString( valueArray ) );
+							for ( int i = 0; i < valueArray.length; i++ )
 							{
-								final String values = properties.getProperty( argument.getName() + "*" );
-								final String[] valueArray = values.split( "\\s+" );
-								System.err.println( " - Variable argument " + argument.getName() + " = " + Arrays.toString( valueArray ) );
-								for ( int i = 0; i < valueArray.length; i++ )
+								final String value = valueArray[ i ];
+								if ( i == 0 )
 								{
-									final String value = valueArray[ i ];
-									if ( i == 0 )
-									{
-										argumentValues.set( index, value );
-									}
-									else
-									{
-										argumentValues.add( value );
-									}
+									argumentValues.set( index, value );
+								}
+								else
+								{
+									argumentValues.add( value );
 								}
 							}
-							else
-							{
-								System.err.println( " - Ignoring variable argument " + argument.getName() + ": it is not the last argument for this tool." );
-							}
+						}
+						else
+						{
+							System.err.println( " - Ignoring variable argument " + argument.getName() + ": it is not the last argument for this tool." );
 						}
 					}
 				}
@@ -671,6 +669,26 @@ public abstract class AbstractCommandLineTool
 			{
 				argumentValues.remove( argumentValues.size() - 1 );
 			}
+
+			// Fill gaps in the config file with arguments.
+			final Iterator<String> commandLineIterator = _argumentValues.iterator();
+			for ( final ListIterator<String> configFileIterator = argumentValues.listIterator(); configFileIterator.hasNext() && commandLineIterator.hasNext(); )
+			{
+				if ( configFileIterator.next() == null )
+				{
+					configFileIterator.set( commandLineIterator.next() );
+				}
+			}
+
+			// Append any remaining arguments.
+			while ( commandLineIterator.hasNext() )
+			{
+				argumentValues.add( commandLineIterator.next() );
+			}
+
+			// Replace original arguments.
+			_argumentValues.clear();
+			_argumentValues.addAll( argumentValues );
 		}
 	}
 
@@ -787,18 +805,18 @@ public abstract class AbstractCommandLineTool
 	@SuppressWarnings( "NullableProblems" )
 	protected void printSyntax( @NotNull final PrintStream out )
 	{
-		final Collection<ToolOption> optionDefintions = getOptionDefinitions();
-		final List<ToolOption> argumentDefintions = getArgumentDefinitions();
+		final Collection<ToolOption> optionDefinitions = getOptionDefinitions();
+		final List<ToolOption> argumentDefinitions = getArgumentDefinitions();
 
 		int maxOptionLabelLength = 0;
-		for ( final ToolOption option : optionDefintions )
+		for ( final ToolOption option : optionDefinitions )
 		{
 			maxOptionLabelLength = Math.max( maxOptionLabelLength, option.getLabel().length() );
 		}
 		final boolean hasOptions = maxOptionLabelLength > 0;
 
 		int maxArgLabelLength = 0;
-		for ( final ToolOption option : argumentDefintions )
+		for ( final ToolOption option : argumentDefinitions )
 		{
 			maxArgLabelLength = Math.max( maxArgLabelLength, option.getLabel().length() );
 		}
@@ -812,7 +830,7 @@ public abstract class AbstractCommandLineTool
 			{
 				out.print( " [<option> [...]]" );
 			}
-			for ( final ToolOption option : argumentDefintions )
+			for ( final ToolOption option : argumentDefinitions )
 			{
 				out.print( ' ' );
 				out.print( option.getLabel() );
@@ -824,7 +842,7 @@ public abstract class AbstractCommandLineTool
 				out.println();
 				out.println( "Options:" );
 				final String indent = '\n' + TextTools.getFixed( maxOptionLabelLength + 4, ' ' );
-				for ( final ToolOption option : optionDefintions )
+				for ( final ToolOption option : optionDefinitions )
 				{
 					out.print( "  " );
 					out.print( TextTools.getFixed( option.getLabel(), maxOptionLabelLength, false, ' ' ) );
@@ -838,7 +856,7 @@ public abstract class AbstractCommandLineTool
 				out.println();
 				out.println( "Arguments:" );
 				final String indent = '\n' + TextTools.getFixed( maxArgLabelLength + 4, ' ' );
-				for ( final ToolOption option : argumentDefintions )
+				for ( final ToolOption option : argumentDefinitions )
 				{
 					out.print( "  " );
 					out.print( TextTools.getFixed( option.getLabel(), maxArgLabelLength, false, ' ' ) );
