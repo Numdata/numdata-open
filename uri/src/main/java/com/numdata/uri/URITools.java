@@ -42,7 +42,7 @@ import org.jetbrains.annotations.*;
 /**
  * This class provides utility methods related to {@link URI}s. This class
  * supports all schemes supported by the JVM and explicitly supports the
- * schemes: file, ftp, smb, and serial.
+ * schemes: file, ftp, keyboard, memory, serial, and smb.
  *
  * <h3>FTP</h3> The following parameters can be used:
  *
@@ -62,8 +62,8 @@ import org.jetbrains.annotations.*;
  * <tr><td>*</td><td>mode</td><td>active</td><td>Use active connection
  * mode.</td></tr>
  *
- * <tr><td>*</td><td>no-chdir</td><td></td><td> Write files without using {@code
- * chdir} commands. Qualified filenames are used instead. Note that <a
+ * <tr><td>*</td><td>no-chdir</td><td></td><td> Write files without using
+ * {@code chdir} commands. Qualified filenames are used instead. Note that <a
  * href="http://www.ietf.org/rfc/rfc1738.txt">RFC 1738: Uniform Resource
  * Locators (URL)</a> states that each path segment "is to be supplied,
  * sequentially, as the argument to a CWD (change working directory) command."
@@ -73,6 +73,11 @@ import org.jetbrains.annotations.*;
  * written.</td></tr>
  *
  * </table>
+ *
+ * <h3>keyboard</h3>
+ *
+ * You may use the 'encoding' parameter to select character encoding other than
+ * the default, UTF-8.
  *
  * @author Peter S. Heijnen
  * @see URI Java URI definition
@@ -492,6 +497,10 @@ public class URITools
 				final Javacomm javacomm = Javacomm.getInstance();
 				javacomm.sendToSerialPort( uri, data );
 			}
+			else if ( "keyboard".equals( scheme ) )
+			{
+				senTodKeyboard( uri, data );
+			}
 			else if ( "smb".equals( scheme ) )
 			{
 				final SmbFile file = new SmbFile( "smb:" + uri.getSchemeSpecificPart() );
@@ -572,6 +581,38 @@ public class URITools
 		catch ( final SecurityException e )
 		{
 			throw new IOException( String.valueOf( e ) );
+		}
+	}
+
+	/**
+	 * Send data to keyboard.
+	 *
+	 * @param uri  Keyboard URI.
+	 * @param data Data to send.
+	 *
+	 * @throws IOException if keyboard can not be accessed.
+	 */
+	private static void senTodKeyboard( @NotNull final URI uri, @NotNull final byte[] data )
+	throws IOException
+	{
+		final URIPath uriPath = new URIPath( uri );
+		final Map<String, String> parameters = uriPath.getParameters();
+
+		String encoding = parameters.get( "encoding" );
+		if ( encoding == null )
+		{
+			encoding = "UTF-8";
+		}
+
+		final String string = new String( data, encoding );
+
+		try
+		{
+			RobotTools.sendString( string );
+		}
+		catch ( final Throwable t )
+		{
+			throw new IOException( "Failed to send to keyboard: " + t, t );
 		}
 	}
 
@@ -728,8 +769,7 @@ public class URITools
 	public static class URIPath
 	{
 		/**
-		 * Whether the path is absolute. Absolute paths start with a
-		 * slash.
+		 * Whether the path is absolute. Absolute paths start with a slash.
 		 *
 		 * Note that a URI with authority and an empty path is defined to be
 		 * absolute, but since the path is empty (and contains no slash), this
@@ -738,8 +778,8 @@ public class URITools
 		private final boolean _absolute;
 
 		/**
-		 * Whether the path is a directory. A path is understood to
-		 * denote a directory if and only if it ends with a slash.
+		 * Whether the path is a directory. A path is understood to denote a
+		 * directory if and only if it ends with a slash.
 		 */
 		private final boolean _directory;
 
