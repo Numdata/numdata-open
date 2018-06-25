@@ -48,7 +48,7 @@ import org.jetbrains.annotations.*;
  *
  * (Non-standard parameters are marked with a '*'.)
  *
- * <table>
+ * <table summary="Available FTP parameters">
  *
  * <tr><th></th><th>Key</th><th>Value</th><th>Description</th></tr>
  *
@@ -93,7 +93,7 @@ public class URITools
 
 	/**
 	 * Extended version of {@link URI#resolve(String)} method. This also
-	 * supports resolving against a 'jar:<url>!/<path>' URI.
+	 * supports resolving against a 'jar:&lt;url&gt;!/&lt;path&gt;' URI.
 	 *
 	 * @param context URI context to resolve against.
 	 * @param uri     URI to resolve against the context URI.
@@ -109,7 +109,7 @@ public class URITools
 
 	/**
 	 * Extended version of {@link URI#resolve(String)} method. This also
-	 * supports resolving against a 'jar:<url>!/<path>' URI.
+	 * supports resolving against a 'jar:&lt;url&gt;!/&lt;path&gt;' URI.
 	 *
 	 * @param context URI context to resolve against.
 	 * @param uri     URI to resolve against the context URI.
@@ -125,7 +125,7 @@ public class URITools
 
 	/**
 	 * Extended version of {@link URI#resolve(URI)} method. This also supports
-	 * resolving against a 'jar:<url>!/<path>' URI.
+	 * resolving against a 'jar:&lt;url&gt;!/&lt;path&gt;' URI.
 	 *
 	 * @param context URI context to resolve against.
 	 * @param uri     URI to resolve against the context URI.
@@ -139,7 +139,7 @@ public class URITools
 		URI result = context.resolve( uri );
 
 		/*
-		 * Implement resolving against 'jar:<url>!/<path>' URI.
+		 * Implement resolving against 'jar:&lt;url&gt;!/&lt;path&gt;' URI.
 		 */
 		//noinspection ObjectEquality
 		if ( ( result == uri ) && !uri.isOpaque() && context.isOpaque() && "jar".equals( context.getScheme() ) )
