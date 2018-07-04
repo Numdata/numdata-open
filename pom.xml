@@ -66,6 +66,7 @@
 		<module>uri</module>
 		<module>velocity</module>
 		<module>web</module>
+		<module>socket-tool</module>
 	</modules>
 
 	<dependencyManagement>
@@ -108,6 +109,11 @@
 			<dependency>
 				<groupId>com.numdata</groupId>
 				<artifactId>numdata-swing</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.numdata</groupId>
+				<artifactId>numdata-uri</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

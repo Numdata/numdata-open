@@ -28,6 +28,7 @@ package com.numdata.uri;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.*;
 import java.util.regex.*;
 
 import org.jetbrains.annotations.*;
@@ -90,6 +91,26 @@ public class RobotTools
 	private static final int WAIT = 7;
 
 	/**
+	 * {@link KeyEvent#getExtendedKeyCodeForChar(int)} method.
+	 */
+	@Nullable
+	private static final Method GET_EXTENDED_KEY_CODE_FOR_CHAR_METHOD;
+
+	static
+	{
+		Method method = null;
+		try
+		{
+			//noinspection JavaReflectionMemberAccess
+			method = KeyEvent.class.getMethod( "getExtendedKeyCodeForChar", char.class );
+		}
+		catch ( final Exception ignored )
+		{
+		}
+		GET_EXTENDED_KEY_CODE_FOR_CHAR_METHOD = method;
+	}
+
+	/**
 	 * Send string to keyboard.
 	 *
 	 * @param string String to send.
@@ -123,7 +144,8 @@ public class RobotTools
 			for ( int i = start; i < end; i++ )
 			{
 				final char ch = string.charAt( i );
-				final int keyCode = KeyEvent.getExtendedKeyCodeForChar( ch );
+
+				final int keyCode = getKeyCodeForChar( ch );
 				if ( keyCode != KeyEvent.VK_UNDEFINED )
 				{
 					if ( Character.isUpperCase( ch ) )
@@ -185,11 +207,381 @@ public class RobotTools
 	}
 
 	/**
+	 * Get key code for the given character.
+	 *
+	 * This method is Java 6 compatible; for Java 7+ it will simply call {@link
+	 * KeyEvent#getExtendedKeyCodeForChar(int)}.
+	 *
+	 * @param ch Character.
+	 *
+	 * @return Key code; {@link KeyEvent#VK_UNDEFINED} if no key code is
+	 * available.
+	 *
+	 * @see KeyEvent#getExtendedKeyCodeForChar
+	 */
+	private static int getKeyCodeForChar( final char ch )
+	{
+		int keyCode = -1;
+		if ( GET_EXTENDED_KEY_CODE_FOR_CHAR_METHOD != null )
+		{
+			try
+			{
+				//noinspection JavaReflectionMemberAccess
+				keyCode = (Integer)GET_EXTENDED_KEY_CODE_FOR_CHAR_METHOD.invoke( null, ch );
+			}
+			catch ( final Exception ignored )
+			{
+			}
+		}
+
+		if ( keyCode < 0 )
+		{
+			switch ( ch )
+			{
+				case '\b': // 010
+					keyCode = KeyEvent.VK_BACK_SPACE;
+					break;
+
+				case '\t': // 011
+					keyCode = KeyEvent.VK_TAB;
+					break;
+
+				case '\n': // 012
+					keyCode = KeyEvent.VK_ENTER;
+					break;
+
+//				case '\020':
+//					keyCode = KeyEvent.VK_HOME;
+//					break;
+
+//				case '\021':
+//					keyCode = KeyEvent.VK_END;
+//					break;
+
+//				case '\022':
+//					keyCode = KeyEvent.VK_WINDOWS;
+//					break;
+
+				case '\033':
+					keyCode = KeyEvent.VK_ESCAPE;
+					break;
+
+				case ' ':
+					keyCode = KeyEvent.VK_SPACE;
+					break;
+
+				case '0':
+					keyCode = KeyEvent.VK_0;
+					break;
+
+				case '1':
+					keyCode = KeyEvent.VK_1;
+					break;
+
+				case '2':
+					keyCode = KeyEvent.VK_2;
+					break;
+
+				case '3':
+					keyCode = KeyEvent.VK_3;
+					break;
+
+				case '4':
+					keyCode = KeyEvent.VK_4;
+					break;
+
+				case '5':
+					keyCode = KeyEvent.VK_5;
+					break;
+
+				case '6':
+					keyCode = KeyEvent.VK_6;
+					break;
+
+				case '7':
+					keyCode = KeyEvent.VK_7;
+					break;
+
+				case '8':
+					keyCode = KeyEvent.VK_8;
+					break;
+
+				case '9':
+					keyCode = KeyEvent.VK_9;
+					break;
+
+				case 'A':
+				case 'a':
+					keyCode = KeyEvent.VK_A;
+					break;
+
+				case 'B':
+				case 'b':
+					keyCode = KeyEvent.VK_B;
+					break;
+
+				case 'C':
+				case 'c':
+					keyCode = KeyEvent.VK_C;
+					break;
+
+				case 'D':
+				case 'd':
+					keyCode = KeyEvent.VK_D;
+					break;
+
+				case 'E':
+				case 'e':
+					keyCode = KeyEvent.VK_E;
+					break;
+
+				case 'F':
+				case 'f':
+					keyCode = KeyEvent.VK_F;
+					break;
+
+				case 'G':
+				case 'g':
+					keyCode = KeyEvent.VK_G;
+					break;
+
+				case 'H':
+				case 'h':
+					keyCode = KeyEvent.VK_H;
+					break;
+
+				case 'I':
+				case 'i':
+					keyCode = KeyEvent.VK_I;
+					break;
+
+				case 'J':
+				case 'j':
+					keyCode = KeyEvent.VK_J;
+					break;
+
+				case 'K':
+				case 'k':
+					keyCode = KeyEvent.VK_K;
+					break;
+
+				case 'L':
+				case 'l':
+					keyCode = KeyEvent.VK_L;
+					break;
+
+				case 'M':
+				case 'm':
+					keyCode = KeyEvent.VK_M;
+					break;
+
+				case 'N':
+				case 'n':
+					keyCode = KeyEvent.VK_N;
+					break;
+
+				case 'O':
+				case 'o':
+					keyCode = KeyEvent.VK_O;
+					break;
+
+				case 'P':
+				case 'p':
+					keyCode = KeyEvent.VK_P;
+					break;
+
+				case 'Q':
+				case 'q':
+					keyCode = KeyEvent.VK_Q;
+					break;
+
+				case 'R':
+				case 'r':
+					keyCode = KeyEvent.VK_R;
+					break;
+
+				case 'S':
+				case 's':
+					keyCode = KeyEvent.VK_S;
+					break;
+
+				case 'T':
+				case 't':
+					keyCode = KeyEvent.VK_T;
+					break;
+
+				case 'U':
+				case 'u':
+					keyCode = KeyEvent.VK_U;
+					break;
+
+				case 'V':
+				case 'v':
+					keyCode = KeyEvent.VK_V;
+					break;
+
+				case 'W':
+				case 'w':
+					keyCode = KeyEvent.VK_W;
+					break;
+
+				case 'X':
+				case 'x':
+					keyCode = KeyEvent.VK_X;
+					break;
+
+				case 'Y':
+				case 'y':
+					keyCode = KeyEvent.VK_Y;
+					break;
+
+				case 'Z':
+				case 'z':
+					keyCode = KeyEvent.VK_Z;
+					break;
+
+				case '!':
+					keyCode = KeyEvent.VK_EXCLAMATION_MARK;
+					break;
+
+				case '@':
+					keyCode = KeyEvent.VK_AT;
+					break;
+
+				case '#':
+					keyCode = KeyEvent.VK_NUMBER_SIGN;
+					break;
+
+				case '$':
+					keyCode = KeyEvent.VK_DOLLAR;
+					break;
+
+//				case '%':
+//					keyCode = KeyEvent.VK_PERCENT;
+//					break;
+
+				case '^':
+					keyCode = KeyEvent.VK_CIRCUMFLEX;
+					break;
+
+				case '&':
+					keyCode = KeyEvent.VK_AMPERSAND;
+					break;
+
+				case '*':
+					keyCode = KeyEvent.VK_ASTERISK;
+					break;
+
+				case '(':
+					keyCode = KeyEvent.VK_LEFT_PARENTHESIS;
+					break;
+
+				case ')':
+					keyCode = KeyEvent.VK_RIGHT_PARENTHESIS;
+					break;
+
+				case '-':
+					keyCode = KeyEvent.VK_MINUS;
+					break;
+
+				case '_':
+					keyCode = KeyEvent.VK_UNDERSCORE;
+					break;
+
+				case '=':
+					keyCode = KeyEvent.VK_EQUALS;
+					break;
+
+				case '+':
+					keyCode = KeyEvent.VK_PLUS;
+					break;
+
+				case '[':
+					keyCode = KeyEvent.VK_OPEN_BRACKET;
+					break;
+
+				case ']':
+					keyCode = KeyEvent.VK_CLOSE_BRACKET;
+					break;
+
+				case '{':
+					keyCode = KeyEvent.VK_BRACELEFT;
+					break;
+
+				case '}':
+					keyCode = KeyEvent.VK_BRACERIGHT;
+					break;
+
+				case '\\':
+					keyCode = KeyEvent.VK_BACK_SLASH;
+					break;
+
+//				case '|':
+//					keyCode = KeyEvent.VK_PIPE;
+//					break;
+
+				case ';':
+					keyCode = KeyEvent.VK_SEMICOLON;
+					break;
+
+				case ':':
+					keyCode = KeyEvent.VK_COLON;
+					break;
+
+				case '\'':
+					keyCode = KeyEvent.VK_QUOTE;
+					break;
+
+				case '"':
+					keyCode = KeyEvent.VK_QUOTEDBL;
+					break;
+
+				case ',':
+					keyCode = KeyEvent.VK_COMMA;
+					break;
+
+				case '.':
+					keyCode = KeyEvent.VK_PERIOD;
+					break;
+
+				case '/':
+					keyCode = KeyEvent.VK_SLASH;
+					break;
+
+				case '<':
+					keyCode = KeyEvent.VK_LESS;
+					break;
+
+				case '>':
+					keyCode = KeyEvent.VK_GREATER;
+					break;
+
+//				case '?':
+//					keyCode = KeyEvent.VK_QUESTION;
+//					break;
+
+				case '`':
+					keyCode = KeyEvent.VK_BACK_SLASH;
+					break;
+
+//				case '~':
+//					keyCode = KeyEvent.VK_TILDE;
+//					break;
+
+				default:
+					keyCode = KeyEvent.VK_UNDEFINED;
+			}
+		}
+
+		return keyCode;
+	}
+
+	/**
 	 * Send key with optional modifiers to the keyboard.
 	 *
-	 * @param robot   {@link Robot} to use.
+	 * @param robot     {@link Robot} to use.
 	 * @param modifiers Modifier keys to hold down.
-	 * @param keyCode Key code to send.
+	 * @param keyCode   Key code to send.
 	 */
 	private static void sendKey( @NotNull final Robot robot, final int modifiers, final int keyCode )
 	{
