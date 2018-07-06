@@ -29,6 +29,7 @@ package com.numdata.oss.web.form;
 import java.io.*;
 import java.math.*;
 import java.text.*;
+import java.util.*;
 import javax.servlet.http.*;
 
 import com.numdata.oss.*;
@@ -70,6 +71,12 @@ extends FormField
 	 * @see TextTools#isEmpty
 	 */
 	private boolean _nullIfEmpty = false;
+
+	/**
+	 * Placeholder text.
+	 */
+	@Nullable
+	private String _placeholder = null;
 
 	/**
 	 * Construct text field.
@@ -203,15 +210,29 @@ extends FormField
 		_nullIfEmpty = nullIfEmpty;
 	}
 
+	@Nullable
+	public String getPlaceholder()
+	{
+		return _placeholder;
+	}
+
+	public void setPlaceholder( @Nullable final String placeholder )
+	{
+		_placeholder = placeholder;
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
 		final String name = getName();
 
+		final String placeholder = getPlaceholder();
+		final Map<String, String> attributes = TextTools.isEmpty( placeholder ) ? null : Collections.singletonMap( "placeholder", placeholder );
+
 		@SuppressWarnings( "ThrowableResultOfMethodCallIgnored" ) final boolean invalid = getException() != null;
 
-		formFactory.writeTextField( iw, isEditable(), name, name, getValue(), 10, 20, false, false, invalid, null );
+		formFactory.writeTextField( iw, isEditable(), name, name, getValue(), 10, 20, false, false, invalid, attributes );
 	}
 
 

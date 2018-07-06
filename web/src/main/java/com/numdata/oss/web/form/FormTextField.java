@@ -27,6 +27,7 @@
 package com.numdata.oss.web.form;
 
 import java.io.*;
+import java.util.*;
 import javax.servlet.http.*;
 
 import com.numdata.oss.*;
@@ -87,6 +88,12 @@ extends FormField
 	 * value.
 	 */
 	private boolean _trimWhitespace = true;
+
+	/**
+	 * Placeholder text.
+	 */
+	@Nullable
+	private String _placeholder = null;
 
 	/**
 	 * Construct text field.
@@ -289,12 +296,26 @@ extends FormField
 		_trimWhitespace = trimWhitespace;
 	}
 
+	@Nullable
+	public String getPlaceholder()
+	{
+		return _placeholder;
+	}
+
+	public void setPlaceholder( @Nullable final String placeholder )
+	{
+		_placeholder = placeholder;
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
+		final String placeholder = getPlaceholder();
+		final Map<String, String> attributes = TextTools.isEmpty( placeholder ) ? null : Collections.singletonMap( "placeholder", placeholder );
+
 		//noinspection ThrowableResultOfMethodCallIgnored
-		formFactory.writeTextField( iw, isEditable(), getName(), getName(), getValue(), getSize(), getMaxLength(), isPassword(), isDisableAutocomplete(), getException() != null, null );
+		formFactory.writeTextField( iw, isEditable(), getName(), getName(), getValue(), getSize(), getMaxLength(), isPassword(), isDisableAutocomplete(), getException() != null, attributes );
 	}
 
 	@NotNull
