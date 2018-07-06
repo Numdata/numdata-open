@@ -499,10 +499,10 @@ implements HTMLFormFactory
 				input.put( "class", "invalid" );
 			}
 
-//			if ( attributes != null )
-//			{
-//				actualAttributes.putAll( attributes );
-//			}
+			if ( attributes != null )
+			{
+				input.putAll( attributes );
+			}
 
 			out.print( "<input" );
 			HTMLTools.writeAttributes( out, input );
