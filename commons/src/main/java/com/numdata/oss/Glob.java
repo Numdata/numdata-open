@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,8 @@ import org.jetbrains.annotations.*;
  *
  * <dt>|</dt><dd>Separates multiple patterns.</dd>
  *
+ * <dt>!</dt><dd>Precedes exclusive pattern (pattern starting with '!!' is inclusive '!').</dd>
+ *
  * </dl>
  *
  * @author Peter S. Heijnen
@@ -51,7 +53,7 @@ public class Glob
 	/**
 	 * Cache for {@link #compilePattern(String)}.
 	 */
-	private final Map<String, Pattern> _patternCache = new HashMap<String, Pattern>();
+	private final Map<String, Pattern[]> _patternCache = new HashMap<String, Pattern[]>();
 
 	/**
 	 * Match string value against glob pattern.
@@ -69,10 +71,12 @@ public class Glob
 
 		if ( ( value != null ) && !value.isEmpty() )
 		{
-			final Pattern compiled = compilePattern( pattern );
-			if ( compiled != null )
+			final Pattern[] patterns = compilePattern( pattern );
+			if ( patterns != null )
 			{
-				result = compiled.matcher( value ).matches();
+				final Pattern includePattern = patterns[ 0 ];
+				final Pattern excludePattern = patterns[ 1 ];
+				result = ( ( excludePattern == null ) || !excludePattern.matcher( value ).matches() ) && ( ( includePattern == null ) || includePattern.matcher( value ).matches() );
 			}
 		}
 
@@ -90,9 +94,9 @@ public class Glob
 	 * is empty.
 	 */
 	@Nullable
-	private Pattern compilePattern( @Nullable final String glob )
+	private Pattern[] compilePattern( @Nullable final String glob )
 	{
-		Pattern result;
+		Pattern[] result;
 
 		if ( ( glob == null ) || glob.isEmpty() )
 		{
@@ -104,14 +108,50 @@ public class Glob
 			if ( result == null )
 			{
 				final int len = glob.length();
-				final StringBuilder sb = new StringBuilder( glob.length() * 11 / 10 ); // reserve 10% capacity for escaping etc
+				StringBuilder includeBuffer = null;
+				StringBuilder excludeBuffer = null;
 
 				int pos = 0;
+				StringBuilder sb = null;
+
 				while ( pos < len )
 				{
-					final char ch = glob.charAt( pos++ );
+					char ch = glob.charAt( pos++ );
+
+					if ( sb == null )
+					{
+						boolean negate = false;
+						if ( ( ch == '!' ) && ( pos < len ) )
+						{
+							ch = glob.charAt( pos++ );
+							negate = ( ch != '!' );
+						}
+
+						sb = negate ? excludeBuffer : includeBuffer;
+						if ( sb == null )
+						{
+							sb = new StringBuilder( glob.length() * 11 / 10 );  // reserve 10% capacity for escaping etc
+							if ( negate )
+							{
+								excludeBuffer = sb;
+							}
+							else
+							{
+								includeBuffer = sb;
+							}
+						}
+						else if ( sb.length() > 0 )
+						{
+							sb.append( '|' );
+						}
+					}
+
 					switch ( ch )
 					{
+						case '|':
+							sb = null;
+							break;
+
 						case '?':
 							sb.append( '.' );
 							break;
@@ -142,7 +182,9 @@ public class Glob
 					}
 				}
 
-				result = Pattern.compile( sb.toString() );
+				final Pattern includePattern = ( includeBuffer != null ) && ( includeBuffer.length() > 0 ) ? Pattern.compile( includeBuffer.toString() ) : null;
+				final Pattern excludePattern = ( excludeBuffer != null ) && ( excludeBuffer.length() > 0 ) ? Pattern.compile( excludeBuffer.toString() ) : null;
+				result = new Pattern[] { includePattern, excludePattern };
 				_patternCache.put( glob, result );
 			}
 		}
