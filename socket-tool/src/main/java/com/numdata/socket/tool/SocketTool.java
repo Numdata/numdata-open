@@ -206,7 +206,21 @@ public class SocketTool
 			_executor = executor;
 		}
 
-		executor.submit( task );
+		executor.submit( new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					task.run();
+				}
+				catch ( Throwable t )
+				{
+					LOG.error( "Failed to run task " + task, t );
+				}
+			}
+		} );
 	}
 
 	/**
