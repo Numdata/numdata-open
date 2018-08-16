@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import scrollParent from 'scrollparent';
 
 /**
  * Scrolls the given parent element vertically such that the given element is
@@ -32,10 +33,10 @@
  *
  * @author Gerrit Meinders
  *
- * @param element
- * @param parent
+ * @param element Element to scroll to.
+ * @param [parent] Scroll parent of the element. Determined automatically if omitted.
  */
-export default function scrollToElement( element, parent )
+export default function scrollToElement( element, parent = scrollParent( element ) )
 {
 	if ( element && element.getBoundingClientRect &&
 		 parent && parent.getBoundingClientRect )
