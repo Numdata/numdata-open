@@ -396,6 +396,38 @@ public class BeanTools
 		{
 			throw new IllegalArgumentException( "exception occurred while getting '" + getter.getName() + "' method of " + bean + " of " + bean.getClass(), e );
 		}
+		catch ( final RuntimeException e )
+		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append( "Failed to call getter method " );
+			sb.append( getter.getDeclaringClass().getName() );
+			sb.append( '.' );
+			sb.append( getter.getName() );
+			final Class<?>[] parameterTypes = getter.getParameterTypes();
+			if ( parameterTypes.length == 0 )
+			{
+				sb.append( "()" );
+			}
+			else
+			{
+				sb.append( "( " );
+				for ( int i = 0; i < parameterTypes.length; i++ )
+				{
+					if ( i > 0 )
+					{
+						sb.append( ", " );
+					}
+					sb.append( parameterTypes[ i ].getName() );
+				}
+				sb.append( " )" );
+			}
+			sb.append( " method on " );
+			sb.append( bean.getClass().getName() );
+			sb.append( '@' );
+			sb.append( System.identityHashCode( bean ) );
+			sb.append( " object" );
+			throw new RuntimeException( sb.toString(), e );
+		}
 	}
 
 	/**
@@ -484,7 +516,7 @@ public class BeanTools
 		private final Class<?> _beanClass;
 
 		/**
-		 * PGetter method.
+		 * Getter method.
 		 */
 		@NotNull
 		private final PropertyDescriptor _propertyDescriptor;
