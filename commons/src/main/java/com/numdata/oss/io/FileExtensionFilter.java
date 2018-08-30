@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,13 +88,13 @@ implements java.io.FileFilter, FilenameFilter
 	@Override
 	public boolean accept( final File dir, final String name )
 	{
-		return isFilenameMatch( name ) && ( _includeDirectories || !new File( dir, name ).isDirectory() );
+		return new File( dir, name ).isDirectory() ? _includeDirectories : isFilenameMatch( name );
 	}
 
 	@Override
 	public boolean accept( final File file )
 	{
-		return isFilenameMatch( file.getName() ) && ( _includeDirectories || !file.isDirectory() );
+		return file.isDirectory() ? _includeDirectories : isFilenameMatch( file.getName() );
 	}
 
 	@Override
