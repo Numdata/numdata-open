@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,31 +42,37 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "UnusedReturnValue", "rawtypes", "unchecked", "WeakerAccess" } )
 public class ListEditor<E>
 {
 	/**
 	 * List that is being edited.
 	 */
+	@NotNull
 	private final ListModelDecorator<E> _list;
 
 	/**
 	 * List component.
 	 */
+	@NotNull
 	private final JList _listComponent;
 
 	/**
 	 * Panel that contains the list and tool bar.
 	 */
+	@NotNull
 	private final JPanel _listPanel;
 
 	/**
 	 * Container used for tool components.
 	 */
+	@Nullable
 	private JComponent _toolBar = null;
 
 	/**
 	 * Listener for events used/created by this editor.
 	 */
+	@NotNull
 	private final CompoundListener _componentListener = new CompoundListener();
 
 	/**
@@ -75,8 +81,16 @@ public class ListEditor<E>
 	private boolean _sorted = false;
 
 	/**
-	 * Comparator used to sort the list.
+	 * Whether duplicated should be removed from the list.
 	 */
+	private boolean _removeDuplicates = false;
+
+	/**
+	 * Comparator used to sort the list. Note that the list will only be sorted
+	 * if {@link #isSorted()} is {@code true}. Set to {@code null} for natural
+	 * ordering.
+	 */
+	@Nullable
 	private Comparator<E> _comparator = null;
 
 	/**
@@ -109,11 +123,12 @@ public class ListEditor<E>
 	 *
 	 * @param list List to edit.
 	 */
-	public ListEditor( final List<E> list )
+	public ListEditor( @NotNull final List<E> list )
 	{
 		final ListModelDecorator<E> decoratedList = new ListModelDecorator<E>( list );
 		_list = decoratedList;
 
+		//noinspection OverridableMethodCallDuringObjectConstruction
 		final JList listComponent = createListComponent( decoratedList );
 		_listComponent = listComponent;
 
@@ -145,55 +160,38 @@ public class ListEditor<E>
 		return getListPanel();
 	}
 
-	/**
-	 * Get list being edited.
-	 *
-	 * @return {@link List} being edited.
-	 */
-	@SuppressWarnings ( "ReturnOfCollectionOrArrayField" )
+	@SuppressWarnings( "ReturnOfCollectionOrArrayField" )
 	public List<E> getList()
 	{
 		return _list;
 	}
 
-	/**
-	 * Returns whether the edited list is sorted (when changed).
-	 *
-	 * @return {@code true} if the list is sorted.
-	 */
 	public boolean isSorted()
 	{
 		return _sorted;
 	}
 
-	/**
-	 * Sets whether the edited list should be sorted.
-	 *
-	 * @param sorted {@code true} to sort the list.
-	 */
 	public void setSorted( final boolean sorted )
 	{
 		_sorted = sorted;
 	}
 
-	/**
-	 * Returns the comparator used to sort the edited list. Note that the list will
-	 * only be sorted if {@link #isSorted()} is {@code true}.
-	 *
-	 * @return Comparator used to sort the list; {@code null} for natural
-	 *         ordering.
-	 */
+	public boolean isRemoveDuplicates()
+	{
+		return _removeDuplicates;
+	}
+
+	public void setRemoveDuplicates( final boolean removeDuplicates )
+	{
+		_removeDuplicates = removeDuplicates;
+	}
+
+	@Nullable
 	public Comparator<E> getComparator()
 	{
 		return _comparator;
 	}
 
-	/**
-	 * Sets the comparator used to sort the edited list. Note that the list will
-	 * only be sorted if {@link #isSorted()} is {@code true}.
-	 *
-	 * @param comparator Comparator to be used; {@code null} for natural ordering.
-	 */
 	public void setComparator( @Nullable final Comparator<E> comparator )
 	{
 		_comparator = comparator;
@@ -204,7 +202,7 @@ public class ListEditor<E>
 	 *
 	 * @param value Value to be set.
 	 */
-	public void setValue( final List<E> value )
+	public void setValue( final Collection<E> value )
 	{
 		final ListModelDecorator<E> list = _list;
 		if ( !list.equals( value ) )
@@ -220,21 +218,13 @@ public class ListEditor<E>
 		}
 	}
 
-	/**
-	 * Get list component.
-	 *
-	 * @return List component.
-	 */
+	@NotNull
 	public JList getListComponent()
 	{
 		return _listComponent;
 	}
 
-	/**
-	 * Get panel that contains the list and tool bar.
-	 *
-	 * @return Panel that contains the list and tool bar.
-	 */
+	@NotNull
 	protected JPanel getListPanel()
 	{
 		return _listPanel;
@@ -374,8 +364,8 @@ public class ListEditor<E>
 	/**
 	 * Get selected item in list.
 	 *
-	 * @return Selected item; {@code null} if no item is selected (or the item is
-	 *         actually {@code null}).
+	 * @return Selected item; {@code null} if no item is selected (or the item
+	 * is actually {@code null}).
 	 */
 	@Nullable
 	public E getSelectedItem()
@@ -455,9 +445,9 @@ public class ListEditor<E>
 	}
 
 	/**
-	 * Add component to the tool bar of the editor. The tool bar is automatically
-	 * created when the first component is added. If no components are added, no
-	 * tool bar is created.
+	 * Add component to the tool bar of the editor. The tool bar is
+	 * automatically created when the first component is added. If no components
+	 * are added, no tool bar is created.
 	 *
 	 * @param component Component to add to tool bar.
 	 */
@@ -520,6 +510,7 @@ public class ListEditor<E>
 		final ListCellRenderer defaultRenderer = result.getCellRenderer();
 		result.setCellRenderer( new ListCellRenderer()
 		{
+			@Override
 			public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus )
 			{
 				return defaultRenderer.getListCellRendererComponent( list, getDisplayValue( (E)value ), index, isSelected, cellHasFocus );
@@ -530,8 +521,8 @@ public class ListEditor<E>
 	}
 
 	/**
-	 * Get value to display for the given item. The default implementation simply
-	 * returns the given item.
+	 * Get value to display for the given item. The default implementation
+	 * simply returns the given item.
 	 *
 	 * @param item Item to display.
 	 *
@@ -565,10 +556,14 @@ public class ListEditor<E>
 		{
 			if ( hasSelection )
 			{
-				final E itemCopy = createItemCopy( getSelectedItem() );
-				if ( itemCopy != null )
+				final E item = getSelectedItem();
+				if ( item != null )
 				{
-					addElement( selectedIndex + 1, itemCopy );
+					final E itemCopy = createItemCopy( item );
+					if ( itemCopy != null )
+					{
+						addElement( selectedIndex + 1, itemCopy );
+					}
 				}
 			}
 		}
@@ -594,20 +589,27 @@ public class ListEditor<E>
 			}
 		}
 
-		if ( _sorted )
-		{
-			sortList();
-		}
+		cleanup();
 	}
 
 	/**
-	 * Sorts the edited list.
+	 * Clean up list. This sorts and removes duplicates from the list.
 	 */
-	private void sortList()
+	public void cleanup()
 	{
-		final List<E> sorted = new ArrayList<E>( getList() );
-		Collections.sort( sorted, _comparator );
-		setValue( sorted );
+		if ( isRemoveDuplicates() )
+		{
+			final List<E> list = getList();
+			final Collection<E> tmp = isSorted() ? new TreeSet<E>( _comparator ) : new LinkedHashSet<E>( list.size() );
+			tmp.addAll( list );
+			setValue( tmp );
+		}
+		else if ( isSorted() )
+		{
+			final List<E> list = new ArrayList<E>( getList() );
+			Collections.sort( list, _comparator );
+			setValue( list );
+		}
 	}
 
 	/**
@@ -615,13 +617,13 @@ public class ListEditor<E>
 	 */
 	protected void updateSelection()
 	{
-		final int selectedIndex = getSelectedIndex();
-		final int listSize = _list.size();
-		final boolean hasSelection = ( selectedIndex >= 0 ) && ( selectedIndex < listSize );
-
 		final JComponent toolBar = _toolBar;
 		if ( toolBar != null )
 		{
+			final int selectedIndex = getSelectedIndex();
+			final int listSize = _list.size();
+			final boolean hasSelection = ( selectedIndex >= 0 ) && ( selectedIndex < listSize );
+
 			for ( final Component component : toolBar.getComponents() )
 			{
 				if ( component instanceof AbstractButton )
@@ -656,11 +658,13 @@ public class ListEditor<E>
 	extends ComponentAdapter
 	implements ActionListener, ListSelectionListener
 	{
+		@Override
 		public void actionPerformed( final ActionEvent e )
 		{
 			performAction( e.getActionCommand() );
 		}
 
+		@Override
 		public void valueChanged( final ListSelectionEvent e )
 		{
 			if ( !e.getValueIsAdjusting() )

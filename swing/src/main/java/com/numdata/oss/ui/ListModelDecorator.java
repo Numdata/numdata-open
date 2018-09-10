@@ -36,13 +36,13 @@ import org.jetbrains.annotations.*;
  * This decorator implements the {@link ListModel} interface on top of an
  * existing {@link List}.
  *
- * @param   <E>     Element type.
+ * @param <E> Element type.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class ListModelDecorator<E>
-	extends AbstractList<E>
-	implements ListModel
+extends AbstractList<E>
+implements ListModel
 {
 	/**
 	 * {@link List} that is decorated by this class.
@@ -57,7 +57,7 @@ public class ListModelDecorator<E>
 	/**
 	 * Constructs decorator for the given list.
 	 *
-	 * @param   decoratedList   {@link List} to decorate.
+	 * @param decoratedList {@link List} to decorate.
 	 */
 	public ListModelDecorator( @NotNull final List<E> decoratedList )
 	{
@@ -81,7 +81,7 @@ public class ListModelDecorator<E>
 	}
 
 	@Override
-	public boolean addAll( final Collection<? extends E> collection )
+	public boolean addAll( @NotNull final Collection<? extends E> collection )
 	{
 		final boolean result = _decoratedList.addAll( collection );
 		if ( result )
@@ -105,10 +105,9 @@ public class ListModelDecorator<E>
 	/**
 	 * Sets all elements of the list, such that it is equal to the given list.
 	 *
-	 *
-	 * @param   list    Elements to be set.
+	 * @param list Elements to be set.
 	 */
-	public void setAll( final List<E> list )
+	public void setAll( final Collection<E> list )
 	{
 		if ( ( list != this ) && !equals( list ) )
 		{
@@ -155,7 +154,7 @@ public class ListModelDecorator<E>
 	}
 
 	@Override
-	public boolean containsAll( final Collection<?> c )
+	public boolean containsAll( @NotNull final Collection<?> c )
 	{
 		return _decoratedList.containsAll( c );
 	}
@@ -219,7 +218,7 @@ public class ListModelDecorator<E>
 	protected void removeRange( final int fromIndex, final int toIndex )
 	{
 		super.removeRange( fromIndex, toIndex );
-		fireIntervalRemoved( fromIndex, toIndex);
+		fireIntervalRemoved( fromIndex, toIndex );
 	}
 
 	@Override
@@ -236,15 +235,18 @@ public class ListModelDecorator<E>
 		return _decoratedList.size();
 	}
 
+	@NotNull
 	@Override
 	public Object[] toArray()
 	{
 		return _decoratedList.toArray();
 	}
 
+	@NotNull
 	@Override
-	public <A> A[] toArray( final A[] array )
+	public <A> A[] toArray( @NotNull final A[] array )
 	{
+		//noinspection SuspiciousToArrayCall
 		return _decoratedList.toArray( array );
 	}
 
@@ -275,10 +277,10 @@ public class ListModelDecorator<E>
 	/**
 	 * This method must be called after one or more elements were added.
 	 *
-	 * @param   start   Start of internal (inclusive).
-	 * @param   end     End of interval (inclusive).
+	 * @param start Start of internal (inclusive).
+	 * @param end   End of interval (inclusive).
 	 *
-	 * @throws  IllegalArgumentException if the specified range is invalid.
+	 * @throws IllegalArgumentException if the specified range is invalid.
 	 */
 	protected void fireIntervalAdded( final int start, final int end )
 	{
@@ -300,10 +302,10 @@ public class ListModelDecorator<E>
 	/**
 	 * This method must be called after one or more elements changed.
 	 *
-	 * @param   start   Start of internal (inclusive).
-	 * @param   end     End of interval (inclusive).
+	 * @param start Start of internal (inclusive).
+	 * @param end   End of interval (inclusive).
 	 *
-	 * @throws  IllegalArgumentException if the specified range is invalid.
+	 * @throws IllegalArgumentException if the specified range is invalid.
 	 */
 	protected void fireContentsChanged( final int start, final int end )
 	{
@@ -330,10 +332,10 @@ public class ListModelDecorator<E>
 	/**
 	 * This method must be called after one or more elements were removed.
 	 *
-	 * @param   start   Start of internal (inclusive).
-	 * @param   end     End of interval (inclusive).
+	 * @param start Start of internal (inclusive).
+	 * @param end   End of interval (inclusive).
 	 *
-	 * @throws  IllegalArgumentException if the specified range is invalid.
+	 * @throws IllegalArgumentException if the specified range is invalid.
 	 */
 	protected void fireIntervalRemoved( final int start, final int end )
 	{
