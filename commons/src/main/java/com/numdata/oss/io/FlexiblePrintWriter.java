@@ -31,7 +31,7 @@ import java.io.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class represent a generic CNC machine.
+ * Extends {@code PrintWriter} to allow setting a custom line separator.
  *
  * @author Peter S. Heijnen
  */
