@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,7 +163,7 @@ public class ResourceBundleTools
 
 				final Class<?> superclass = clazz.getSuperclass();
 				ResourceBundle superBundle = null;
-				if ( ( superclass != null ) && ( superclass != Object.class ) )
+				if ( ( superclass != null ) && ( superclass != Object.class ) && !superclass.getName().startsWith( "java." ) )
 				{
 					try
 					{
@@ -173,23 +173,6 @@ public class ResourceBundleTools
 							LOG.trace( "getBundleHierarchy() got super-bundle for super-class " + superclass.getName() + " with keys " + new TreeSet<String>( superBundle.keySet() ) );
 						}
 						bundles.add( superBundle );
-					}
-					catch ( final MissingResourceException ignored )
-					{
-					}
-				}
-
-				final Class<?> declaringClass = getDeclaringClass( clazz );
-				if ( declaringClass != null )
-				{
-					try
-					{
-						final ResourceBundle bundle = getBundleHierarchy( declaringClass, usedLocale );
-						bundles.add( bundle );
-						if ( trace )
-						{
-							LOG.trace( "getBundleHierarchy() got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-						}
 					}
 					catch ( final MissingResourceException ignored )
 					{
@@ -229,6 +212,23 @@ public class ResourceBundleTools
 						packageName = ( dot > 0 ) ? packageName.substring( 0, dot ) : null;
 					}
 					while ( packageName != null );
+				}
+
+				final Class<?> declaringClass = getDeclaringClass( clazz );
+				if ( declaringClass != null )
+				{
+					try
+					{
+						final ResourceBundle bundle = getBundleHierarchy( declaringClass, usedLocale );
+						bundles.add( bundle );
+						if ( trace )
+						{
+							LOG.trace( "getBundleHierarchy() got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
+						}
+					}
+					catch ( final MissingResourceException ignored )
+					{
+					}
 				}
 
 				try
