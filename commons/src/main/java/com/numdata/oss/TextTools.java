@@ -887,9 +887,9 @@ public class TextTools
 	 * Add escapes to a string (e.g. to use in SQL queries) and appends the
 	 * result to the specified string buffer.
 	 *
-	 * This method escapes characters for use in a string or character
-	 * literal, using the syntax defined in the Java Language Specification. See
-	 * {@link #escape(Appendable, char)} for details.
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. See {@link
+	 * #escape(Appendable, char)} for details.
 	 *
 	 * @param buffer {@link Appendable} destination.
 	 * @param source String to escape.
@@ -912,8 +912,8 @@ public class TextTools
 	 * Append character to an {@link Appendable}. Escape codes are added when
 	 * necessary.
 	 *
-	 * This method escapes characters for use in a string or character
-	 * literal, using the syntax defined in the Java Language Specification. The
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. The
 	 * following characters are escape: ISO control characters, characters not
 	 * in ISO-8859-1, single quote {@code '\''}, double quote {@code '"'} and
 	 * backslash {@code '\\'}.
@@ -1008,9 +1008,9 @@ public class TextTools
 	/**
 	 * Append character to string. Escape codes are added when necessary.
 	 *
-	 * This method escapes characters for use in a string or character
-	 * literal, using the syntax defined in the Java Language Specification. See
-	 * {@link #escape(Appendable, char)} for details.
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. See {@link
+	 * #escape(Appendable, char)} for details.
 	 *
 	 * @param sb String buffer destination.
 	 * @param c  Character to append.
@@ -1031,9 +1031,9 @@ public class TextTools
 	 * Add escapes to a string (e.g. to use in SQL queries) and appends the
 	 * result to the specified string builder.
 	 *
-	 * This method escapes characters for use in a string or character
-	 * literal, using the syntax defined in the Java Language Specification. See
-	 * {@link #escape(Appendable, char)} for details.
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. See {@link
+	 * #escape(Appendable, char)} for details.
 	 *
 	 * @param sb     String builder destination.
 	 * @param source String to escape.
@@ -1053,9 +1053,9 @@ public class TextTools
 	/**
 	 * Append character to string. Escape codes are added when necessary.
 	 *
-	 * This method escapes characters for use in a string or character
-	 * literal, using the syntax defined in the Java Language Specification. See
-	 * {@link #escape(Appendable, char)} for details.
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. See {@link
+	 * #escape(Appendable, char)} for details.
 	 *
 	 * @param sb String builder destination.
 	 * @param ch Character to append.
@@ -1921,18 +1921,18 @@ public class TextTools
 	@NotNull
 	public static List<String> tokenize( @Nullable final String source, final char separator, final boolean trim )
 	{
-		final List<String> result;
+		List<String> result;
 
 		/*
 		 * Handle empty source string.
 		 */
-		if ( ( source == null ) || ( trim ? isEmpty( source ) : source.isEmpty() ) )
+		if ( ( source == null ) || source.isEmpty() )
 		{
 			result = Collections.emptyList();
 		}
 		else
 		{
-			result = new ArrayList<String>();
+			result = null;
 
 			final int length = source.length();
 
@@ -1959,7 +1959,31 @@ public class TextTools
 					}
 				}
 
-				result.add( ( start == end ) ? "" : source.substring( start, end ) );
+				final boolean empty = ( start == end );
+				final String token = empty ? "" : source.substring( start, end );
+
+				// first token ?
+				if ( result == null )
+				{
+					// one and only token?
+					if ( separatorPos < 0 )
+					{
+						// totally empty?
+						if ( empty )
+						{
+							result = Collections.emptyList();
+						}
+						else
+						{
+							result = Collections.singletonList( token );
+						}
+						break;
+					}
+					// at least 2 tokens
+					result = new ArrayList<String>();
+				}
+
+				result.add( token );
 			}
 			while ( separatorPos >= 0 );
 		}
