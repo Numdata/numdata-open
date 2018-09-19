@@ -28,6 +28,7 @@ package com.numdata.oss.db;
 
 import java.sql.*;
 import java.util.*;
+import java.util.regex.*;
 import javax.sql.*;
 
 import com.numdata.oss.*;
@@ -304,10 +305,26 @@ public class DatabaseTableUpdater
 	private static String getCreateTable( @NotNull final String tableName, @NotNull final Statement statement )
 	throws SQLException
 	{
-		final String result;
-		final String query = "show create table ";
+		String result;
 
-		final ResultSet tableDescriptionResultSet = statement.executeQuery( query + tableName );
+		final String versionString = getVersion( statement );
+		final boolean mariadb = versionString.endsWith( "-MariaDB" ); // e.g. 10.3.9-MariaDB
+		boolean atLeastMariaDb10_3 = false;
+		if ( mariadb )
+		{
+			final Matcher matcher = Pattern.compile( "(\\d+)\\.(\\d+)(\\D.*)?" ).matcher( versionString );
+			if ( matcher.matches() )
+			{
+				final int major = Integer.parseInt( matcher.group( 1 ) );
+				final int minor = Integer.parseInt( matcher.group( 2 ) );
+
+				atLeastMariaDb10_3 = ( major > 10 ) || ( ( major == 10 ) && ( minor >= 3 ) );
+			}
+		}
+
+		final String query = "show create table " + tableName;
+
+		final ResultSet tableDescriptionResultSet = statement.executeQuery( query );
 		try
 		{
 			if ( !tableDescriptionResultSet.next() )
@@ -316,11 +333,54 @@ public class DatabaseTableUpdater
 			}
 
 			result = tableDescriptionResultSet.getString( "Create Table" );
+
+			if ( atLeastMariaDb10_3 )
+			{
+				result = result.replaceAll( "CHARACTER SET \\w+", "" )
+				               .replaceAll( "(text|blob) DEFAULT NULL", "$1" )
+				               .replaceAll( "current_timestamp\\(\\)", "CURRENT_TIMESTAMP" )
+				               .replaceAll( "DEFAULT (-?\\d+(?:\\.\\d+)?)", "DEFAULT '$1'" );
+			}
+//			System.out.println(result );
 		}
 		finally
 		{
 			tableDescriptionResultSet.close();
 		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the version string.
+	 *
+	 * @param statement Statement to use.
+	 *
+	 * @return 'VERSION()' value.
+	 *
+	 * @throws SQLException if an error occurs while accessing the database.
+	 */
+	@NotNull
+	private static String getVersion( @NotNull final Statement statement )
+	throws SQLException
+	{
+		final String result;
+		final String query = "SELECT VERSION()";
+
+		final ResultSet tableDescriptionResultSet = statement.executeQuery( query );
+		try
+		{
+			if ( !tableDescriptionResultSet.next() )
+			{
+				throw new RuntimeException( "No result from: " + query );
+			}
+			result = tableDescriptionResultSet.getString( 1 );
+		}
+		finally
+		{
+			tableDescriptionResultSet.close();
+		}
+
 		return result;
 	}
 
