@@ -112,7 +112,7 @@ implements Comparator<String>
 	 * @return int -1, 0 or 1 respectively if the first String (lhs) sorts
 	 * before equally or after the second String
 	 */
-	public int compare( String lhs, String rhs )
+	public int compare( final String lhs, final String rhs )
 	{
 		// Take care of nulls first
 		if ( lhs == null && rhs == null )
@@ -125,14 +125,14 @@ implements Comparator<String>
 		}
 		else if ( rhs == null ) return 1;
 
-		Matcher lhsMatcher = SEGMENT_PATTERN.matcher( lhs );
-		Matcher rhsMatcher = SEGMENT_PATTERN.matcher( rhs );
+		final Matcher lhsMatcher = SEGMENT_PATTERN.matcher( lhs );
+		final Matcher rhsMatcher = SEGMENT_PATTERN.matcher( rhs );
 
 		int result = 0;
 		while ( result == 0 )
 		{
-			boolean lhsFound = lhsMatcher.find();
-			boolean rhsFound = rhsMatcher.find();
+			final boolean lhsFound = lhsMatcher.find();
+			final boolean rhsFound = rhsMatcher.find();
 
 			if ( !lhsFound && !rhsFound )
 			{
@@ -150,10 +150,10 @@ implements Comparator<String>
 			}
 			else
 			{
-				String lhsSegment = lhsMatcher.group();
-				String rhsSegment = rhsMatcher.group();
+				final String lhsSegment = lhsMatcher.group();
+				final String rhsSegment = rhsMatcher.group();
 
-				if ( Character.isDigit( lhsSegment.toCharArray()[ 0 ] ) )
+				if ( Character.isDigit( lhsSegment.charAt( 0 ) ) && Character.isDigit( rhsSegment.charAt( 0 ) ) )
 				{
 					result = compareNumberSegments( lhsSegment, rhsSegment );
 				}
@@ -171,7 +171,7 @@ implements Comparator<String>
 	 * Converts the two Strings to doubles and then compares then numerically by
 	 * invoking Double.compareTo()
 	 */
-	protected int compareNumberSegments( String lhs, String rhs )
+	protected int compareNumberSegments( final String lhs, final String rhs )
 	{
 		return new Double( lhs ).compareTo( new Double( rhs ) );
 	}
@@ -180,7 +180,7 @@ implements Comparator<String>
 	 * Compares the left hand String to the right hand String case-insensitively
 	 * by invoking lhs.compareToIgnoreCase(rhs).
 	 */
-	protected int compareStringSegments( String lhs, String rhs )
+	protected int compareStringSegments( final String lhs, final String rhs )
 	{
 		return lhs.compareToIgnoreCase( rhs );
 	}
