@@ -202,6 +202,21 @@ public class CalendarTools
 	}
 
 	/**
+	 * Returns date that is represented by an integer value.
+	 *
+	 * @param dateInt Integer date (e.g. 20370708 = July 8th 2037).
+	 *
+	 * @return Date.
+	 *
+	 * @see #getDateInt
+	 * @see #gregorianDate
+	 */
+	public static Date getDateByInt( final int dateInt )
+	{
+		return gregorianDate( dateInt / 10000, ( ( dateInt / 100 ) % 100 ) - 1, dateInt % 100 );
+	}
+
+	/**
 	 * Returns a calendar instance for the current time. The date fields of the
 	 * calendar are all set to the Epoch (January 1, 1970, Gregorian calendar).
 	 *
