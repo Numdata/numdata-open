@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,31 @@ public class XMLTools
 
 	/**
 	 * Creates an XML stream reader. Coalescing of character data is enabled.
+	 *
+	 * @param in Stream to read from.
+	 *
+	 * @return XML stream reader.
+	 */
+	@NotNull
+	public static XMLStreamReader createXMLStreamReader( @NotNull final InputStream in )
+	{
+		final XMLInputFactory xmlInputFactory = getXMLInputFactory();
+		try
+		{
+			return xmlInputFactory.createXMLStreamReader( in );
+		}
+		catch ( final XMLStreamException e )
+		{
+			throw new RuntimeException( e );
+		}
+	}
+
+	/**
+	 * Creates an XML stream reader. Coalescing of character data is enabled.
+	 *
+	 * <strong>This method should only be used in very specific circumstances,
+	 * e.g. when reading from a string. Otherwise use
+	 * {@link #createXMLStreamReader(InputStream)}.</strong>
 	 *
 	 * @param reader Character stream to read from.
 	 *
