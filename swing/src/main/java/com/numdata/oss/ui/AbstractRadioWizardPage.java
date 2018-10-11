@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import java.util.*;
 import javax.swing.*;
 
 import com.numdata.oss.*;
+import static javax.swing.ScrollPaneConstants.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -75,11 +76,14 @@ implements ItemListener
 		_radios = null;
 	}
 
+	@Override
 	protected void initGui()
 	{
-		add( createRadioPanel(), BorderLayout.CENTER );
+		final JPanel radioPanel = createRadioPanel();
+		add( new JScrollPane( radioPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER ), BorderLayout.CENTER );
 	}
 
+	@Override
 	protected void shown()
 	{
 		updateRadios();
@@ -237,6 +241,7 @@ implements ItemListener
 		return result;
 	}
 
+	@Override
 	public final void itemStateChanged( final ItemEvent event )
 	{
 		if ( ( event.getID() == ItemEvent.ITEM_STATE_CHANGED ) && ( event.getStateChange() == ItemEvent.SELECTED ) )
@@ -326,6 +331,7 @@ implements ItemListener
 			}
 		}
 
+		@Override
 		protected void addImpl( final Component component, final Object constraints, final int index )
 		{
 			if ( component instanceof AbstractButton )
@@ -342,6 +348,7 @@ implements ItemListener
 			super.addImpl( component, ( constraints == null ) ? _constraints : constraints, index );
 		}
 
+		@Override
 		public void remove( final int index )
 		{
 			final Component component = getComponent( index );
@@ -358,6 +365,7 @@ implements ItemListener
 			super.remove( index );
 		}
 
+		@Override
 		public void removeAll()
 		{
 			synchronized ( getTreeLock() )
