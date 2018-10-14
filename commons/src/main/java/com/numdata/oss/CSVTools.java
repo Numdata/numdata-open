@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This class contains utility methods for reading and writing Character
  * Separated Values.
@@ -58,7 +60,7 @@ public class CSVTools
 	 *
 	 * @throws IOException when reading failed.
 	 */
-	public static List<List<String>> readCSV( final Reader in )
+	public static List<List<String>> readCSV( @NotNull final Reader in )
 	throws IOException
 	{
 		return readCSV( in, ',' );
@@ -67,8 +69,8 @@ public class CSVTools
 	/**
 	 * Read values from the specified reader.
 	 *
-	 * This method automatically removes any leading and trailing whitespace,
-	 * if not quoted. <em>This behavior is not compliant with RFC 4180.</em>
+	 * This method automatically removes any leading and trailing whitespace, if
+	 * not quoted. <em>This behavior is not compliant with RFC 4180.</em>
 	 *
 	 * @param in        Reader to read from.
 	 * @param separator Value separator.
@@ -77,7 +79,7 @@ public class CSVTools
 	 *
 	 * @throws IOException when reading failed.
 	 */
-	public static List<List<String>> readCSV( final Reader in, final char separator )
+	public static List<List<String>> readCSV( @NotNull final Reader in, final char separator )
 	throws IOException
 	{
 		return readCSV( in, separator, false, false );
@@ -86,15 +88,14 @@ public class CSVTools
 	/**
 	 * Read values from the specified reader.
 	 *
-	 * This method automatically removes any leading and trailing whitespace,
-	 * if not quoted. <em>This behavior is not compliant with RFC 4180.</em>
+	 * This method automatically removes any leading and trailing whitespace, if
+	 * not quoted. <em>This behavior is not compliant with RFC 4180.</em>
 	 *
 	 * If {@code skipComments} is set, all lines that start with a '#' are
 	 * considered to be comments and will be ignored. <em>This behavior is not
 	 * compliant with RFC 4180.</em>
 	 *
-	 * If {@code skipEmptyRows} is set, all rows without any data are
-	 * skipped.
+	 * If {@code skipEmptyRows} is set, all rows without any data are skipped.
 	 *
 	 * @param in            Reader to read from.
 	 * @param separator     Value separator.
@@ -105,7 +106,7 @@ public class CSVTools
 	 *
 	 * @throws IOException when reading failed.
 	 */
-	public static List<List<String>> readCSV( final Reader in, final char separator, final boolean skipComments, final boolean skipEmptyRows )
+	public static List<List<String>> readCSV( @NotNull final Reader in, final char separator, final boolean skipComments, final boolean skipEmptyRows )
 	throws IOException
 	{
 		final CSVReader csvReader = new CSVReader( in );
@@ -137,7 +138,7 @@ public class CSVTools
 	 *
 	 * @return String with CSV document.
 	 */
-	public static String writeCSV( final Iterable<? extends Iterable<?>> rows, final char separator )
+	public static String writeCSV( @NotNull final Iterable<? extends Iterable<?>> rows, final char separator )
 	{
 		final StringBuilder result = new StringBuilder();
 		try
@@ -161,7 +162,7 @@ public class CSVTools
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public static void writeCSV( final Appendable dest, final Iterable<? extends Iterable<?>> rows )
+	public static void writeCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows )
 	throws IOException
 	{
 		writeCSV( dest, rows, ',' );
@@ -176,7 +177,7 @@ public class CSVTools
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public static void writeCSV( final Appendable dest, final Iterable<? extends Iterable<?>> rows, final char separator )
+	public static void writeCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows, final char separator )
 	throws IOException
 	{
 		writeCSV( dest, rows, separator, "\n" );
@@ -192,12 +193,29 @@ public class CSVTools
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public static void writeCSV( final Appendable dest, final Iterable<? extends Iterable<?>> rows, final char separator, final String lineTerminator )
+	public static void writeCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows, final char separator, @NotNull final CharSequence lineTerminator )
+	throws IOException
+	{
+		writeCSV( dest, rows, String.valueOf( separator ), lineTerminator, null );
+	}
+
+	/**
+	 * Write the specified rows to the specified destination.
+	 *
+	 * @param dest              Destination to write to.
+	 * @param rows              Rows to write.
+	 * @param separator         Separator to use.
+	 * @param lineTerminator    Line terminator to use.
+	 * @param fixedColumnWidths Optional fixed column lengths.
+	 *
+	 * @throws IOException when writing failed.
+	 */
+	public static void writeCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows, @NotNull final String separator, @NotNull final CharSequence lineTerminator, @Nullable final int[] fixedColumnWidths )
 	throws IOException
 	{
 		for ( final Iterator<? extends Iterable<?>> it = rows.iterator(); it.hasNext(); )
 		{
-			writeRow( dest, it.next(), separator );
+			writeRow( dest, it.next(), separator, fixedColumnWidths );
 
 			if ( it.hasNext() )
 			{
@@ -209,25 +227,29 @@ public class CSVTools
 	/**
 	 * Writes the specified row to the specified destination.
 	 *
-	 * @param dest      Destination to write to.
-	 * @param row       Row to write.
-	 * @param separator Separator to use.
+	 * @param dest              Destination to write to.
+	 * @param row               Row to write.
+	 * @param separator         Separator to use.
+	 * @param fixedColumnWidths Optional fixed column lengths.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public static void writeRow( final Appendable dest, final Iterable<?> row, final char separator )
+	public static void writeRow( @NotNull final Appendable dest, @NotNull final Iterable<?> row, @NotNull final String separator, @Nullable final int[] fixedColumnWidths )
 	throws IOException
 	{
 		boolean writeSeparator = false;
+		int columnIndex = 0;
 		for ( final Object value : row )
 		{
+
 			if ( writeSeparator )
 			{
 				dest.append( separator );
 			}
 
-			writeValue( dest, value, separator );
+			writeValue( dest, value, separator, ( fixedColumnWidths != null ) ? fixedColumnWidths[ columnIndex ] : -1 );
 			writeSeparator = true;
+			columnIndex++;
 		}
 	}
 
@@ -247,7 +269,29 @@ public class CSVTools
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public static void writeTidyCSV( final Appendable dest, final Iterable<? extends Iterable<?>> rows, final char separator, final String lineTerminator )
+	public static void writeTidyCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows, final char separator, @NotNull final CharSequence lineTerminator )
+	throws IOException
+	{
+		writeTidyCSV( dest, rows, String.valueOf( separator ), lineTerminator );
+	}
+
+	/**
+	 * Write the specified rows to the specified destination, using formatting
+	 * where possible to make the output more tidy. The tidy output is <em>not
+	 * compliant with RFC 4180</em>, due to the extra whitespace that is
+	 * introduced. Use {@link #writeCSV} for compatibility.
+	 *
+	 * Single-column rows that start with a '#' character are considered
+	 * comments and do not affect column widths.
+	 *
+	 * @param dest           Destination to write to.
+	 * @param rows           Rows to write.
+	 * @param separator      Separator to use.
+	 * @param lineTerminator Line terminator to use.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static void writeTidyCSV( @NotNull final Appendable dest, @NotNull final Iterable<? extends Iterable<?>> rows, @NotNull final String separator, @NotNull final CharSequence lineTerminator )
 	throws IOException
 	{
 		final StringBuilder buffer = new StringBuilder();
@@ -272,7 +316,7 @@ public class CSVTools
 					while ( valueIterator.hasNext() )
 					{
 						buffer.setLength( 0 );
-						writeValue( buffer, valueIterator.next(), separator );
+						writeValue( buffer, valueIterator.next(), separator, -1 );
 
 						final int valueWidth = buffer.length();
 						if ( columnWidthIterator.hasNext() )
@@ -304,7 +348,7 @@ public class CSVTools
 					buffer.append( value );
 				}
 
-				writeValue( dest, buffer, separator );
+				writeValue( dest, buffer, separator, -1 );
 			}
 			else
 			{
@@ -315,7 +359,7 @@ public class CSVTools
 					final Object value = valueIterator.next();
 
 					buffer.setLength( 0 );
-					writeValue( buffer, value, separator );
+					writeValue( buffer, value, separator, -1 );
 					final int valueLength = buffer.length();
 					dest.append( buffer );
 
@@ -350,7 +394,7 @@ public class CSVTools
 	 *
 	 * @return {@code true} if the rows represents a comment.
 	 */
-	private static boolean isComment( final Iterable<?> row )
+	private static boolean isComment( @NotNull final Iterable<?> row )
 	{
 		boolean result = false;
 
@@ -371,19 +415,38 @@ public class CSVTools
 	/**
 	 * Write the specified value.
 	 *
-	 * @param dest      Destination to write to.
-	 * @param value     Value to write.
-	 * @param separator Separator to use.
+	 * @param dest        Destination to write to.
+	 * @param value       Value to write.
+	 * @param separator   Separator to use.
+	 * @param fixedLength Fixed length to use.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	private static void writeValue( final Appendable dest, final Object value, final char separator )
+	private static void writeValue( @NotNull final Appendable dest, @Nullable final Object value, @NotNull final String separator, final int fixedLength )
 	throws IOException
 	{
-		if ( value != null )
+		final String stringValue = ( value == null ) ? "" : String.valueOf( value );
+		final int length = stringValue.length();
+		if ( fixedLength >= 0 )
 		{
-			final String stringValue = String.valueOf( value );
-
+			if ( fixedLength > 0 )
+			{
+				if ( length > fixedLength )
+				{
+					dest.append( stringValue, 0, fixedLength );
+				}
+				else
+				{
+					dest.append( stringValue );
+					for ( int i = length; i < fixedLength; i++ )
+					{
+						dest.append( ' ' );
+					}
+				}
+			}
+		}
+		else if ( length > 0 )
+		{
 			if ( writeQuoted( value, separator ) )
 			{
 				dest.append( '"' );
@@ -400,9 +463,9 @@ public class CSVTools
 	/**
 	 * Check if the specified value should be quoted before writing.
 	 *
-	 * RFC 4180 specifies that a value must be quoted if it contains a
-	 * carriage return, line feed, double quote or comma. This method complies,
-	 * but allows for other separator characters instead of comma. In addition,
+	 * RFC 4180 specifies that a value must be quoted if it contains a carriage
+	 * return, line feed, double quote or comma. This method complies, but
+	 * allows for other separator characters instead of comma. In addition,
 	 * values with leading or trailing whitespace are also quoted, even though
 	 * RFC 4180 does not allow whitespace to be ignored.
 	 *
@@ -412,9 +475,9 @@ public class CSVTools
 	 * @return {@code true} if the value should be quoted; {@code false}
 	 * otherwise.
 	 */
-	private static boolean writeQuoted( final Object value, final char separator )
+	private static boolean writeQuoted( @Nullable final Object value, @NotNull final String separator )
 	{
-		final String separatorRegex = Pattern.quote( String.valueOf( separator ) );
+		final String separatorRegex = Pattern.quote( separator );
 		final Pattern quotesRequiredPattern = Pattern.compile( "(\\s.*)|(.*\\s)|(.*([\\r\\n\"]|" + separatorRegex + ").*)" );
 		final Matcher matcher = quotesRequiredPattern.matcher( String.valueOf( value ) );
 		return matcher.matches();
@@ -437,7 +500,7 @@ public class CSVTools
 	 * @throws IllegalArgumentException if {@link Reader#markSupported()}
 	 * returns {@code false} on the given stream.
 	 */
-	public static char detectSeparator( final Reader in, final String... expectedValues )
+	public static char detectSeparator( @NotNull final Reader in, @NotNull final String... expectedValues )
 	throws IOException
 	{
 		if ( !in.markSupported() )
@@ -555,7 +618,7 @@ public class CSVTools
 	 *
 	 * @return List of data records.
 	 */
-	public static List<Map<String, String>> getMappedByHeader( final List<List<String>> csvData, final int headerRow, final int firstDataRow )
+	public static List<Map<String, String>> getMappedByHeader( @NotNull final List<List<String>> csvData, final int headerRow, final int firstDataRow )
 	{
 		final int csvDataRowCount = csvData.size();
 		final List<Map<String, String>> result = new ArrayList<Map<String, String>>( csvDataRowCount - firstDataRow );
