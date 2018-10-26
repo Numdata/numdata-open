@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,33 +26,30 @@
  */
 package com.numdata.oss.filesystem;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * Monitors the contents of a single folder on the local file system.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class LocalFolderMonitor
-	extends LocalFileMonitor
+extends LocalFileMonitor
 {
 	/**
 	 * Constructs a new folder monitor.
 	 *
-	 * @param   folder  Folder to be monitored.
-	 * @param   delay   Time between updates, in milliseconds.
+	 * @param folder Folder to be monitored.
+	 * @param delay  Time between updates, in milliseconds.
 	 */
-	public LocalFolderMonitor( final File folder , final long delay )
+	public LocalFolderMonitor( final File folder, final long delay )
 	{
-		super( folder , delay );
+		super( folder, delay );
 	}
 
+	@Override
 	protected List<Object> listFiles()
-		throws IOException
 	{
 		final File[] files = _file.listFiles();
 		return ( files == null ) ? Collections.emptyList() : Arrays.asList( (Object[])files );

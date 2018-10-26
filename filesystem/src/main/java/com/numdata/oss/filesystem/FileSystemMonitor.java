@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import java.util.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.log.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Provides notifications when files in a file system (or part of a file system)
@@ -39,29 +40,61 @@ import com.numdata.oss.log.*;
  *
  * @author G. Meinders
  */
+@SuppressWarnings( { "unused", "WeakerAccess" } )
 public abstract class FileSystemMonitor
 implements ResourceMonitor
 {
+	/**
+	 * How to handle newly found files.
+	 */
+	public enum NewFileHandling
+	{
+		/**
+		 * Keep all newly found files.
+		 */
+		KEEP_ALL,
+
+		/**
+		 * Keep only last of newly found files.
+		 */
+		KEEP_LAST,
+
+		/**
+		 * Do not keep any newly found files.
+		 */
+		KEEP_NONE
+	}
+
 	/**
 	 * Log used for messages related to this class.
 	 */
 	private static final ClassLogger LOG = ClassLogger.getFor( FileSystemMonitor.class );
 
 	/**
-	 * Delay between updates.
+	 * Handling of files that are found during the initial run of the monitor.
+	 */
+	@NotNull
+	private NewFileHandling _initialFileHandling = NewFileHandling.KEEP_ALL;
+
+	/**
+	 * Time between updates, in milliseconds. This applied only to
+	 * implementations that need to use some kind of polling mechanism.
+	 * Event-driven implementations may ignore this setting.
 	 */
 	private long _delay;
 
 	/**
 	 * Listeners registered with the monitor.
 	 */
-	private final List<FileSystemMonitorListener> _listeners;
+	@NotNull
+	private final Collection<FileSystemMonitorListener> _listeners = new ArrayList<FileSystemMonitorListener>();
 
 	/**
 	 * Keeps track of the last modification time for each file within the scope
 	 * of the monitor.
 	 */
-	private final Map<Object, Date> _modificationTimeByFile;
+	@NotNull
+	private final Map<Object, Date> _modificationTimeByFile = new LinkedHashMap<Object, Date>();
 
 	/**
 	 * Constructs a new file system monitor. While running, the monitor actively
@@ -73,8 +106,6 @@ implements ResourceMonitor
 	protected FileSystemMonitor( final long delay )
 	{
 		_delay = delay;
-		_listeners = new ArrayList<FileSystemMonitorListener>();
-		_modificationTimeByFile = new LinkedHashMap<Object, Date>();
 	}
 
 	/**
@@ -99,7 +130,7 @@ implements ResourceMonitor
 			{
 				result = new SMBFolderMonitor( uri.toString(), delay );
 			}
-			catch ( MalformedURLException e )
+			catch ( final MalformedURLException e )
 			{
 				throw new IllegalArgumentException( "Invalid URL: " + uri, e );
 			}
@@ -124,41 +155,41 @@ implements ResourceMonitor
 		return result;
 	}
 
-	/**
-	 * Returns the delay between updates. This applied only to implementations
-	 * that need to use some kind of polling mechanism. Event-driven
-	 * implementations may ignore this setting.
-	 *
-	 * @return Time between updates, in milliseconds.
-	 */
+	@NotNull
+	public NewFileHandling getInitialFileHandling()
+	{
+		return _initialFileHandling;
+	}
+
+	public void setInitialFileHandling( @NotNull final NewFileHandling handling )
+	{
+		_initialFileHandling = handling;
+	}
+
 	public long getDelay()
 	{
 		return _delay;
 	}
 
-	/**
-	 * Sets the delay between updates. This applied only to implementations that
-	 * need to use some kind of polling mechanism. Event-driven implementations
-	 * may ignore this setting.
-	 *
-	 * @param delay Time between updates, in milliseconds.
-	 */
 	public void setDelay( final long delay )
 	{
 		_delay = delay;
 	}
 
+	@Override
 	public void run()
 	{
 		String lastException = null;
+		NewFileHandling newFileHandling = getInitialFileHandling();
 
 		while ( !Thread.interrupted() )
 		{
 			try
 			{
-				checkForUpdates();
+				checkForUpdates( newFileHandling );
+				newFileHandling = NewFileHandling.KEEP_ALL;
 			}
-			catch ( IOException e )
+			catch ( final IOException e )
 			{
 				final StringWriter w = new StringWriter();
 				e.printStackTrace( new PrintWriter( w, true ) );
@@ -186,7 +217,7 @@ implements ResourceMonitor
 			{
 				Thread.sleep( getDelay() );
 			}
-			catch ( InterruptedException e )
+			catch ( final InterruptedException e )
 			{
 				break;
 			}
@@ -195,6 +226,7 @@ implements ResourceMonitor
 		LOG.info( "File system monitor '" + getName() + "' was interrupted" );
 	}
 
+	@Override
 	public void stop()
 	{
 	}
@@ -203,9 +235,11 @@ implements ResourceMonitor
 	 * Checks for added, removed and modified files and notifies the monitor's
 	 * listeners where needed.
 	 *
+	 * @param newFileHandling How to handle newly found files.
+	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	private void checkForUpdates()
+	private void checkForUpdates( @NotNull final NewFileHandling newFileHandling )
 	throws IOException
 	{
 		LOG.trace( "checkForUpdates" );
@@ -227,6 +261,7 @@ implements ResourceMonitor
 		 */
 		Collections.sort( files, new Comparator<Object>()
 		{
+			@Override
 			public int compare( final Object o1, final Object o2 )
 			{
 				final Date lastModified1 = newModificationTimeByFile.get( o1 );
@@ -238,15 +273,20 @@ implements ResourceMonitor
 		/*
 		 * Check for added, removed and modified files.
 		 */
-		for ( final Object file : files )
+		for ( final Iterator<Object> iterator = files.iterator(); iterator.hasNext(); )
 		{
+			final Object file = iterator.next();
 			final Date lastModified = modificationTimeByFile.get( file );
 			final Date newLastModified = newModificationTimeByFile.get( file );
 
 			if ( lastModified == null )
 			{
 				modificationTimeByFile.put( file, newLastModified );
-				fireFileAddedEvent( file );
+				if ( ( newFileHandling == NewFileHandling.KEEP_ALL ) ||
+				     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() ) )
+				{
+					fireFileAddedEvent( file );
+				}
 			}
 			else if ( newLastModified == null )
 			{
@@ -280,7 +320,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	protected abstract Date lastModified( Object handle )
+	protected abstract Date lastModified( @NotNull Object handle )
 	throws IOException;
 
 	/**
@@ -292,7 +332,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public abstract boolean isDirectory( Object handle )
+	public abstract boolean isDirectory( @NotNull Object handle )
 	throws IOException;
 
 	/**
@@ -302,7 +342,7 @@ implements ResourceMonitor
 	 *
 	 * @return Path name.
 	 */
-	public abstract String getPath( Object handle );
+	public abstract String getPath( @NotNull Object handle );
 
 	/**
 	 * Returns an input stream for reading from the specified file.
@@ -313,7 +353,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public abstract InputStream readFile( Object handle )
+	public abstract InputStream readFile( @NotNull Object handle )
 	throws IOException;
 
 	/**
@@ -325,7 +365,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public abstract OutputStream writeFile( Object handle )
+	public abstract OutputStream writeFile( @NotNull Object handle )
 	throws IOException;
 
 	/**
@@ -338,7 +378,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public abstract Object renameFile( Object handle, String newName )
+	public abstract Object renameFile( @NotNull Object handle, String newName )
 	throws IOException;
 
 	/**
@@ -348,7 +388,7 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public abstract void deleteFile( Object handle )
+	public abstract void deleteFile( @NotNull Object handle )
 	throws IOException;
 
 	/**
@@ -363,7 +403,7 @@ implements ResourceMonitor
 	 *
 	 * @param listener Listener to be added.
 	 */
-	public void addListener( final FileSystemMonitorListener listener )
+	public void addListener( @NotNull final FileSystemMonitorListener listener )
 	{
 		_listeners.add( listener );
 	}
@@ -373,7 +413,7 @@ implements ResourceMonitor
 	 *
 	 * @param listener Listener to be removed.
 	 */
-	public void removeListener( final FileSystemMonitorListener listener )
+	public void removeListener( @NotNull final FileSystemMonitorListener listener )
 	{
 		_listeners.remove( listener );
 	}
@@ -383,7 +423,7 @@ implements ResourceMonitor
 	 *
 	 * @param file Identifies the file that was added.
 	 */
-	protected void fireFileAddedEvent( final Object file )
+	protected void fireFileAddedEvent( @NotNull final Object file )
 	{
 		if ( LOG.isTraceEnabled() )
 		{
@@ -396,7 +436,7 @@ implements ResourceMonitor
 			{
 				listener.fileAdded( this, file );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				LOG.error( "Unhandled exception in 'fileAdded' method of " + listener, e );
 			}
@@ -408,7 +448,7 @@ implements ResourceMonitor
 	 *
 	 * @param file Identifies the file that was modified.
 	 */
-	protected void fireFileModifiedEvent( final Object file )
+	protected void fireFileModifiedEvent( @NotNull final Object file )
 	{
 		if ( LOG.isTraceEnabled() )
 		{
@@ -421,7 +461,7 @@ implements ResourceMonitor
 			{
 				listener.fileModified( this, file );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				LOG.error( "Unhandled exception in 'fileModified' method of " + listener, e );
 			}
@@ -434,7 +474,7 @@ implements ResourceMonitor
 	 *
 	 * @param file Identifies the file that was removed.
 	 */
-	protected void fireFileRemovedEvent( final Object file )
+	protected void fireFileRemovedEvent( @NotNull final Object file )
 	{
 		if ( LOG.isTraceEnabled() )
 		{
@@ -447,7 +487,7 @@ implements ResourceMonitor
 			{
 				listener.fileRemoved( this, file );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				LOG.error( "Unhandled exception in 'fileRemoved' method of " + listener, e );
 			}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,10 @@ import org.jetbrains.annotations.*;
 /**
  * Monitors a single file on the local file system.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public class LocalFileMonitor
-	extends FileSystemMonitor
+extends FileSystemMonitor
 {
 	/**
 	 * Log used for messages related to this class.
@@ -54,10 +54,10 @@ public class LocalFileMonitor
 	/**
 	 * Constructs a new file monitor.
 	 *
-	 * @param   file    File to be monitored.
-	 * @param   delay   Time between updates, in milliseconds.
+	 * @param file  File to be monitored.
+	 * @param delay Time between updates, in milliseconds.
 	 */
-	public LocalFileMonitor( final File file, final long delay )
+	public LocalFileMonitor( @NotNull final File file, final long delay )
 	{
 		super( delay );
 		_file = file;
@@ -80,7 +80,7 @@ public class LocalFileMonitor
 		{
 			result = _file.exists();
 		}
-		catch ( SecurityException e )
+		catch ( final SecurityException e )
 		{
 			LOG.trace( "isAvailable caused: " + e, e );
 			result = false;
@@ -91,47 +91,46 @@ public class LocalFileMonitor
 
 	@Override
 	protected List<Object> listFiles()
-		throws IOException
+	throws IOException
 	{
 		return _file.exists() ? Collections.<Object>singletonList( _file ) : Collections.emptyList();
 	}
 
 	@Override
-	protected Date lastModified( final Object handle )
-		throws IOException
+	protected Date lastModified( @NotNull final Object handle )
 	{
 		return new Date( ( (File)handle ).lastModified() );
 	}
 
 	@Override
-	public boolean isDirectory( final Object handle )
+	public boolean isDirectory( @NotNull final Object handle )
 	{
 		return ( (File)handle ).isDirectory();
 	}
 
 	@Override
-	public String getPath( final Object handle )
+	public String getPath( @NotNull final Object handle )
 	{
 		return ( (File)handle ).getPath();
 	}
 
 	@Override
-	public InputStream readFile( final Object handle )
-		throws IOException
+	public InputStream readFile( @NotNull final Object handle )
+	throws IOException
 	{
 		return new FileInputStream( (File)handle );
 	}
 
 	@Override
-	public OutputStream writeFile( final Object handle )
-		throws IOException
+	public OutputStream writeFile( @NotNull final Object handle )
+	throws IOException
 	{
 		return new FileOutputStream( (File)handle );
 	}
 
 	@Override
-	public Object renameFile( final Object handle, final String newName )
-		throws IOException
+	public Object renameFile( @NotNull final Object handle, final String newName )
+	throws IOException
 	{
 		final File file = (File)handle;
 		final File newFile = new File( file.getParent(), newName );
@@ -143,8 +142,8 @@ public class LocalFileMonitor
 	}
 
 	@Override
-	public void deleteFile( final Object handle )
-		throws IOException
+	public void deleteFile( @NotNull final Object handle )
+	throws IOException
 	{
 		final File file = (File)handle;
 		if ( !file.delete() )

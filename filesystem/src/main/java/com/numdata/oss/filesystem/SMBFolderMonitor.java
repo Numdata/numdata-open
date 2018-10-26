@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,11 @@ import org.jetbrains.annotations.*;
  * Provides part information from files in a folder shared over the network
  * using SMB. Files are deleted after being processed.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
+@SuppressWarnings( "OverlyStrongTypeCast" )
 public class SMBFolderMonitor
-	extends FileSystemMonitor
+extends FileSystemMonitor
 {
 	/**
 	 * Log used for messages related to this class.
@@ -54,16 +55,16 @@ public class SMBFolderMonitor
 	private final SmbFile _folder;
 
 	/**
-	 * Constructs a new part information source that monitors the specified
-	 * SMB folder.
+	 * Constructs a new part information source that monitors the specified SMB
+	 * folder.
 	 *
-	 * @param   url     URL to the SMB folder to be monitored.
-	 * @param   delay   Time between up-to-date checks.
+	 * @param url   URL to the SMB folder to be monitored.
+	 * @param delay Time between up-to-date checks.
 	 *
 	 * @throws MalformedURLException if the given URL is invalid.
 	 */
-	public SMBFolderMonitor( final String url , final long delay )
-		throws MalformedURLException
+	public SMBFolderMonitor( @NotNull final String url, final long delay )
+	throws MalformedURLException
 	{
 		super( delay );
 		_folder = new SmbFile( url );
@@ -85,7 +86,7 @@ public class SMBFolderMonitor
 		{
 			result = _folder.exists();
 		}
-		catch ( SmbException e )
+		catch ( final SmbException e )
 		{
 			LOG.trace( "isAvailable caused: " + e, e );
 			result = false;
@@ -96,49 +97,48 @@ public class SMBFolderMonitor
 
 	@Override
 	protected List<Object> listFiles()
-		throws IOException
+	throws IOException
 	{
 		final SmbFile[] files = _folder.listFiles();
 		return ( files == null ) ? Collections.emptyList() : Arrays.asList( (Object[])files );
 	}
 
 	@Override
-	protected Date lastModified( final Object handle )
-		throws IOException
+	protected Date lastModified( @NotNull final Object handle )
 	{
 		return new Date( ( (SmbFile)handle ).getLastModified() );
 	}
 
 	@Override
-	public boolean isDirectory( final Object handle )
-		throws IOException
+	public boolean isDirectory( @NotNull final Object handle )
+	throws IOException
 	{
 		return ( (SmbFile)handle ).isDirectory();
 	}
 
 	@Override
-	public String getPath( final Object handle )
+	public String getPath( @NotNull final Object handle )
 	{
 		return ( (SmbFile)handle ).getPath();
 	}
 
 	@Override
-	public InputStream readFile( final Object handle )
-		throws IOException
+	public InputStream readFile( @NotNull final Object handle )
+	throws IOException
 	{
 		return ( (SmbFile)handle ).getInputStream();
 	}
 
 	@Override
-	public OutputStream writeFile( final Object handle )
-		throws IOException
+	public OutputStream writeFile( @NotNull final Object handle )
+	throws IOException
 	{
 		return ( (SmbFile)handle ).getOutputStream();
 	}
 
 	@Override
-	public Object renameFile( final Object handle, final String newName )
-		throws IOException
+	public Object renameFile( @NotNull final Object handle, final String newName )
+	throws IOException
 	{
 		final SmbFile file = (SmbFile)handle;
 		final SmbFile newFile = new SmbFile( file.getParent(), newName );
@@ -147,8 +147,8 @@ public class SMBFolderMonitor
 	}
 
 	@Override
-	public void deleteFile( final Object handle )
-		throws IOException
+	public void deleteFile( @NotNull final Object handle )
+	throws IOException
 	{
 		final SmbFile file = (SmbFile)handle;
 		file.delete();
@@ -162,7 +162,7 @@ public class SMBFolderMonitor
 		{
 			result = _folder.exists();
 		}
-		catch ( SmbException e )
+		catch ( final SmbException e )
 		{
 			// Ignore.
 		}
