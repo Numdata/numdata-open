@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,11 @@ public class ProgressBar
 	 * Width of progress bar in characters.
 	 */
 	private int _width = 50;
+
+	/**
+	 * Whether the next progress indicator is marked.
+	 */
+	private boolean _mark = false;
 
 	/**
 	 * Constructs a new instance.
@@ -226,11 +231,13 @@ public class ProgressBar
 		if ( value != -1 )
 		{
 			final PrintStream out = _out;
+			final boolean mark = _mark;
 			while ( value < newValue )
 			{
-				out.print( '.' );
+				out.print( mark ? 'x' : '.' );
 				value++;
 			}
+			_mark = false;
 			_value = value;
 		}
 	}
@@ -295,5 +302,13 @@ public class ProgressBar
 		{
 			_out.println( " done." );
 		}
+	}
+
+	/**
+	 * Marks the next progress indicator.
+	 */
+	public void mark()
+	{
+		_mark = true;
 	}
 }
