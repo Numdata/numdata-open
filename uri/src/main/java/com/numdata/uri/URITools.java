@@ -499,7 +499,7 @@ public class URITools
 			}
 			else if ( "keyboard".equals( scheme ) )
 			{
-				senTodKeyboard( uri, data );
+				sendToKeyboard( uri, data );
 			}
 			else if ( "smb".equals( scheme ) )
 			{
@@ -592,7 +592,7 @@ public class URITools
 	 *
 	 * @throws IOException if keyboard can not be accessed.
 	 */
-	private static void senTodKeyboard( @NotNull final URI uri, @NotNull final byte[] data )
+	private static void sendToKeyboard( @NotNull final URI uri, @NotNull final byte[] data )
 	throws IOException
 	{
 		final URIPath uriPath = new URIPath( uri );
