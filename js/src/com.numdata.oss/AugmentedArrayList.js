@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ export default class AugmentedArrayList
 		if ( original )
 		{
 			const elements = original._elements || original;
-			if ( elements instanceof Array )
+			if ( Array.isArray( elements ) )
 			{
 				this._elements = elements.slice();
 			}
