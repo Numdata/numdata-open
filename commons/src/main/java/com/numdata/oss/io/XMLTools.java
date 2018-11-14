@@ -691,6 +691,21 @@ public class XMLTools
 	}
 
 	/**
+	 * Returns a list based on the given node list. The created list is simply
+	 * an adapter wrapping the given node list, not a copy of it. As such, the
+	 * list behaves exactly the same as the node list would.
+	 *
+	 * @param nodeList Node list.
+	 * @param <T> Node type.
+	 *
+	 * @return Created list.
+	 */
+	public static <T extends Node> List<T> asList( final NodeList nodeList )
+	{
+		return new NodeListAdapter<T>( nodeList );
+	}
+
+	/**
 	 * Wrapper for {@link XMLStreamWriter} to add indentation and net lines.
 	 */
 	public static class PrettyXMLStreamWriterHandler
