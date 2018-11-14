@@ -54,7 +54,7 @@ export default class DecimalFormatSymbols
 	 */
 	static getInstance( locale )
 	{
-		return new DecimalFormatSymbols( decimalSymbolComma.indexOf( locale.toString() ) == -1 ? '.' : ',' );
+		return new DecimalFormatSymbols( decimalSymbolComma.indexOf( locale.toString() ) === -1 ? '.' : ',' );
 	}
 }
 
