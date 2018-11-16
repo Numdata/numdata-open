@@ -401,4 +401,9 @@ export default class AugmentedArrayList
 	{
 		return other._elements && ( this._elements.length === other._elements.length ) && ArrayTools.equals( this._elements, other._elements );
 	}
+
+	toString()
+	{
+		return '[' + String( this._elements ) + ']';
+	}
 }
