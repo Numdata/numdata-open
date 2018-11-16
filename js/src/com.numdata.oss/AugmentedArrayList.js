@@ -28,7 +28,7 @@ import ArrayTools from './ArrayTools';
 
 /**
  * Tests if two objects are equal, using an equals method if available or
- * the equality operator (==) otherwise.
+ * the strict equality operator (===) otherwise.
  *
  * @param o1 First value.
  * @param o2 Second value.
@@ -37,7 +37,7 @@ import ArrayTools from './ArrayTools';
  */
 function equals( o1, o2 )
 {
-	return o1 && o1.equals ? o1.equals( o2 ) : o1 == o2;
+	return o1 && o1.equals ? o1.equals( o2 ) : o1 === o2;
 }
 
 /**
@@ -160,7 +160,7 @@ export default class AugmentedArrayList
 
 	isEmpty()
 	{
-		return this.size() == 0;
+		return this.size() === 0;
 	}
 
 	size()
@@ -175,7 +175,7 @@ export default class AugmentedArrayList
 
 	add()
 	{
-		if ( arguments.length == 1 )
+		if ( arguments.length === 1 )
 		{
 			return this.addElement.apply( this, arguments );
 		}
@@ -206,7 +206,7 @@ export default class AugmentedArrayList
 		let result = collection.length > 0;
 		if ( result )
 		{
-			collection.forEach( ( element ) => this._elements.push( element ) );
+			collection.forEach( element => this._elements.push( element ) );
 		}
 		return result;
 	}
@@ -233,12 +233,12 @@ export default class AugmentedArrayList
 
 	contains( element )
 	{
-		return this._elements.indexOf( element ) != -1;
+		return this._elements.indexOf( element ) !== -1;
 	}
 
 	containsAll( collection )
 	{
-		return collection.every( ( element ) => this._elements.indexOf( element ) != -1 );
+		return collection.every( element => this._elements.indexOf( element ) !== -1 );
 	}
 
 	indexOf( element )
@@ -274,7 +274,7 @@ export default class AugmentedArrayList
 	getLast()
 	{
 		let size = this.size();
-		if ( size == 0 )
+		if ( size === 0 )
 		{
 			throw new Error( "no such element" );
 		}
@@ -298,7 +298,7 @@ export default class AugmentedArrayList
 
 	setAll( list )
 	{
-		let changed = ( list.length != this.length ) || !list.every( ( element, i ) => equals( this._elements[ i ], element ) );
+		let changed = ( list.length !== this.length ) || !list.every( ( element, i ) => equals( this._elements[ i ], element ) );
 		if ( changed )
 		{
 			let elements = list._elements || list;
@@ -309,7 +309,7 @@ export default class AugmentedArrayList
 	remove()
 	{
 		// FIXME: But what happens for int<>?
-		if ( typeof arguments[ 0 ] == 'number' )
+		if ( typeof arguments[ 0 ] === 'number' )
 		{
 			return this.removeIndex.apply( this, arguments );
 		}
@@ -325,8 +325,6 @@ export default class AugmentedArrayList
 		{
 			throw new Error( "Index: " + index + ", Size: " + this.length );
 		}
-
-		this.handleUpdate( true, true, this._isExplicit );
 
 		let element = this._elements[ index ];
 		this._elements.splice( index, 1 );
@@ -356,7 +354,7 @@ export default class AugmentedArrayList
 	removeElement( element )
 	{
 		var index = this._elements.indexOf( element );
-		let result = index != -1;
+		let result = index !== -1;
 		if ( result )
 		{
 			this._elements.splice( index, 1 );
@@ -379,7 +377,7 @@ export default class AugmentedArrayList
 	removeLast()
 	{
 		let size = this.size();
-		if ( size == 0 )
+		if ( size === 0 )
 		{
 			throw new Error( "no such element" );
 		}
@@ -392,7 +390,7 @@ export default class AugmentedArrayList
 	removeAll( collection )
 	{
 		let result = false;
-		collection.forEach( ( element ) =>
+		collection.forEach( element =>
 		{
 			result |= this.removeElement( element );
 		} );
