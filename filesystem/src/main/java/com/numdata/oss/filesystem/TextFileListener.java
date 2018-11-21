@@ -28,7 +28,6 @@ package com.numdata.oss.filesystem;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.io.*;
@@ -49,13 +48,6 @@ implements FileSystemMonitorListener
 	 * Log used for messages related to this class.
 	 */
 	private static final ClassLogger LOG = ClassLogger.getFor( TextFileListener.class );
-
-	/**
-	 * Path filter. This filter is applied to the {@link
-	 * FileSystemMonitor#getPath(Object) file path} by {@link #processFile}.
-	 */
-	@Nullable
-	private Pattern _pathFilter = null;
 
 	/**
 	 * File encoding. If empty, use system encoding.
@@ -100,30 +92,6 @@ implements FileSystemMonitorListener
 		_lineProcessor = lineProcessor;
 	}
 
-	@Nullable
-	public Pattern getPathFilter()
-	{
-		return _pathFilter;
-	}
-
-	public void setPathFilter( @Nullable final Pattern pathFilter )
-	{
-		_pathFilter = pathFilter;
-	}
-
-	/**
-	 * Set path filter using a wildcard pattern.
-	 *
-	 * @param wildcardFilter Wildcard pattern.
-	 * @param caseSensitive  Match case-sensitive vs case-insensitive.
-	 *
-	 * @see TextTools#wildcardPatternToRegex(String)
-	 */
-	public void setPathFilter( @Nullable final String wildcardFilter, final boolean caseSensitive )
-	{
-		setPathFilter( TextTools.isEmpty( wildcardFilter ) ? null : Pattern.compile( TextTools.wildcardPatternToRegex( wildcardFilter ), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE ) );
-	}
-
 	public String getFileEncoding()
 	{
 		return _fileEncoding;
@@ -160,7 +128,7 @@ implements FileSystemMonitorListener
 	{
 		try
 		{
-			filterAndProcessFile( monitor, handle );
+			processFile( monitor, handle );
 		}
 		catch ( final IOException e )
 		{
@@ -173,7 +141,7 @@ implements FileSystemMonitorListener
 	{
 		try
 		{
-			filterAndProcessFile( monitor, handle );
+			processFile( monitor, handle );
 		}
 		catch ( final IOException e )
 		{
@@ -184,26 +152,6 @@ implements FileSystemMonitorListener
 	@Override
 	public void fileRemoved( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	{
-	}
-
-	/**
-	 * Apply {@link #getPathFilter() path filter} to file and, if matched,
-	 * forward to {@link #processFile}.
-	 *
-	 * @param monitor File system monitor reporting the file.
-	 * @param handle  Identifies the file to process.
-	 *
-	 * @throws IOException if there was a problem reading the file.
-	 */
-	protected void filterAndProcessFile( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
-	throws IOException
-	{
-		final Pattern pathFilter = getPathFilter();
-		final boolean matches = ( pathFilter == null ) || pathFilter.matcher( monitor.getPath( handle ) ).matches();
-		if ( matches )
-		{
-			processFile( monitor, handle );
-		}
 	}
 
 	/**

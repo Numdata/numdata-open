@@ -29,6 +29,7 @@ package com.numdata.oss.filesystem;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.log.*;
@@ -84,17 +85,37 @@ implements ResourceMonitor
 	private long _delay;
 
 	/**
+	 * Path filter. This filter is applied to the {@link #getPath(Object) file
+	 * path}.
+	 */
+	@Nullable
+	private Pattern _pathFilter = null;
+
+	/**
+	 * Whether to monitor only a single file.
+	 */
+	private boolean _singleFile = false;
+
+	/**
+	 * Always assume that a file is modified, even if the modification time and
+	 * file size have not changed. This may be useful if the state information
+	 * reported by the file system is cache and may therefore be out-of-date,
+	 * which cause issues if changes need to be picked up immediately.
+	 */
+	private boolean _alwaysModified = false;
+
+	/**
 	 * Listeners registered with the monitor.
 	 */
 	@NotNull
 	private final Collection<FileSystemMonitorListener> _listeners = new ArrayList<FileSystemMonitorListener>();
 
 	/**
-	 * Keeps track of the last modification time for each file within the scope
-	 * of the monitor.
+	 * Map with last known modification time for each file within the scope of
+	 * the monitor.
 	 */
 	@NotNull
-	private final Map<Object, Date> _modificationTimeByFile = new LinkedHashMap<Object, Date>();
+	private Map<Object, Date> _modificationTimeByFile = Collections.emptyMap();
 
 	/**
 	 * Constructs a new file system monitor. While running, the monitor actively
@@ -176,6 +197,61 @@ implements ResourceMonitor
 		_delay = delay;
 	}
 
+	@Nullable
+	public Pattern getPathFilter()
+	{
+		return _pathFilter;
+	}
+
+	public void setPathFilter( @Nullable final Pattern pathFilter )
+	{
+		_pathFilter = pathFilter;
+	}
+
+	/**
+	 * Set path filter using a wildcard pattern.
+	 *
+	 * @param wildcardFilter Wildcard pattern.
+	 * @param caseSensitive  Match case-sensitive vs case-insensitive.
+	 *
+	 * @see TextTools#wildcardPatternToRegex(String)
+	 */
+	public void setPathFilter( @Nullable final String wildcardFilter, final boolean caseSensitive )
+	{
+		Pattern pattern = null;
+		if ( !TextTools.isEmpty( wildcardFilter ) )
+		{
+			String regex = TextTools.wildcardPatternToRegex( wildcardFilter );
+			if ( ( wildcardFilter.indexOf( '/' ) < 0 ) && ( wildcardFilter.indexOf( '\\' ) < 0 ) )
+			{
+				regex = "(?:.*[/\\\\])?" + regex;
+			}
+
+			pattern = Pattern.compile( regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE );
+		}
+		setPathFilter( pattern );
+	}
+
+	public void setSingleFile( final boolean singleFile )
+	{
+		_singleFile = singleFile;
+	}
+
+	public boolean isSingleFile()
+	{
+		return _singleFile;
+	}
+
+	public boolean isAlwaysModified()
+	{
+		return _alwaysModified;
+	}
+
+	public void setAlwaysModified( final boolean alwaysModified )
+	{
+		_alwaysModified = alwaysModified;
+	}
+
 	@Override
 	public void run()
 	{
@@ -189,7 +265,7 @@ implements ResourceMonitor
 				checkForUpdates( newFileHandling );
 				newFileHandling = NewFileHandling.KEEP_ALL;
 			}
-			catch ( final IOException e )
+			catch ( final Exception e )
 			{
 				final StringWriter w = new StringWriter();
 				e.printStackTrace( new PrintWriter( w, true ) );
@@ -242,62 +318,124 @@ implements ResourceMonitor
 	private void checkForUpdates( @NotNull final NewFileHandling newFileHandling )
 	throws IOException
 	{
+		final boolean trace = LOG.isTraceEnabled();
 		LOG.trace( "checkForUpdates" );
-
-		final Map<Object, Date> modificationTimeByFile = _modificationTimeByFile;
-		final Map<Object, Date> newModificationTimeByFile = new HashMap<Object, Date>();
 
 		/*
 		 * Update modification times.
 		 */
-		final List<Object> files = new ArrayList<Object>( listFiles() );
-		for ( final Object file : files )
+		final AugmentedList<Object> files = new AugmentedArrayList<Object>( listFiles() );
+		if ( files.isEmpty() )
 		{
-			newModificationTimeByFile.put( file, lastModified( file ) );
-		}
-
-		/*
-		 * Sort files by modification time.
-		 */
-		Collections.sort( files, new Comparator<Object>()
-		{
-			@Override
-			public int compare( final Object o1, final Object o2 )
+			if ( trace )
 			{
-				final Date lastModified1 = newModificationTimeByFile.get( o1 );
-				final Date lastModified2 = newModificationTimeByFile.get( o2 );
-				return lastModified1.compareTo( lastModified2 );
+				LOG.trace( "checkForUpdates: found no files" );
 			}
-		} );
-
-		/*
-		 * Check for added, removed and modified files.
-		 */
-		for ( final Iterator<Object> iterator = files.iterator(); iterator.hasNext(); )
+		}
+		else
 		{
-			final Object file = iterator.next();
-			final Date lastModified = modificationTimeByFile.get( file );
-			final Date newLastModified = newModificationTimeByFile.get( file );
-
-			if ( lastModified == null )
+			final Pattern pathFilter = getPathFilter();
+			if ( pathFilter != null )
 			{
-				modificationTimeByFile.put( file, newLastModified );
-				if ( ( newFileHandling == NewFileHandling.KEEP_ALL ) ||
-				     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() ) )
+				if ( trace )
 				{
-					fireFileAddedEvent( file );
+					LOG.trace( "checkForUpdates: apply path filter " + pathFilter );
+				}
+				for ( final Iterator<Object> it = files.iterator(); it.hasNext(); )
+				{
+					if ( !pathFilter.matcher( getPath( it.next() ) ).matches() )
+					{
+						it.remove();
+					}
 				}
 			}
-			else if ( newLastModified == null )
+
+			if ( trace )
 			{
-				modificationTimeByFile.remove( file );
-				fireFileRemovedEvent( file );
+				LOG.trace( "checkForUpdates: have " + files.size() + " file(s)" );
 			}
-			else if ( !newLastModified.equals( lastModified ) )
+
+			final Map<Object, Date> newModificationTimeByFile = new HashMap<Object, Date>();
+			for ( final Object file : files )
 			{
-				modificationTimeByFile.put( file, newLastModified );
-				fireFileModifiedEvent( file );
+				newModificationTimeByFile.put( file, lastModified( file ) );
 			}
+
+			/*
+			 * Sort files by modification time.
+			 */
+			Collections.sort( files, new Comparator<Object>()
+			{
+				@Override
+				public int compare( final Object o1, final Object o2 )
+				{
+					final Date lastModified1 = newModificationTimeByFile.get( o1 );
+					final Date lastModified2 = newModificationTimeByFile.get( o2 );
+					return lastModified1.compareTo( lastModified2 );
+				}
+			} );
+
+			if ( isSingleFile() && ( files.size() > 1 ) )
+			{
+				final Object file = files.getLast();
+				files.removeRange( 0, files.size() - 1 );
+
+				final Date lastModified = newModificationTimeByFile.get( file );
+				newModificationTimeByFile.clear();
+				newModificationTimeByFile.put( file, lastModified );
+			}
+
+			final Map<Object, Date> oldModificationTimeByFile = _modificationTimeByFile;
+
+			/*
+			 * Check for added and modified files.
+			 */
+			for ( final Iterator<Object> iterator = files.iterator(); iterator.hasNext(); )
+			{
+				final Object file = iterator.next();
+				final Date oldLastModified = oldModificationTimeByFile.get( file );
+				final Date newLastModified = newModificationTimeByFile.get( file );
+				if ( oldLastModified == null )
+				{
+					final boolean keep = ( newFileHandling == NewFileHandling.KEEP_ALL ) ||
+					                     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() );
+					if ( trace )
+					{
+						LOG.trace( "new file: " + getPath( file ) + ", newFileHandling=" + newFileHandling + " => keep=" + keep );
+					}
+					if ( keep )
+					{
+						fireFileAddedEvent( file );
+					}
+				}
+				else if ( isAlwaysModified() || !newLastModified.equals( oldLastModified ) )
+				{
+					if ( trace )
+					{
+						LOG.trace( "modified file: " + getPath( file ) );
+					}
+					fireFileModifiedEvent( file );
+				}
+			}
+
+			/*
+			 * Check for removed files.
+			 */
+			for ( final Object file : oldModificationTimeByFile.keySet() )
+			{
+				if ( !newModificationTimeByFile.containsKey( file ) )
+				{
+					if ( trace )
+					{
+						LOG.trace( "removed file: " + getPath( file ) );
+					}
+					oldModificationTimeByFile.remove( file );
+					fireFileRemovedEvent( file );
+				}
+			}
+
+			_modificationTimeByFile = newModificationTimeByFile;
+
 		}
 	}
 
@@ -427,7 +565,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isTraceEnabled() )
 		{
-			LOG.trace( "fireFileAddedEvent( " + file + " )" );
+			LOG.trace( "fireFileAddedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -452,7 +590,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isTraceEnabled() )
 		{
-			LOG.trace( "fireFileModifiedEvent( " + file + " )" );
+			LOG.trace( "fireFileModifiedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -478,7 +616,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isTraceEnabled() )
 		{
-			LOG.trace( "fireFileRemovedEvent( " + file + " )" );
+			LOG.trace( "fireFileRemovedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
