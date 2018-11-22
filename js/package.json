@@ -11,6 +11,7 @@
   },
   "module": "./module.js",
   "dependencies": {
+    "@babel/runtime": "^7.1.5",
     "big-rational": "^0.10.7",
     "bigdecimal": "^0.6.1",
     "scrollparent": "^2.0.1"
