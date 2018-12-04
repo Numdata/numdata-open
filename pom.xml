@@ -6,7 +6,7 @@
 
 	<groupId>com.numdata</groupId>
 	<artifactId>numdata-open</artifactId>
-	<version>1.8</version>
+	<version>1.9-SNAPSHOT</version>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Collection of miscellaneous open source libraries.</description>
