@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.numdata</groupId>
 		<artifactId>numdata-open</artifactId>
-		<version>1.8-SNAPSHOT</version>
+		<version>1.8</version>
 	</parent>
 
 	<artifactId>numdata-icons</artifactId>
