@@ -884,6 +884,27 @@ public class TextTools
 	}
 
 	/**
+	 * Add escapes to a string (e.g. to use in SQL queries).
+	 *
+	 * This method escapes characters for use in a string or character literal,
+	 * using the syntax defined in the Java Language Specification. See {@link
+	 * #escape(Appendable, char)} for details.
+	 *
+	 * @param source String to escape.
+	 *
+	 * @return Escaped string.
+	 *
+	 * @see #unescape
+	 */
+	@NotNull
+	public static String escape( @NotNull final CharSequence source )
+	{
+		final StringBuilder sb = new StringBuilder();
+		escape( sb, source );
+		return sb.toString();
+	}
+
+	/**
 	 * Add escapes to a string (e.g. to use in SQL queries) and appends the
 	 * result to the specified string buffer.
 	 *
@@ -2553,7 +2574,7 @@ public class TextTools
 
 		if ( lastWildcardPosition < wildcardPattern.length() )
 		{
-			resultPattern.append( Pattern.quote( wildcardPattern.substring( lastWildcardPosition, wildcardPattern.length() ) ) );
+			resultPattern.append( Pattern.quote( wildcardPattern.substring( lastWildcardPosition ) ) );
 		}
 
 		return resultPattern.toString();
@@ -2733,7 +2754,7 @@ public class TextTools
 			fraction = '.' + fraction.substring( 2, Math.min( fraction.length(), 2 + fractionScale ) );
 		}
 
-		return Long.toString( quotient ) + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
+		return quotient + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
 	}
 
 	/**
