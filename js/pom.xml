@@ -86,6 +86,7 @@
 								<argument>test</argument>
 							</arguments>
 							<toolchain>paths</toolchain>
+							<skip>${skipTests}</skip>
 						</configuration>
 					</execution>
 				</executions>
