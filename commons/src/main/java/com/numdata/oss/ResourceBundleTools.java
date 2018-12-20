@@ -808,7 +808,19 @@ public class ResourceBundleTools
 	@NotNull
 	public static String getString( @Nullable final Locale locale, @NotNull final Class<?> clazz, @NotNull final String key )
 	{
-		final ResourceBundle bundle = getBundleHierarchy( clazz, locale );
+		final ResourceBundle bundle;
+		try
+		{
+			bundle = getBundleHierarchy( clazz, locale );
+		}
+		catch ( final MissingResourceException e )
+		{
+			final MissingResourceException mre = new MissingResourceException( "Resource bundle '" + clazz.getName() + "' missing (to get '" + key + "' resource) for locale " + locale, clazz.getName(), key );
+			mre.initCause( e );
+			throw mre;
+
+		}
+
 		try
 		{
 			return bundle.getString( key );
@@ -948,7 +960,20 @@ public class ResourceBundleTools
 	@NotNull
 	public static String format( @Nullable final Locale locale, @NotNull final Class<?> clazz, @NotNull final String key, final Object... arguments )
 	{
-		return format( locale, getBundleHierarchy( clazz, locale ), key, arguments );
+		final ResourceBundle bundle;
+		try
+		{
+			bundle = getBundleHierarchy( clazz, locale );
+		}
+		catch ( final MissingResourceException e )
+		{
+			final MissingResourceException mre = new MissingResourceException( "Resource bundle '" + clazz.getName() + "' missing (to get '" + key + "' resource and format with arguments " + Arrays.toString( arguments ) + ") for locale " + locale, clazz.getName(), key );
+			mre.initCause( e );
+			throw mre;
+
+		}
+
+		return format( locale, bundle, key, arguments );
 	}
 
 	/**
