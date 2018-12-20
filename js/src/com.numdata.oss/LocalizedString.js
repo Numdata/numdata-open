@@ -117,7 +117,7 @@ export default class LocalizedString
 	{
 		let result;
 
-		let key = ( locale == null ) ? "" : locale;
+		let key = ( locale == null ) ? "" : String( locale );
 		while ( true ) // eslint-disable-line no-constant-condition
 		{
 			result = this.getSpecific( key );
@@ -178,7 +178,7 @@ export default class LocalizedString
 		{
 			this._values = Object.assign( {}, value._values );
 		}
-		else if ( locale && !locale.match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
+		else if ( locale && !String( locale ).match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
 		{
 			throw new TypeError( 'Invalid locale: ' + locale );
 		}
