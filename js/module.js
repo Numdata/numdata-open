@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,45 @@
 import clamp from './lib/clamp';
 import naturalOrder from './lib/naturalOrder';
 import scrollToElement from './lib/scrollToElement';
+
+import ArrayTools from './lib/com.numdata.oss/ArrayTools';
+import AugmentedArrayList from './lib/com.numdata.oss/AugmentedArrayList';
+import DecimalFormat from './lib/com.numdata.oss/DecimalFormat';
+import DecimalFormatSymbols from './lib/com.numdata.oss/DecimalFormatSymbols';
+import Glob from './lib/com.numdata.oss/Glob';
+import LengthMeasureFormat from './lib/com.numdata.oss/LengthMeasureFormat';
+import LengthMeasurePreferences from './lib/com.numdata.oss/LengthMeasurePreferences';
+import Locale from './lib/com.numdata.oss/Locale';
+import LocalizedString from './lib/com.numdata.oss/LocalizedString';
+import NestedProperties from './lib/com.numdata.oss/NestedProperties';
+import signum from './lib/com.numdata.oss/signum';
 import toDegrees from './lib/com.numdata.oss/toDegrees';
 import toRadians from './lib/com.numdata.oss/toRadians';
+
+import EventDispatcher from './lib/com.numdata.oss.event/EventDispatcher';
+import ClassLogger from './lib/com.numdata.oss.log/ClassLogger';
+import Enum from './lib/java.lang/Enum';
+
 export {
 	clamp,
 	naturalOrder,
 	scrollToElement,
+
+	ArrayTools,
+	AugmentedArrayList,
+	DecimalFormat,
+	DecimalFormatSymbols,
+	Glob,
+	LengthMeasureFormat,
+	LengthMeasurePreferences,
+	Locale,
+	LocalizedString,
+	NestedProperties,
+	signum,
 	toDegrees,
-	toRadians
+	toRadians,
+
+	EventDispatcher,
+	ClassLogger,
+	Enum
 };
