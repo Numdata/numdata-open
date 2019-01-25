@@ -54,7 +54,8 @@ public class DbServices
 {
 	/**
 	 * Generate warning in log about a slow query when a query takes longer than
-	 * this number of seconds to execute (and process).
+	 * this number of seconds to execute (and process). If this value is zero or
+	 * negative, slow query logging is disabled.
 	 */
 	private static final double SLOW_QUERY_THRESHOLD;
 
@@ -635,15 +636,19 @@ public class DbServices
 	 */
 	private static <DbObject> void logSlowQuery( final long start, final String source, @Nullable final Class<DbObject> dbClass, @Nullable final Object queryResult, @Nullable final CharSequence query, @NotNull final Object[] arguments )
 	{
-		final double seconds = TimeUnit.NANOSECONDS.toMillis( System.nanoTime() - start ) / 1000.0;
-		if ( seconds > SLOW_QUERY_THRESHOLD )
+		final boolean debugEnabled = LOG.isDebugEnabled();
+		if ( debugEnabled || ( SLOW_QUERY_THRESHOLD > 0 ) )
 		{
-			final String message = source + " SLOW QUERY: time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments );
-			LOG.warn( message, new DatabaseException( message ) );
-		}
-		else if ( LOG.isDebugEnabled() )
-		{
-			LOG.debug( source + " time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments ) );
+			final double seconds = TimeUnit.NANOSECONDS.toMillis( System.nanoTime() - start ) / 1000.0;
+			if ( seconds > SLOW_QUERY_THRESHOLD )
+			{
+				final String message = source + " SLOW QUERY: time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments );
+				LOG.warn( message, new DatabaseException( message ) );
+			}
+			else if ( debugEnabled )
+			{
+				LOG.debug( source + " time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments ) );
+			}
 		}
 	}
 
