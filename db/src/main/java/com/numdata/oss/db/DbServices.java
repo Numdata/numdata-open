@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.concurrent.*;
 import javax.sql.*;
 
 import com.numdata.oss.*;
@@ -53,13 +54,14 @@ public class DbServices
 {
 	/**
 	 * Generate warning in log about a slow query when a query takes longer than
-	 * this number of seconds to execute (and process).
+	 * this number of seconds to execute (and process). If this value is zero or
+	 * negative, slow query logging is disabled.
 	 */
 	private static final double SLOW_QUERY_THRESHOLD;
 
 	static
 	{
-		double slowQueryThreshold = 3.0;
+		double slowQueryThreshold = 60.0;
 		try
 		{
 			final String value = System.getProperty( "slow.query.threshold" );
@@ -599,19 +601,7 @@ public class DbServices
 
 			final long start = System.nanoTime();
 			final List<DbObject> result = JdbcTools.executeQuery( connection, processor, query, arguments );
-			if ( LOG.isDebugEnabled() )
-			{
-				final double seconds = ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0;
-				if ( seconds > SLOW_QUERY_THRESHOLD )
-				{
-					final String message = "retrieveList() SLOW QUERY: time=" + seconds + "s, result=" + dbClass.getSimpleName() + '[' + result.size() + "], query='" + query + "', parameters=" + Arrays.toString( arguments );
-					LOG.warn( message, new DatabaseException( message ) );
-				}
-				else
-				{
-					LOG.debug( "retrieveList() time=" + seconds + "s, result=" + dbClass.getSimpleName() + '[' + result.size() + "], query='" + query + "', parameters=" + Arrays.toString( arguments ) );
-				}
-			}
+			logSlowQuery( start, "retrieveList()", dbClass, result, query, arguments );
 			return result;
 		}
 		catch ( final SQLTransientException e )
@@ -631,6 +621,71 @@ public class DbServices
 		{
 			releaseConnection( connection );
 		}
+	}
+
+	/**
+	 * Checks the duration of a query and logs any queries slower than the
+	 * {@link #SLOW_QUERY_THRESHOLD}.
+	 *
+	 * @param start       Start of the query.
+	 * @param source      Name of the method that
+	 * @param dbClass     Database record class, if known/applicable.
+	 * @param queryResult Query result, if any.
+	 * @param query       Executed SQL query.
+	 * @param arguments   Arguments used in the query.
+	 */
+	private static <DbObject> void logSlowQuery( final long start, final String source, @Nullable final Class<DbObject> dbClass, @Nullable final Object queryResult, @Nullable final CharSequence query, @NotNull final Object[] arguments )
+	{
+		final boolean debugEnabled = LOG.isDebugEnabled();
+		if ( debugEnabled || ( SLOW_QUERY_THRESHOLD > 0 ) )
+		{
+			final double seconds = TimeUnit.NANOSECONDS.toMillis( System.nanoTime() - start ) / 1000.0;
+			if ( seconds > SLOW_QUERY_THRESHOLD )
+			{
+				final String message = source + " SLOW QUERY: time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments );
+				LOG.warn( message, new DatabaseException( message ) );
+			}
+			else if ( debugEnabled )
+			{
+				LOG.debug( source + " time=" + seconds + "s, result=" + describeQueryResult( dbClass, queryResult ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments ) );
+			}
+		}
+	}
+
+	/**
+	 * Returns a short description of the given query result, for logging.
+	 *
+	 * @param dbClass     Database record class, if known/applicable.
+	 * @param queryResult Query result, if any.
+	 *
+	 * @return Description of the query result.
+	 */
+	private static <DbObject> String describeQueryResult( @Nullable final Class<DbObject> dbClass, @Nullable final Object queryResult )
+	{
+		final String result;
+		if ( ( dbClass == null ) && ( queryResult == null ) )
+		{
+			result = "n/a";
+		}
+		else if ( queryResult == null )
+		{
+			result = "(" + dbClass.getSimpleName() + ")null";
+		}
+		else if ( queryResult instanceof Collection )
+		{
+			final Collection<?> collection = (Collection<?>)queryResult;
+			result = ( dbClass == null ? "" : dbClass.getSimpleName() ) + "[" + collection.size() + "]";
+		}
+		else if ( queryResult instanceof SingleObjectConverter )
+		{
+			final SingleObjectConverter<DbObject> singleObjectConverter = (SingleObjectConverter<DbObject>)queryResult;
+			result = ( dbClass == null ? "" : dbClass.getSimpleName() ) + "(" + ( singleObjectConverter.getFirst() != null ? ( singleObjectConverter.isMultiple() ? "multiple" : "single" ) : "empty" ) + ")";
+		}
+		else
+		{
+			result = ( dbClass == null ? "" : "(" + dbClass.getSimpleName() + ")" ) + queryResult;
+		}
+		return result;
 	}
 
 	/**
@@ -675,19 +730,7 @@ public class DbServices
 		{
 			final long start = System.nanoTime();
 			final R result = JdbcTools.executeQuery( connection, processor, query, arguments );
-			if ( LOG.isDebugEnabled() )
-			{
-				final double seconds = ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0;
-				if ( seconds > SLOW_QUERY_THRESHOLD )
-				{
-					final String message = "executeQuery() SLOW QUERY: time=" + seconds + "s, query='" + query + "', parameters=" + Arrays.toString( arguments );
-					LOG.warn( message, new DatabaseException( message ) );
-				}
-				else
-				{
-					LOG.debug( "executeQuery() time=" + seconds + "s, query='" + query + "', parameters=" + Arrays.toString( arguments ) );
-				}
-			}
+			logSlowQuery( start, "executeQuery()", null, null, query, arguments );
 			return result;
 		}
 		catch ( final SQLTransientException e )
@@ -734,19 +777,7 @@ public class DbServices
 		{
 			final long start = System.nanoTime();
 			final R result = JdbcTools.executeQueryStreaming( connection, processor, query, arguments );
-			if ( LOG.isDebugEnabled() )
-			{
-				final double seconds = ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0;
-				if ( seconds > SLOW_QUERY_THRESHOLD )
-				{
-					final String message = "executeQueryStreaming() SLOW QUERY: time=" + seconds + "s, query='" + query + "', parameters=" + Arrays.toString( arguments );
-					LOG.warn( message, new DatabaseException( message ) );
-				}
-				else
-				{
-					LOG.debug( "executeQueryStreaming() time=" + seconds + "s, query='" + query + "', parameters=" + Arrays.toString( arguments ) );
-				}
-			}
+			logSlowQuery( start, "executeQueryStreaming()", null, null, query, arguments );
 			return result;
 		}
 		catch ( final SQLTransientException e )
@@ -801,22 +832,7 @@ public class DbServices
 		{
 			final long start = System.nanoTime();
 			result = JdbcTools.executeQuery( connection, processor, query, arguments );
-			if ( LOG.isDebugEnabled() )
-			{
-				final double seconds = ( ( System.nanoTime() - start ) / 1000000L ) / 1000.0;
-				if ( seconds > SLOW_QUERY_THRESHOLD )
-				{
-					final String message = "retrieveObject() SLOW QUERY: time=" + seconds + "s, result=" + ( ( result.getFirst() != null ) ? result.isMultiple() ? "multiple" : "single" : "empty" ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments );
-					LOG.warn( message, new DatabaseException( message ) );
-				}
-				else
-				{
-					if ( LOG.isTraceEnabled() )
-					{
-						LOG.trace( "retrieveObject() time=" + seconds + "s, result=" + ( ( result.getFirst() != null ) ? result.isMultiple() ? "multiple" : "single" : "empty" ) + ", query='" + query + "', parameters=" + Arrays.toString( arguments ) );
-					}
-				}
-			}
+			logSlowQuery( start, "retrieveObject()", dbClass, result, query, arguments );
 		}
 		catch ( final SQLTransientException e )
 		{
