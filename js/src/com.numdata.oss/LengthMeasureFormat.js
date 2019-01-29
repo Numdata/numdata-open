@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,12 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 import { BigDecimal, BigInteger, RoundingMode } from 'bigdecimal';
+import bigRat from 'big-rational';
 
-import parseBigRational from 'big-rational';
-let BigRational = parseBigRational().constructor;
-BigRational.parse = parseBigRational;
+const BigRational = bigRat.one.constructor;
+BigRational.parse = bigRat;
 
 import LengthMeasurePreferences from './LengthMeasurePreferences';
 
@@ -72,13 +71,13 @@ export default class LengthMeasureFormat
 	 * </pre>
 	 */
 	static PARSE_PATTERN =
-		//                                                   numerator
-		//      negative?                                    |      denominator
-		//      |      feet                      whole       |      |      decimal (inches)
-		//      |      |                         |           |      |      |       fraction    inches?
-		//      |      |                         |           |      |      |          |        |
-		//      1      2                         3           4      5      6          7        8
-			/\s*(-)?(?:(\d+)'[-\s]?)?(?:(?:(?:(?:(\d+)[-\s])?(\d+)\/(\d+))|(\d+(?:[.,](\d+))?))(")?)?/;
+		//                                               numerator
+		//  negative?                                    |      denominator
+		//  |      feet                      whole       |      |      decimal (inches)
+		//  |      |                         |           |      |      |       fraction    inches?
+		//  |      |                         |           |      |      |          |        |
+		//  1      2                         3           4      5      6          7        8
+		/\s*(-)?(?:(\d+)'[-\s]?)?(?:(?:(?:(?:(\d+)[-\s])?(\d+)\/(\d+))|(\d+(?:[.,](\d+))?))(")?)?/;
 
 	/**
 	 * Group index in {@link #PARSE_PATTERN}.
@@ -414,11 +413,11 @@ export default class LengthMeasureFormat
 			result = number;
 		}
 		else if ( number instanceof BigDecimal ||
-				  number instanceof BigInteger )
+		          number instanceof BigInteger )
 		{
 			result = BigRational.parse( number.toString() );
 		}
-		else if ( typeof number == 'number' )
+		else if ( typeof number === 'number' )
 		{
 			result = BigRational.parse( number );
 		}
@@ -431,8 +430,7 @@ export default class LengthMeasureFormat
 	}
 
 	/**
-	 * Limit scale of {@link BigRational} according to {@link
-			* LengthMeasurePreferences}.
+	 * Limit scale of {@link BigRational} according to {@link LengthMeasurePreferences}.
 	 *
 	 * @param {BigRational} bigRational Value whose scale to limit.
 	 *
@@ -526,7 +524,7 @@ export default class LengthMeasureFormat
 			toAppendTo += preferences.getFractionSeparator();
 			toAppendTo += denominator.toString();
 
-			if ( preferences.getDisplayUnit() == LengthMeasurePreferences.LengthUnit.INCH )
+			if ( preferences.getDisplayUnit() === LengthMeasurePreferences.LengthUnit.INCH )
 			{
 				toAppendTo += preferences.getInchSymbol();
 			}
@@ -554,11 +552,11 @@ export default class LengthMeasureFormat
 				}
 			}
 
-			if ( numerator != null )
+			if ( numerator !== null )
 			{
 				toAppendTo += numerator.toString();
 
-				if ( preferences.getDisplayUnit() == LengthMeasurePreferences.LengthUnit.INCH )
+				if ( preferences.getDisplayUnit() === LengthMeasurePreferences.LengthUnit.INCH )
 				{
 					toAppendTo += preferences.getInchSymbol();
 				}
@@ -603,7 +601,7 @@ export default class LengthMeasureFormat
 			if ( decimalGroup !== undefined ) // ['-'] [<feet>] <decimal>
 			{
 				let decimalSeparator = this.getDecimalFormatSymbols().decimalSeparator;
-				value = BigRational.parse( ( decimalSeparator == '.' ) ? decimalGroup : decimalGroup.replace( decimalSeparator, '.' ) );
+				value = BigRational.parse( ( decimalSeparator === '.' ) ? decimalGroup : decimalGroup.replace( decimalSeparator, '.' ) );
 
 				if ( feetGroup !== undefined )
 				{
@@ -620,7 +618,7 @@ export default class LengthMeasureFormat
 			{
 				let numerator = parseInt( numeratorGroup );
 				let denominator = parseInt( matcher[ LengthMeasureFormat.DENOMINATOR_GROUP ] );
-				if ( denominator == 0 )
+				if ( denominator === 0 )
 				{
 					value = null;
 				}
@@ -656,7 +654,7 @@ export default class LengthMeasureFormat
 				value = null;
 			}
 
-			if ( value == null )
+			if ( value === null )
 			{
 				result = null;
 			}
@@ -667,7 +665,7 @@ export default class LengthMeasureFormat
 				let numerator = value.numerator;
 				let denominator = value.denominator;
 
-				if ( denominator == 1 )
+				if ( denominator === 1 )
 				{
 					result = numerator.valueOf();
 				}
@@ -677,15 +675,15 @@ export default class LengthMeasureFormat
 				}
 				else
 				{
-					let scale = ( denominator == 10 ) ? 1 :
-								( denominator == 100 ) ? 2 :
-								( denominator == 1000 ) ? 3 :
-								( denominator == 10000 ) ? 4 :
-								( denominator == 100000 ) ? 5 :
-								( denominator == 1000000 ) ? 6 :
-								( denominator == 10000000 ) ? 7 :
-								( denominator == 100000000 ) ? 8 :
-								( denominator == 1000000000 ) ? 9 : -1;
+					let scale = ( denominator === 10 ) ? 1 :
+					            ( denominator === 100 ) ? 2 :
+					            ( denominator === 1000 ) ? 3 :
+					            ( denominator === 10000 ) ? 4 :
+					            ( denominator === 100000 ) ? 5 :
+					            ( denominator === 1000000 ) ? 6 :
+					            ( denominator === 10000000 ) ? 7 :
+					            ( denominator === 100000000 ) ? 8 :
+					            ( denominator === 1000000000 ) ? 9 : -1;
 					if ( scale > 0 )
 					{
 						result = new BigDecimal( BigInteger.valueOf( numerator ), scale );
@@ -702,7 +700,7 @@ export default class LengthMeasureFormat
 	}
 
 	/**
-	 * Determine whether the given value is power of two.\
+	 * Determine whether the given value is power of two.
 	 *
 	 * @param {number} value Value to test.
 	 *
@@ -710,6 +708,6 @@ export default class LengthMeasureFormat
 	 */
 	static isPowerOfTwo( value )
 	{
-		return ( value != 0 ) && ( ( value & ( value - 1 ) ) == 0 );
+		return ( value !== 0 ) && ( ( value & ( value - 1 ) ) == 0 );
 	}
 }
