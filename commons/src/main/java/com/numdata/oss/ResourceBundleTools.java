@@ -102,7 +102,7 @@ public class ResourceBundleTools
 	 * Recursive bundle cache.
 	 */
 	@SuppressWarnings( "ConstantNamingConvention" )
-	public void clearCache()
+	public static void clearCache()
 	{
 		final Map<Locale, Map<String, ResourceBundle>> recursiveBundleCache = _recursiveBundleCache;
 		//noinspection SynchronizationOnLocalVariableOrMethodParameter
