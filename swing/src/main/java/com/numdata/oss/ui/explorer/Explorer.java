@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "NonSerializableFieldInSerializableClass" )
 public class Explorer
 extends JPanel
 implements ActionListener, ItemSelectable
@@ -105,12 +106,12 @@ implements ActionListener, ItemSelectable
 	/**
 	 * Default columns.
 	 */
-	public static final int DEFAULT_COLUMNS = 4;
+	private static final int DEFAULT_COLUMNS = 4;
 
 	/**
 	 * Default rows.
 	 */
-	public static final int DEFAULT_ROWS = 3;
+	private static final int DEFAULT_ROWS = 3;
 
 	/**
 	 * Property name: current folder, {@link #getCurrentFolder()}.
@@ -201,32 +202,37 @@ implements ActionListener, ItemSelectable
 	/**
 	 * Action command associated with action events.
 	 */
+	@Nullable
 	private String _actionCommand;
 
 	/**
-	 * Foldercombox to select folders.
+	 * Combo box to select folders.
 	 */
 	private JComboBox _folderComboBox;
 
 	/**
 	 * Filesystem the explorer was constructed with.
 	 */
+	@NotNull
 	private VirtualFileSystem _fileSystem;
+
+	/**
+	 * Base folder of the explorer. ("root")
+	 */
+	@NotNull
+	private String _baseFolder;
 
 	/**
 	 * Current active folder.
 	 */
+	@NotNull
 	private String _currentFolder;
 
 	/**
 	 * File that is currently selected.
 	 */
+	@Nullable
 	private VirtualFile _selectedFile;
-
-	/**
-	 * Base folder of the explorer. ("root")
-	 */
-	private String _baseFolder;
 
 	/**
 	 * Construct explorer panel.
@@ -234,7 +240,7 @@ implements ActionListener, ItemSelectable
 	 * @param virtualFileSystem {@link VirtualFileSystem} to use.
 	 * @param baseFolder        Folder to show in explorer.
 	 */
-	public Explorer( final VirtualFileSystem virtualFileSystem, final String baseFolder )
+	public Explorer( @NotNull final VirtualFileSystem virtualFileSystem, @Nullable final String baseFolder )
 	{
 		this( 64, virtualFileSystem, baseFolder, new ToolBarComponent[] {
 		Explorer.ToolBarComponent.FOLDER_LIST_LABEL,
@@ -249,10 +255,9 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param fileSystem        {@link VirtualFileSystem} to use.
 	 * @param baseFolder        Folder to show in explorer. {@code null} for root.
-	 * @param toolBarComponents Toolbar components to add to the toolbar. May be
-	 *                          {@code null}.
+	 * @param toolBarComponents Toolbar components to add to the toolbar.
 	 */
-	public Explorer( final VirtualFileSystem fileSystem, final String baseFolder, final ToolBarComponent[] toolBarComponents )
+	public Explorer( @NotNull final VirtualFileSystem fileSystem, @Nullable final String baseFolder, @Nullable final ToolBarComponent[] toolBarComponents )
 	{
 		this( 64, fileSystem, baseFolder, toolBarComponents );
 	}
@@ -263,10 +268,9 @@ implements ActionListener, ItemSelectable
 	 * @param thumbnailSize     Size of thumbnail images.
 	 * @param fileSystem        {@link VirtualFileSystem} to use.
 	 * @param baseFolder        Folder to show in explorer. {@code null} for root.
-	 * @param toolBarComponents Toolbar components to add to the toolbar. May be
-	 *                          {@code null}.
+	 * @param toolBarComponents Toolbar components to add to the toolbar.
 	 */
-	public Explorer( final int thumbnailSize, final VirtualFileSystem fileSystem, final String baseFolder, final ToolBarComponent[] toolBarComponents )
+	public Explorer( final int thumbnailSize, @NotNull final VirtualFileSystem fileSystem, @Nullable final String baseFolder, @Nullable final ToolBarComponent[] toolBarComponents )
 	{
 		super( new BorderLayout() );
 
@@ -316,7 +320,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param toolBarComponents Initial tool bar components.
 	 */
-	private void initGUI( final ToolBarComponent[] toolBarComponents )
+	private void initGUI( @Nullable final ToolBarComponent[] toolBarComponents )
 	{
 		removeAll();
 
@@ -332,9 +336,12 @@ implements ActionListener, ItemSelectable
 
 		_folderComboBox = folderComboBox;
 
-		for ( final ToolBarComponent component : toolBarComponents )
+		if ( toolBarComponents != null )
 		{
-			addToolbarComponent( component );
+			for ( final ToolBarComponent component : toolBarComponents )
+			{
+				addToolbarComponent( component );
+			}
 		}
 
 		add( _scrollPane, BorderLayout.CENTER );
@@ -387,6 +394,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param listener Item listener to add.
 	 */
+	@Override
 	public void addItemListener( final ItemListener listener )
 	{
 		listenerList.add( ItemListener.class, listener );
@@ -397,6 +405,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param listener Item listener to remove.
 	 */
+	@Override
 	public void removeItemListener( final ItemListener listener )
 	{
 		listenerList.remove( ItemListener.class, listener );
@@ -452,6 +461,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @return Action command associated with action events.
 	 */
+	@Nullable
 	public String getActionCommand()
 	{
 		return _actionCommand;
@@ -468,6 +478,7 @@ implements ActionListener, ItemSelectable
 		return ( selected != null ) ? new VirtualFile[] { selected } : new VirtualFile[ 0 ];
 	}
 
+	@Override
 	public Object[] getSelectedObjects()
 	{
 		return getSelectedItems();
@@ -501,7 +512,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param actionCommand Action command to associate with action events.
 	 */
-	public void setActionCommand( final String actionCommand )
+	public void setActionCommand( @Nullable final String actionCommand )
 	{
 		_actionCommand = actionCommand;
 	}
@@ -511,6 +522,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @return The currently selected item.
 	 */
+	@Nullable
 	public VirtualFile getSelectedFile()
 	{
 		return _selectedFile;
@@ -521,7 +533,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @param file File to set select.
 	 */
-	public void setSelectedFile( final VirtualFile file )
+	public void setSelectedFile( @Nullable final VirtualFile file )
 	{
 		final VirtualFile oldValue = _selectedFile;
 		if ( oldValue != file )
@@ -608,6 +620,7 @@ implements ActionListener, ItemSelectable
 		}
 	}
 
+	@Override
 	public void actionPerformed( final ActionEvent event )
 	{
 		final JComboBox folderComboBox = _folderComboBox;
@@ -655,6 +668,18 @@ implements ActionListener, ItemSelectable
 	 */
 	public void setCurrentFolder( final String folderPath )
 	{
+		setCurrentFolder( folderPath, false );
+	}
+
+	/**
+	 * Sets the folder that is displayed. When set, the view is updated to show the
+	 * current content of the specified folder.
+	 *
+	 * @param folderPath Path of the folder.
+	 * @param forceUpdate Update the UI regardless of whether {@link #_currentFolder} changed.
+	 */
+	private void setCurrentFolder( final String folderPath, final boolean forceUpdate )
+	{
 		if ( folderPath == null )
 		{
 			throw new NullPointerException( "folderPath" );
@@ -664,7 +689,7 @@ implements ActionListener, ItemSelectable
 		final String baseFolder = getBaseFolder();
 		final String newFolder = folderPath.startsWith( baseFolder ) ? folderPath : baseFolder;
 
-		if ( !newFolder.equals( currentFolder ) )
+		if ( forceUpdate || !newFolder.equals( currentFolder ) )
 		{
 			setSelectedFile( null );
 			_currentFolder = newFolder;
@@ -739,6 +764,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @return the current folder.
 	 */
+	@NotNull
 	public String getCurrentFolder()
 	{
 		return _currentFolder;
@@ -751,21 +777,14 @@ implements ActionListener, ItemSelectable
 	 */
 	public List<VirtualFile> getFileList()
 	{
-		final List<VirtualFile> result = new ArrayList<VirtualFile>();
-
 		try
 		{
-			for ( final VirtualFile file : _fileSystem.getFolderContents( _currentFolder ) )
-			{
-				result.add( file );
-			}
+			return new ArrayList<VirtualFile>( _fileSystem.getFolderContents( _currentFolder ) );
 		}
 		catch ( IOException e )
 		{
 			throw new RuntimeException( e );
 		}
-
-		return result;
 	}
 
 	/**
@@ -773,6 +792,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @return the base folder.
 	 */
+	@NotNull
 	public String getBaseFolder()
 	{
 		return _baseFolder;
@@ -938,6 +958,7 @@ implements ActionListener, ItemSelectable
 	 *
 	 * @return the {@link VirtualFileSystem} of the {@link Explorer}.
 	 */
+	@NotNull
 	public VirtualFileSystem getFileSystem()
 	{
 		return _fileSystem;
@@ -949,22 +970,11 @@ implements ActionListener, ItemSelectable
 	 * @param fileSystem File system to be set.
 	 * @param baseFolder Folder to be used as root folder.
 	 */
-	public void setFileSystem( final VirtualFileSystem fileSystem, final String baseFolder )
+	public void setFileSystem( @NotNull final VirtualFileSystem fileSystem, @NotNull final String baseFolder )
 	{
-		if ( fileSystem == null )
-		{
-			throw new NullPointerException( "fileSystem" );
-		}
-
-		if ( baseFolder == null )
-		{
-			throw new NullPointerException( "baseFolder" );
-		}
-
 		_fileSystem = fileSystem;
 		_baseFolder = baseFolder;
 
-		_currentFolder = null;
-		setCurrentFolder( baseFolder );
+		setCurrentFolder( baseFolder, true );
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -61,21 +60,22 @@ import com.numdata.oss.TextTools;
  * Demo application that searches images using Flickr. It is used to demonstrate
  * the {@link BackgroundProcessingListModel}.
  *
- * @author  Peter S. Heijnen
- * @author  John O'Conner (original Sun example code)
+ * @author Peter S. Heijnen
+ * @author John O'Conner (original Sun example code)
  */
 public class BackgroundProcessingListModelDemoApp
-	extends JFrame
+extends JFrame
 {
 	/**
 	 * Run application.
 	 *
-	 * @param   args    Command-line arguments.
+	 * @param args Command-line arguments.
 	 */
 	public static void main( final String[] args )
 	{
 		SwingUtilities.invokeLater( new Runnable()
 		{
+			@Override
 			public void run()
 			{
 				try
@@ -88,7 +88,7 @@ public class BackgroundProcessingListModelDemoApp
 				}
 
 				final JFrame frame = new BackgroundProcessingListModelDemoApp();
-				WindowTools.center( frame , -200 , -100 );
+				WindowTools.center( frame, -200, -100 );
 				frame.setVisible( true );
 			}
 		} );
@@ -97,7 +97,7 @@ public class BackgroundProcessingListModelDemoApp
 	/**
 	 * Construct application frame.
 	 */
-	public BackgroundProcessingListModelDemoApp()
+	private BackgroundProcessingListModelDemoApp()
 	{
 		super( "Image Search" );
 		setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
@@ -107,30 +107,33 @@ public class BackgroundProcessingListModelDemoApp
 		final JProgressBar progressBar = new JProgressBar();
 
 		final BackgroundProcessingListModel<FlickrWebClient.ImageInfo> listModel = new BackgroundProcessingListModel<FlickrWebClient.ImageInfo>()
+		{
+			/** Serialized data version. */
+			private static final long serialVersionUID = 4598738474171628782L;
+
+			@Override
+			protected void process( final FlickrWebClient.ImageInfo info )
 			{
-				/** Serialized data version. */
-				private static final long serialVersionUID = 4598738474171628782L;
+				info.setThumbnail( FlickrWebClient.retrieveThumbNail( info ) );
+			}
 
-				protected void process( final FlickrWebClient.ImageInfo info )
-				{
-					info.setThumbnail( FlickrWebClient.retrieveThumbNail( info ) );
-				}
-
-				protected void processed( final List<FlickrWebClient.ImageInfo> elements , final int progress )
-				{
-					super.processed( elements , progress );
-					progressBar.setIndeterminate( false );
-					progressBar.setValue( progress );
-				}
-			};
+			@Override
+			protected void processed( final List<FlickrWebClient.ImageInfo> elements, final int progress )
+			{
+				super.processed( elements, progress );
+				progressBar.setIndeterminate( false );
+				progressBar.setValue( progress );
+			}
+		};
 
 		final SortedListModel<ListModel> sortedModel = new SortedListModel<ListModel>();
 
 		final ListRowSorter<ListModel> sorter = new ListRowSorter<ListModel>( listModel );
-		sorter.setSortKeys( Arrays.asList( new RowSorter.SortKey( 0 , SortOrder.ASCENDING ) ) );
+		sorter.setSortKeys( Collections.singletonList( new RowSorter.SortKey( 0, SortOrder.ASCENDING ) ) );
 		sorter.setStringConverter( new ListStringConverter()
 		{
-			public String toString( final ListModel model , final int row )
+			@Override
+			public String toString( final ListModel model, final int row )
 			{
 				final FlickrWebClient.ImageInfo imageInfo = (FlickrWebClient.ImageInfo)model.getElementAt( row );
 				return imageInfo.getTitle();
@@ -140,33 +143,34 @@ public class BackgroundProcessingListModelDemoApp
 		sortedModel.setSorter( sorter );
 
 		searchField.addKeyListener( new KeyAdapter()
+		{
+			/** Active searcher. */
+			private Searcher _searcher = null;
+
+			@Override
+			public void keyPressed( final KeyEvent evt )
 			{
-				/** Active searcher. */
-				private Searcher _searcher = null;
-
-				public void keyPressed( final KeyEvent evt )
+				if ( evt.getKeyCode() == KeyEvent.VK_ENTER )
 				{
-					if ( evt.getKeyCode() == KeyEvent.VK_ENTER )
+					final String text = searchField.getText();
+					if ( TextTools.isNonEmpty( text ) )
 					{
-						final String text = searchField.getText();
-						if ( TextTools.isNonEmpty( text ) )
+						final Searcher previousSearcher = _searcher;
+						if ( ( previousSearcher != null ) && !previousSearcher.isDone() )
 						{
-							final Searcher previousSearcher = _searcher;
-							if ( ( previousSearcher != null ) && !previousSearcher.isDone() )
-							{
-								previousSearcher.cancel( true );
-							}
-
-							listModel.clear();
-							progressBar.setIndeterminate( true );
-
-							final Searcher searcher = new Searcher( listModel , text );
-							_searcher = searcher;
-							searcher.execute();
+							previousSearcher.cancel( true );
 						}
+
+						listModel.clear();
+						progressBar.setIndeterminate( true );
+
+						final Searcher searcher = new Searcher( listModel, text );
+						_searcher = searcher;
+						searcher.execute();
 					}
 				}
-			} );
+			}
+		} );
 
 		final JList imageList = new JList( sortedModel );
 		imageList.setLayoutOrientation( JList.HORIZONTAL_WRAP );
@@ -175,22 +179,22 @@ public class BackgroundProcessingListModelDemoApp
 		imageList.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
 
 		final Box searchBox = new Box( BoxLayout.LINE_AXIS );
-		searchBox.setBorder( BorderFactory.createEmptyBorder( 2 , 2 , 2 , 2 ) );
+		searchBox.setBorder( BorderFactory.createEmptyBorder( 2, 2, 2, 2 ) );
 		searchBox.add( new JLabel( "Search" ) );
 		searchBox.add( searchField );
 		searchBox.add( Box.createHorizontalGlue() );
 
 		final Box progressBox = new Box( BoxLayout.LINE_AXIS );
-		progressBox.setBorder( BorderFactory.createEmptyBorder( 2 , 2 , 2 , 2 ) );
+		progressBox.setBorder( BorderFactory.createEmptyBorder( 2, 2, 2, 2 ) );
 		progressBox.add( new JLabel( "Matched Images" ) );
 		progressBox.add( progressBar );
 
 		final JPanel topPanel = new JPanel( new BorderLayout() );
-		topPanel.add( searchBox , BorderLayout.NORTH );
-		topPanel.add( progressBox , BorderLayout.SOUTH );
+		topPanel.add( searchBox, BorderLayout.NORTH );
+		topPanel.add( progressBox, BorderLayout.SOUTH );
 
 		final JPanel contentPane = new JPanel( new BorderLayout() );
-		contentPane.add( topPanel , BorderLayout.NORTH );
+		contentPane.add( topPanel, BorderLayout.NORTH );
 		contentPane.add( new JScrollPane( imageList ) );
 		setContentPane( contentPane );
 	}
@@ -199,7 +203,7 @@ public class BackgroundProcessingListModelDemoApp
 	 * Worker that performs the search in the background.
 	 */
 	public static class Searcher
-		extends SwingWorker<List<FlickrWebClient.ImageInfo>,Void>
+	extends SwingWorker<List<FlickrWebClient.ImageInfo>, Void>
 	{
 		/**
 		 * List to add images to.
@@ -214,20 +218,22 @@ public class BackgroundProcessingListModelDemoApp
 		/**
 		 * Construct worker.
 		 *
-		 * @param   list    List to add images to.
-		 * @param   text    Text to search.
+		 * @param list List to add images to.
+		 * @param text Text to search.
 		 */
-		public Searcher( final List<FlickrWebClient.ImageInfo> list , final String text )
+		public Searcher( final List<FlickrWebClient.ImageInfo> list, final String text )
 		{
-			_list = list;
+			_list = new ArrayList<FlickrWebClient.ImageInfo>( list );
 			_text = text;
 		}
 
+		@Override
 		protected List<FlickrWebClient.ImageInfo> doInBackground()
 		{
-			return FlickrWebClient.searchImages( _text , 50 );
+			return FlickrWebClient.searchImages( _text, 50 );
 		}
 
+		@Override
 		protected void done()
 		{
 			if ( !isCancelled() )
@@ -249,11 +255,13 @@ public class BackgroundProcessingListModelDemoApp
 				final List<FlickrWebClient.ImageInfo> list = _list;
 				if ( infoList == null )
 				{
-					list.add( new FlickrWebClient.ImageInfo( null , null , null , null , "Error occurred!" , false , false , false ) );
+					//noinspection ConstantConditions
+					list.add( new FlickrWebClient.ImageInfo( null, null, null, null, "Error occurred!", false, false, false ) );
 				}
 				else if ( infoList.isEmpty() )
 				{
-					list.add( new FlickrWebClient.ImageInfo( null , null , null , null , "No images available" , false , false , false ) );
+					//noinspection ConstantConditions
+					list.add( new FlickrWebClient.ImageInfo( null, null, null, null, "No images available", false, false, false ) );
 				}
 				else
 				{
@@ -267,24 +275,28 @@ public class BackgroundProcessingListModelDemoApp
 	 * Cell renderer for image list.
 	 */
 	public static class CellRenderer
-		extends DefaultListCellRenderer
+	extends DefaultListCellRenderer
 	{
 		/**
 		 * Current image info to render.
 		 */
+		@SuppressWarnings( "NonSerializableFieldInSerializableClass" )
 		private FlickrWebClient.ImageInfo _info = null;
 
-		public Component getListCellRendererComponent( final JList list , final Object value , final int index , final boolean isSelected , final boolean cellHasFocus )
+		@Override
+		public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus )
 		{
 			_info = (FlickrWebClient.ImageInfo)value;
-			return super.getListCellRendererComponent( list , value , index , isSelected , cellHasFocus );
+			return super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
 		}
 
+		@Override
 		public void setIcon( final Icon icon )
 		{
 			super.setIcon( _info != null ? _info.getThumbnail() : null );
 		}
 
+		@Override
 		public void setText( final String text )
 		{
 			super.setText( _info != null ? _info.getTitle() : null );

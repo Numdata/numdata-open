@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ import java.util.concurrent.*;
 import javax.swing.*;
 
 import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * List model that automatically processes elements in the background. A typical
@@ -45,13 +46,14 @@ import com.numdata.oss.*;
  *
  * NOTE: Elements that have been retrieved more recently are processed with
  * higher priority. This is intended to improve the user experience when the
- * model is used for a {@link javax.swing.JList}, in which case visible items
+ * model is used for a {@link JList}, in which case visible items
  * are processed first.
  *
  * @param <T> type of elements in this model.
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "TransientFieldNotInitialized" )
 public abstract class BackgroundProcessingListModel<T>
 extends ArrayListModel<T>
 {
@@ -63,6 +65,7 @@ extends ArrayListModel<T>
 	/**
 	 * Worker that processes the queue in the background.
 	 */
+	@Nullable
 	private transient QueueWorker _worker;
 
 	/**
@@ -114,24 +117,15 @@ extends ArrayListModel<T>
 			final int index = indexOf( element );
 			if ( index >= 0 )
 			{
-				if ( index == end + 1 )
-				{
-					end = index;
-					if ( start == -1 )
-					{
-						start = index;
-					}
-				}
-				else
+				if ( index != end + 1 )
 				{
 					if ( start <= end )
 					{
 						fireContentsChanged( start, end );
 					}
-
 					start = index;
-					end = index;
 				}
+				end = index;
 			}
 		}
 
@@ -145,12 +139,13 @@ extends ArrayListModel<T>
 	 * Executed on the <i>Event Dispatch Thread</i> after all elements in the
 	 * queue have been processed.
 	 *
-	 * @param elements  Elements that were processed .
+	 * @param elements  Elements that were processed.
 	 * @param cancelled Whether the background process was cancelled or not.
 	 *
 	 * @see SwingWorker#done
 	 */
-	protected void done( final List<T> elements, final boolean cancelled )
+	@SuppressWarnings( "unused" )
+	protected void done( @NotNull final List<T> elements, final boolean cancelled )
 	{
 		_worker = null;
 
@@ -169,12 +164,9 @@ extends ArrayListModel<T>
 	}
 
 	/**
-	 * Returns the element at the specified position in this list.
-	 *
-	 * This re-queues elements to give them top priority.
-	 *
-	 * @inheritdoc
+	 * {@inheritDoc} This re-queues elements to give them top priority.
 	 */
+	@Nullable
 	@Override
 	public T get( final int index )
 	{
@@ -231,15 +223,7 @@ extends ArrayListModel<T>
 	{
 		synchronized ( _queue )
 		{
-			for ( final T element : collection )
-			{
-				if ( element != null )
-				{
-					final QueueElement<T> queueElement = new QueueElement<T>( element );
-					_queue.remove( queueElement );
-					addToQueue( queueElement );
-				}
-			}
+			addAllToQueue( collection );
 			return super.addAll( collection );
 		}
 	}
@@ -249,15 +233,7 @@ extends ArrayListModel<T>
 	{
 		synchronized ( _queue )
 		{
-			for ( final T element : collection )
-			{
-				if ( element != null )
-				{
-					final QueueElement<T> queueElement = new QueueElement<T>( element );
-					_queue.remove( queueElement );
-					addToQueue( queueElement );
-				}
-			}
+			addAllToQueue( collection );
 			return super.addAll( index, collection );
 		}
 	}
@@ -272,6 +248,7 @@ extends ArrayListModel<T>
 		}
 	}
 
+	@Nullable
 	@Override
 	public T remove( final int index )
 	{
@@ -291,8 +268,7 @@ extends ArrayListModel<T>
 	{
 		synchronized ( _queue )
 		{
-			final int modCount = toIndex - fromIndex;
-			final Object[] removedElements = new Object[ modCount ];
+			final Object[] removedElements = new Object[ toIndex - fromIndex ];
 			for ( int i = 0; i < removedElements.length; i++ )
 			{
 				removedElements[ i ] = super.get( fromIndex + i );
@@ -310,6 +286,7 @@ extends ArrayListModel<T>
 		}
 	}
 
+	@Nullable
 	@Override
 	public T set( final int index, final T element )
 	{
@@ -349,6 +326,26 @@ extends ArrayListModel<T>
 
 		clear();
 		super.finalize();
+	}
+
+	/**
+	 * Adds multiple new elements to the queue. Each non-null element in the
+	 * given collection is wrapped in a {@link QueueElement} and then added to the
+	 * queue using {@link #addToQueue}.
+	 *
+	 * @param collection Elements to add to the queue.
+	 */
+	private void addAllToQueue( final Collection<? extends T> collection )
+	{
+		for ( final T element : collection )
+		{
+			if ( element != null )
+			{
+				final QueueElement<T> queueElement = new QueueElement<T>( element );
+				_queue.remove( queueElement );
+				addToQueue( queueElement );
+			}
+		}
 	}
 
 	/**
@@ -398,12 +395,12 @@ extends ArrayListModel<T>
 					break;
 				}
 
-				final T element = queueElement.element;
+				final T element = queueElement._element;
 				if ( !result.contains( element ) )
 				{
 					BackgroundProcessingListModel.this.process( element );
 
-					for ( Iterator<T> i = result.iterator(); i.hasNext(); )
+					for ( final Iterator<T> i = result.iterator(); i.hasNext(); )
 					{
 						if ( !contains( i.next() ) )
 						{
@@ -465,12 +462,12 @@ extends ArrayListModel<T>
 		/**
 		 * List element.
 		 */
-		T element;
+		T _element;
 
 		/**
 		 * Value of {@link System#nanoTime()} when last accessed.
 		 */
-		long time;
+		long _time;
 
 		/**
 		 * Construct new queue element.
@@ -479,20 +476,20 @@ extends ArrayListModel<T>
 		 */
 		QueueElement( final T element )
 		{
-			this.element = element;
-			time = System.nanoTime();
+			_element = element;
+			_time = System.nanoTime();
 		}
 
 		public int hashCode()
 		{
-			return ( element != null ) ? element.hashCode() : 0;
+			return ( _element != null ) ? _element.hashCode() : 0;
 		}
 
 		public boolean equals( final Object other )
 		{
 			final boolean result;
 
-			final T element = this.element;
+			final T element = _element;
 
 			if ( other == this )
 			{
@@ -500,7 +497,7 @@ extends ArrayListModel<T>
 			}
 			else if ( other instanceof QueueElement )
 			{
-				final T otherElement = ( (QueueElement<T>)other ).element;
+				final T otherElement = ( (QueueElement<T>)other )._element;
 				result = ( element == null ) ? ( otherElement == null ) : element.equals( otherElement );
 			}
 			else
@@ -512,9 +509,9 @@ extends ArrayListModel<T>
 		}
 
 		@Override
-		public int compareTo( final QueueElement<T> other )
+		public int compareTo( @NotNull final QueueElement<T> other )
 		{
-			return ( time > other.time ) ? -1 : 1;
+			return ( _time > other._time ) ? -1 : 1;
 		}
 	}
 }

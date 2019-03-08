@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,55 +34,58 @@ import javax.swing.*;
 
 import com.numdata.oss.ui.*;
 import com.numdata.oss.ui.explorer.Explorer.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Wizard page that uses an {@link Explorer} component to allow the user to
  * select a file from a {@link VirtualFileSystem}.
  *
- * @author  G. Meinders
+ * @author Gerrit Meinders
  */
 public class ExplorerWizardPage
-	extends WizardPage
+extends WizardPage
 {
 	/**
 	 * Explorer component provided to select a file.
 	 */
+	@NotNull
 	private final Explorer _explorer;
 
 	/**
 	 * Quick find component for filtering the explorer.
 	 */
+	@Nullable
 	private QuickFindPanel _quickFind;
 
 	/**
 	 * Constructs an explorer wizard page based on a new in-memory file system
 	 * with no current selection and the default tool bar components.
 	 *
-	 * @param   wizard              Wizard that controls this page.
-	 * @param   res                 Resource bundle for this page (optional).
-	 * @param   name                Name and resource key of page (optional).
+	 * @param wizard Wizard that controls this page.
+	 * @param res    Resource bundle for this page (optional).
+	 * @param name   Name and resource key of page (optional).
 	 */
-	public ExplorerWizardPage( final Wizard wizard , final ResourceBundle res , final String name )
+	public ExplorerWizardPage( @NotNull final Wizard wizard, final ResourceBundle res, final String name )
 	{
-		this( wizard , res , name , new MemoryFileSystem() , null );
+		this( wizard, res, name, new MemoryFileSystem(), null );
 	}
 
 	/**
 	 * Construct page.
 	 *
-	 * @param   wizard              Wizard that controls this page.
-	 * @param   res                 Resource bundle for this page (optional).
-	 * @param   name                Name and resource key of page (optional).
-	 * @param   fileSystem          File system to select a file from.
-	 * @param   initialSelection    Initially selected file, if any.
-	 * @param   toolBarComponents   Indicates which components should be shown
-	 *                              in the tool bar of the explorer component.
+	 * @param wizard            Wizard that controls this page.
+	 * @param res               Resource bundle for this page (optional).
+	 * @param name              Name and resource key of page (optional).
+	 * @param fileSystem        File system to select a file from.
+	 * @param initialSelection  Initially selected file, if any.
+	 * @param toolBarComponents Indicates which components should be shown
+	 *                          in the tool bar of the explorer component.
 	 */
-	public ExplorerWizardPage( final Wizard wizard , final ResourceBundle res , final String name , final VirtualFileSystem fileSystem , final VirtualFile initialSelection , final ToolBarComponent... toolBarComponents )
+	public ExplorerWizardPage( @NotNull final Wizard wizard, final ResourceBundle res, final String name, @NotNull final VirtualFileSystem fileSystem, @Nullable final VirtualFile initialSelection, final ToolBarComponent... toolBarComponents )
 	{
-		super( wizard , res , name , new BorderLayout() );
+		super( wizard, res, name, new BorderLayout() );
 
-		final Explorer explorer = new Explorer( fileSystem , "/" , toolBarComponents );
+		final Explorer explorer = new Explorer( fileSystem, "/", toolBarComponents );
 		explorer.setLocale( wizard.getLocale() );
 		_explorer = explorer;
 
@@ -101,16 +104,16 @@ public class ExplorerWizardPage
 				if ( e.getStateChange() == ItemEvent.SELECTED )
 				{
 					final VirtualFile selectedFile = getSelectedFile();
-					final boolean     fileSelected = ( selectedFile != null );
-					final boolean     lastPage     = wizard.isLastPage( ExplorerWizardPage.this );
+					final boolean fileSelected = ( selectedFile != null );
+					final boolean lastPage = wizard.isLastPage( ExplorerWizardPage.this );
 
-					contentPane.setButtonState( Wizard.NEXT_ACTION   , fileSelected && !lastPage ? StandardContentPane.BUTTON_ENABLED : StandardContentPane.BUTTON_DISABLED );
-					contentPane.setButtonState( Wizard.FINISH_ACTION , fileSelected              ? StandardContentPane.BUTTON_ENABLED : StandardContentPane.BUTTON_DISABLED );
+					contentPane.setButtonState( Wizard.NEXT_ACTION, fileSelected && !lastPage ? StandardContentPane.BUTTON_ENABLED : StandardContentPane.BUTTON_DISABLED );
+					contentPane.setButtonState( Wizard.FINISH_ACTION, fileSelected ? StandardContentPane.BUTTON_ENABLED : StandardContentPane.BUTTON_DISABLED );
 				}
 				else
 				{
-					contentPane.setButtonState( Wizard.NEXT_ACTION   , StandardContentPane.BUTTON_DISABLED );
-					contentPane.setButtonState( Wizard.FINISH_ACTION , StandardContentPane.BUTTON_DISABLED );
+					contentPane.setButtonState( Wizard.NEXT_ACTION, StandardContentPane.BUTTON_DISABLED );
+					contentPane.setButtonState( Wizard.FINISH_ACTION, StandardContentPane.BUTTON_DISABLED );
 				}
 			}
 		} );
@@ -123,9 +126,9 @@ public class ExplorerWizardPage
 			@Override
 			public void actionPerformed( final ActionEvent e )
 			{
-				final Wizard     wizard    = getWizard();
-				final int        pageCount = wizard.getPageCount();
-				final WizardPage lastPage  = wizard.getPage( pageCount - 1 );
+				final Wizard wizard = getWizard();
+				final int pageCount = wizard.getPageCount();
+				final WizardPage lastPage = wizard.getPage( pageCount - 1 );
 
 				if ( ExplorerWizardPage.this == lastPage )
 				{
@@ -158,8 +161,8 @@ public class ExplorerWizardPage
 		final RowSorter<?> rowSorter = explorer.getRowSorter();
 		if ( rowSorter instanceof DefaultRowSorter )
 		{
-			quickFind = new QuickFindPanel( wizard.getLocale() , (DefaultRowSorter<?,?>)rowSorter );
-			add( quickFind , BorderLayout.NORTH );
+			quickFind = new QuickFindPanel( wizard.getLocale(), (DefaultRowSorter<?, ?>)rowSorter );
+			add( quickFind, BorderLayout.NORTH );
 		}
 		else
 		{
@@ -167,21 +170,25 @@ public class ExplorerWizardPage
 		}
 		_quickFind = quickFind;
 
-		add( explorer , BorderLayout.CENTER );
+		add( explorer, BorderLayout.CENTER );
 	}
 
 	@Override
 	protected void shown()
 	{
-		_quickFind.clear();
+		if ( _quickFind != null )
+		{
+			_quickFind.clear();
+		}
 		super.shown();
 	}
 
 	/**
 	 * Returns the explorer component shown on the page.
 	 *
-	 * @return  Explorer component.
+	 * @return Explorer component.
 	 */
+	@NotNull
 	protected Explorer getExplorer()
 	{
 		return _explorer;
@@ -190,8 +197,9 @@ public class ExplorerWizardPage
 	/**
 	 * Returns the quick find panel.
 	 *
-	 * @return  Quick find panel.
+	 * @return Quick find panel.
 	 */
+	@Nullable
 	protected QuickFindPanel getQuickFind()
 	{
 		return _quickFind;
@@ -201,9 +209,9 @@ public class ExplorerWizardPage
 	 * Selects the specified file. If necessary, the current folder of the
 	 * explorer is changed to the parent folder of the given file.
 	 *
-	 * @param   selectedFile    File to be selected.
+	 * @param selectedFile File to be selected.
 	 */
-	public void setSelectedFile( final VirtualFile selectedFile )
+	public void setSelectedFile( @Nullable final VirtualFile selectedFile )
 	{
 		final Explorer explorer = _explorer;
 
@@ -214,7 +222,7 @@ public class ExplorerWizardPage
 			final int lastSeparator = path.lastIndexOf( (int)'/' );
 			if ( lastSeparator > -1 )
 			{
-				explorer.setCurrentFolder( path.substring( 0 , lastSeparator ) );
+				explorer.setCurrentFolder( path.substring( 0, lastSeparator ) );
 			}
 		}
 
@@ -224,8 +232,9 @@ public class ExplorerWizardPage
 	/**
 	 * Returns the file that was selected by the user.
 	 *
-	 * @return  Selected file.
+	 * @return Selected file.
 	 */
+	@Nullable
 	public VirtualFile getSelectedFile()
 	{
 		return _explorer.getSelectedFile();
