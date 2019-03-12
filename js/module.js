@@ -28,6 +28,7 @@
 import clamp from './lib/clamp';
 import naturalOrder from './lib/naturalOrder';
 import scrollToElement from './lib/scrollToElement';
+import { difference as moduloDifference, nearest as moduloNearest } from './lib/Modulo';
 
 import ArrayTools from './lib/com.numdata.oss/ArrayTools';
 import AugmentedArrayList from './lib/com.numdata.oss/AugmentedArrayList';
@@ -51,6 +52,8 @@ export {
 	clamp,
 	naturalOrder,
 	scrollToElement,
+	moduloDifference,
+	moduloNearest,
 
 	ArrayTools,
 	AugmentedArrayList,
