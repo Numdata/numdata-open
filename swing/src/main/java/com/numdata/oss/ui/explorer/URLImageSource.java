@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,5 +88,11 @@ public class URLImageSource
 	public URL getUrl()
 	{
 		return _url;
+	}
+
+	@Override
+	public String toString()
+	{
+		return super.toString() + "[" + _url + "]";
 	}
 }

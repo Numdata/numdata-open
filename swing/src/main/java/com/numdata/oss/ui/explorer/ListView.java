@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ import org.jetbrains.annotations.*;
  * common views can easily be derived from this class by replacing the list's
  * cell renderer.
  *
- * @author  G. Meinders
+ * @author  Gerrit Meinders
  */
 public abstract class ListView
 	extends JList
@@ -112,7 +112,7 @@ public abstract class ListView
 		final ListRowSorter<ListModel> sorter = new ListRowSorter<ListModel>( model );
 		if ( sorted )
 		{
-			sorter.setSortKeys( Arrays.asList( new RowSorter.SortKey( 0 , SortOrder.ASCENDING ) ) );
+			sorter.setSortKeys( Collections.singletonList( new RowSorter.SortKey( 0, SortOrder.ASCENDING ) ) );
 		}
 		sorter.setComparator( 0 , new DefaultItemComparator( explorer.getLocale() ) );
 
@@ -160,10 +160,7 @@ public abstract class ListView
 					if ( item != null )
 					{
 						final VirtualFile file = item.getFile();
-						if ( file != null )
-						{
-							explorer.doubleClickFile( file );
-						}
+						explorer.doubleClickFile( file );
 					}
 				}
 			}
@@ -297,11 +294,13 @@ public abstract class ListView
 		/**
 		 * Virtual file represented by the item.
 		 */
+		@NotNull
 		private final VirtualFile _file;
 
 		/**
 		 * Cached thumbnail image.
 		 */
+		@Nullable
 		private Image _thumbnail;
 
 		/**
@@ -309,7 +308,7 @@ public abstract class ListView
 		 *
 		 * @param   file    Virtual file.
 		 */
-		public Item( final VirtualFile file )
+		public Item( @NotNull final VirtualFile file )
 		{
 			_file = file;
 			_thumbnail = null;
@@ -320,6 +319,7 @@ public abstract class ListView
 		 *
 		 * @return  Virtual file.
 		 */
+		@NotNull
 		public VirtualFile getFile()
 		{
 			return _file;
@@ -361,6 +361,7 @@ public abstract class ListView
 		 *
 		 * @return  Thumbnail image; or {@code null} if not yet loaded.
 		 */
+		@Nullable
 		public Image getThumbnail()
 		{
 			return _thumbnail;
