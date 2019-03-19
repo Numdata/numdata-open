@@ -31,6 +31,7 @@ import java.util.*;
 import javax.swing.*;
 
 import com.numdata.oss.*;
+import com.numdata.oss.measurement.*;
 
 /**
  * This implementation of the {@code Action} interface provides getters and
@@ -48,6 +49,11 @@ implements Runnable
 	 * Resource bundle.
 	 */
 	protected final ResourceBundle _bundle;
+
+	/**
+	 * Measurement recorder.
+	 */
+	private MeasurementRecorder _measurementRecorder = null;
 
 	/**
 	 * Construct basic action with settings from resource bundle using the
@@ -85,6 +91,21 @@ implements Runnable
 		setMnemonicKey( ResourceBundleTools.getString( bundle, key + "Mnemonic", null ) );
 	}
 
+	public MeasurementRecorder getMeasurementRecorder()
+	{
+		return _measurementRecorder;
+	}
+
+	public void setMeasurementRecorder( final MeasurementRecorder measurementRecorder )
+	{
+		_measurementRecorder = measurementRecorder;
+	}
+
+	public ResourceBundle getBundle()
+	{
+		return _bundle;
+	}
+
 	/**
 	 * Set default icon for action.
 	 */
@@ -113,6 +134,11 @@ implements Runnable
 	 */
 	public void actionPerformed( final ActionEvent event )
 	{
+		if ( ( event != null ) && ( _measurementRecorder != null ) )
+		{
+			_measurementRecorder.recordEvent( getActionCommand(), SwingMeasurements.getInteractionType( event ) );
+		}
+
 		try
 		{
 			run();
