@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,7 +163,6 @@ public class TestURITools
 	 */
 	@Test
 	public void testResolve()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testResolve" );
 
@@ -176,6 +175,9 @@ public class TestURITools
 		{ URI.create( "jar:file:///a/b.jar!/c" ), URI.create( "d/" ), URI.create( "jar:file:///a/b.jar!/d/" ) },
 		{ URI.create( "jar:file:///a/b.jar!/c" ), URI.create( "d/e" ), URI.create( "jar:file:///a/b.jar!/d/e" ) },
 		{ URI.create( "jar:file:///a/b.jar!/c" ), URI.create( "/d" ), URI.create( "jar:file:///a/b.jar!/d" ) },
+		{ URI.create( "file:////server/share/dir/" ), URI.create( "a" ), URI.create( "file:////server/share/dir/a" ) },
+		{ URI.create( "file:////server/share/dir/" ), URI.create( "a/b" ), URI.create( "file:////server/share/dir/a/b" ) },
+		{ URI.create( "file:////server/share/file" ), URI.create( "a" ), URI.create( "file:////server/share/a" ) },
 		};
 
 		for ( int i = 0; i < tests.length; i++ )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,9 +100,9 @@ public class URITools
 	 *
 	 * @return The resulting URI.
 	 *
-	 * @see URI#resolve(URI, URI)
+	 * @see URI#resolve(String)
 	 */
-	public static URI resolve( final String context, final String uri )
+	public static URI resolve( @NotNull final String context, @NotNull final String uri )
 	{
 		return resolve( URI.create( context ), URI.create( uri ) );
 	}
@@ -116,9 +116,9 @@ public class URITools
 	 *
 	 * @return The resulting URI.
 	 *
-	 * @see URI#resolve(URI, URI)
+	 * @see URI#resolve(String)
 	 */
-	public static URI resolve( final URI context, final String uri )
+	public static URI resolve( @NotNull final URI context, @NotNull final String uri )
 	{
 		return resolve( context, URI.create( uri ) );
 	}
@@ -132,9 +132,9 @@ public class URITools
 	 *
 	 * @return The resulting URI.
 	 *
-	 * @see URI#resolve(URI, URI)
+	 * @see URI#resolve(URI)
 	 */
-	public static URI resolve( final URI context, final URI uri )
+	public static URI resolve( @NotNull final URI context, @NotNull final URI uri )
 	{
 		URI result = context.resolve( uri );
 
@@ -156,6 +156,22 @@ public class URITools
 				{
 					result = URI.create( context.getScheme() + ':' + schemeSpecific.substring( 0, separator + 1 ) + resolvedPath );
 				}
+			}
+		}
+
+		/*
+		 * Work-around for JDK-4723726 - URI.normalize() ruins URI built from UNC File
+		 */
+		//noinspection ObjectEquality
+		if ( ( result != uri ) && !uri.isAbsolute() && "file".equals( context.getScheme() ) && ( context.getRawAuthority() == null ) && context.getPath().startsWith( "//" ) && !result.getPath().startsWith( "//" ) )
+		{
+			try
+			{
+				result = new URI( result.getScheme(), result.getAuthority(), "///" + result.getPath(), result.getQuery(), result.getFragment() );
+			}
+			catch ( final URISyntaxException e )
+			{
+				throw new AssertionError( "UNC URI recreation failed for " + result + " with context " + context + " and uri " + uri + " => " + e );
 			}
 		}
 
