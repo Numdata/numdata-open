@@ -379,12 +379,12 @@ public class URITools
 			{
 				for ( final Method filesMethod : Class.forName( "java.nio.file.Files" ).getMethods() )
 				{
-					if ( Modifier.isStatic( filesMethod.getModifiers() ) && ( filesMethod.getParameterCount() == 1 ) && "readAllBytes".equals( filesMethod.getName() ) && "java.nio.file.Path".equals( filesMethod.getParameterTypes()[ 0 ].getName() ) )
+					if ( Modifier.isStatic( filesMethod.getModifiers() ) && "readAllBytes".equals( filesMethod.getName() ) && filesMethod.getParameterTypes().length == 1 && "java.nio.file.Path".equals( filesMethod.getParameterTypes()[ 0 ].getName() ) )
 					{
 						for ( final Method pathsMethod : Class.forName( "java.nio.file.Paths" ).getMethods() )
 						{
 							//noinspection ObjectEquality
-							if ( Modifier.isStatic( pathsMethod.getModifiers() ) && ( pathsMethod.getParameterCount() == 1 ) && "get".equals( pathsMethod.getName() ) && ( URI.class == pathsMethod.getParameterTypes()[ 0 ] ) )
+							if ( Modifier.isStatic( pathsMethod.getModifiers() ) && "get".equals( pathsMethod.getName() ) && pathsMethod.getParameterTypes().length == 1 && ( URI.class == pathsMethod.getParameterTypes()[ 0 ] ) )
 							{
 								readAllBytesMethod = filesMethod;
 								pathsGetMethod = pathsMethod;
