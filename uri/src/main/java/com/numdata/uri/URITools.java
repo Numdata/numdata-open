@@ -171,7 +171,7 @@ public class URITools
 			}
 			catch ( final URISyntaxException e )
 			{
-				throw new AssertionError( "UNC URI recreation failed for " + result + " with context " + context + " and uri " + uri, e );
+				throw new AssertionError( "UNC URI recreation failed for " + result + " with context " + context + " and uri " + uri + " => " + e );
 			}
 		}
 
