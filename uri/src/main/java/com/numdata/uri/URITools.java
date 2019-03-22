@@ -27,6 +27,7 @@
 package com.numdata.uri;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 
@@ -205,34 +206,7 @@ public class URITools
 
 		if ( "file".equals( scheme ) )
 		{
-			final File file = new File( uri );
-			if ( !file.isFile() || !file.canRead() )
-			{
-				throw new FileNotFoundException( uri.toString() );
-			}
-
-			try
-			{
-				final long fileSize = file.length();
-				result = new byte[ (int)fileSize ];
-				final InputStream in = new FileInputStream( file );
-				try
-				{
-					int done = 0;
-					while ( done < result.length )
-					{
-						done += in.read( result, done, result.length - done );
-					}
-				}
-				finally
-				{
-					in.close();
-				}
-			}
-			catch ( final SecurityException e )
-			{
-				throw new IOException( String.valueOf( e ) );
-			}
+			result = readFileData( uri );
 		}
 		else if ( "ftp".equals( scheme ) )
 		{
@@ -355,6 +329,130 @@ public class URITools
 			}
 		}
 
+		return result;
+	}
+
+	/**
+	 * Whether {@link #readFileData(URI)} has tested NIO file system support
+	 * (available since Java 7).
+	 */
+	private static boolean testedNioFilesAPI = false;
+
+	/**
+	 * Reflection object for {@link java.nio.file.Files#readAllBytes(java.nio.file.Path)}
+	 * method.
+	 */
+	private static Method nioFileFilesReadAllBytes = null;
+
+	/**
+	 * Reflection object for {@link java.nio.file.Paths#get(URI)}  method.
+	 */
+	private static Method nioFilePathsGet = null;
+
+	/**
+	 * Called by {@link #readData(URI)} to read data from a '{@code file}' URI.
+	 *
+	 * @param uri URI with '{@code file}' scheme.
+	 *
+	 * @return File contents in a byte array.
+	 *
+	 * @throws IOException if the data could not be retrieved.
+	 */
+	private static byte[] readFileData( @NotNull final URI uri )
+	throws IOException
+	{
+		byte[] result = null;
+
+		/*
+		 * Try to load file content using the NIO file API (since Java 7).
+		 *
+		 * The following reflection code if equivalent to:
+		 * <pre>
+		 *      result = Files.readAllBytes( Paths.get( uri ) );
+		 * </pre>
+		 */
+		Method readAllBytesMethod = nioFileFilesReadAllBytes;
+		Method pathsGetMethod = nioFilePathsGet;
+		if ( ( ( readAllBytesMethod == null ) || ( pathsGetMethod == null ) ) && !testedNioFilesAPI )
+		{
+			try
+			{
+				for ( final Method filesMethod : Class.forName( "java.nio.file.Files" ).getMethods() )
+				{
+					if ( Modifier.isStatic( filesMethod.getModifiers() ) && "readAllBytes".equals( filesMethod.getName() ) && filesMethod.getParameterTypes().length == 1 && "java.nio.file.Path".equals( filesMethod.getParameterTypes()[ 0 ].getName() ) )
+					{
+						for ( final Method pathsMethod : Class.forName( "java.nio.file.Paths" ).getMethods() )
+						{
+							//noinspection ObjectEquality
+							if ( Modifier.isStatic( pathsMethod.getModifiers() ) && "get".equals( pathsMethod.getName() ) && pathsMethod.getParameterTypes().length == 1 && ( URI.class == pathsMethod.getParameterTypes()[ 0 ] ) )
+							{
+								readAllBytesMethod = filesMethod;
+								pathsGetMethod = pathsMethod;
+								break;
+							}
+						}
+						break;
+					}
+				}
+			}
+			catch ( final Throwable ignored )
+			{
+			}
+			finally
+			{
+				nioFileFilesReadAllBytes = readAllBytesMethod;
+				nioFilePathsGet = pathsGetMethod;
+				testedNioFilesAPI = true;
+			}
+		}
+
+		if ( ( ( readAllBytesMethod != null ) && ( pathsGetMethod != null ) ) )
+		{
+			try
+			{
+				result = (byte[])readAllBytesMethod.invoke( null, pathsGetMethod.invoke( null, uri ) );
+			}
+			catch ( final IllegalAccessException ignored )
+			{
+			}
+			catch ( final InvocationTargetException e )
+			{
+				final Throwable cause = e.getCause();
+				throw ( cause instanceof IOException ) ? (IOException)cause : new IOException( cause );
+			}
+		}
+
+		if ( result == null )
+		{
+			final File file = new File( uri );
+			if ( !file.isFile() || !file.canRead() )
+			{
+				throw new FileNotFoundException( uri.toString() );
+			}
+
+			try
+			{
+				final long fileSize = file.length();
+				result = new byte[ (int)fileSize ];
+				final InputStream in = new FileInputStream( file );
+				try
+				{
+					int done = 0;
+					while ( done < result.length )
+					{
+						done += in.read( result, done, result.length - done );
+					}
+				}
+				finally
+				{
+					in.close();
+				}
+			}
+			catch ( final SecurityException e )
+			{
+				throw new IOException( String.valueOf( e ) );
+			}
+		}
 		return result;
 	}
 
