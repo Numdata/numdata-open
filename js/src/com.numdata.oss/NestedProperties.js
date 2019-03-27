@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,8 +85,7 @@ export default class NestedProperties {
 	 */
 	getBoolean( name, defaultValue )
 	{
-		var value = this._values[ name ];
-		return value == null ? defaultValue : value;
+		return this._values.hasOwnProperty( name ) ? !!this._values[ name ] : defaultValue;
 	}
 
 	/**
@@ -99,8 +98,7 @@ export default class NestedProperties {
 	 */
 	getFloat( name, defaultValue )
 	{
-		var value = this._values[ name ];
-		return value == null ? defaultValue : value;
+		return this._values.hasOwnProperty( name ) ? replaceNaN( Number.parseFloat( this._values[ name ] ), defaultValue ) : defaultValue;
 	}
 
 	/**
@@ -113,8 +111,7 @@ export default class NestedProperties {
 	 */
 	getInt( name, defaultValue )
 	{
-		var value = this._values[ name ];
-		return value == null ? defaultValue : value;
+		return this._values.hasOwnProperty( name ) ? replaceNaN( Number.parseInt( this._values[ name ] ), defaultValue ) : defaultValue;
 	}
 
 	/**
@@ -139,8 +136,8 @@ export default class NestedProperties {
 	 */
 	getProperty( name )
 	{
-		var value = this._values[ name ];
-		return typeof value == 'string' ? value : null;
+		const value = this._values[ name ];
+		return typeof value === 'string' ? value : null;
 	}
 
 	/**
@@ -152,7 +149,7 @@ export default class NestedProperties {
 	 */
 	set( nameOrProperties, propertyValue )
 	{
-		if ( typeof nameOrProperties == 'string' )
+		if ( typeof nameOrProperties === 'string' )
 		{
 			this._values[ nameOrProperties ] = propertyValue;
 		}
@@ -165,6 +162,11 @@ export default class NestedProperties {
 		{
 			throw new TypeError( nameOrProperties );
 		}
+	}
+
+	clear()
+	{
+		this._values = {};
 	}
 
 	/**
@@ -196,7 +198,7 @@ export default class NestedProperties {
 					}
 					else
 					{
-						result = thisValue == otherValue;
+						result = thisValue === otherValue;
 					}
 
 					if ( !result )
@@ -209,4 +211,9 @@ export default class NestedProperties {
 
 		return result;
 	}
+}
+
+function replaceNaN( maybeNaN, replacement )
+{
+	return Number.isNaN( maybeNaN ) ? replacement : maybeNaN;
 }

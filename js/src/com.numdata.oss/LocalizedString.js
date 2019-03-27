@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,9 +71,9 @@ export default class LocalizedString
 
 		if ( localeSpecificStrings )
 		{
-			if ( ( localeSpecificStrings.length % 2 ) != 0 )
+			if ( ( localeSpecificStrings.length % 2 ) !== 0 )
 			{
-				throw new TypeError( "Bad number of arguments: " + ( 1 + localeSpecificStrings.length ) );
+				throw new TypeError( 'Bad number of arguments: ' + ( 1 + localeSpecificStrings.length ) );
 			}
 
 			for ( let i = 0; i < localeSpecificStrings.length; i += 2 )
@@ -81,13 +81,13 @@ export default class LocalizedString
 				const locale = localeSpecificStrings[ i ];
 				if ( !locale )
 				{
-					throw new TypeError( i + ": " + locale );
+					throw new TypeError( i + ': ' + locale );
 				}
 
 				const string = localeSpecificStrings[ i + 1 ];
 				if ( !string )
 				{
-					throw new TypeError( ( i + 1 ) + ": " + string );
+					throw new TypeError( ( i + 1 ) + ': ' + string );
 				}
 
 				result.set( string, locale );
@@ -113,28 +113,28 @@ export default class LocalizedString
 	 *
 	 * @return {?string} String for the specified locale; {@code defaultValue} if no suitable string was found.
 	 */
-	get( locale, defaultValue )
+	get( locale = null, defaultValue = null )
 	{
 		let result;
 
-		let key = ( locale == null ) ? "" : String( locale );
+		let key = String( locale || '' );
 		while ( true ) // eslint-disable-line no-constant-condition
 		{
 			result = this.getSpecific( key );
-			if ( ( result != null ) || !key )
+			if ( ( result !== null ) || !key )
 			{
 				break;
 			}
 
 			let end = key.lastIndexOf( '_' );
-			key = ( end < 0 ) ? "" : key.substring( 0, end );
+			key = ( end < 0 ) ? '' : key.substring( 0, end );
 		}
 
-		if ( ( result == null ) && ( locale == null ) )
+		if ( ( result === null ) && ( locale === null ) )
 		{
-			result = this.getSpecific( "en" );
+			result = this.getSpecific( 'en' );
 
-			if ( result == null )
+			if ( result === null )
 			{
 				let names = Object.keys( this._values );
 				if ( names.length )
@@ -144,7 +144,7 @@ export default class LocalizedString
 			}
 		}
 
-		if ( result == null )
+		if ( result === null )
 		{
 			result = defaultValue;
 		}
@@ -155,14 +155,13 @@ export default class LocalizedString
 	/**
 	 * Get string for the specified locale and only that locale.
 	 *
-	 * @param {string} [locale] Locale to get string for; {@code null} for any.
+	 * @param {string|null} locale Locale to get string for; {@code null} or empty string for the default locale.
 	 *
-	 * @return {?string} String for the specified locale; {@code null} if no entry was
-	 *         found.
+	 * @return {string|null} String for the specified locale; {@code null} if no entry was found.
 	 */
 	getSpecific( locale )
 	{
-		return this._values[ ( locale == null ) ? "" : locale ];
+		return this._values[ locale || '' ] || null;
 	}
 
 	/**
@@ -184,7 +183,7 @@ export default class LocalizedString
 		}
 		else
 		{
-			this._values[ ( locale == null ) ? "" : locale ] = value;
+			this._values[ locale || '' ] = value;
 		}
 	}
 
@@ -206,7 +205,7 @@ export default class LocalizedString
 	 */
 	isEmpty()
 	{
-		return Object.keys( this._values ).length == 0;
+		return Object.keys( this._values ).length === 0;
 	}
 
 	/**
@@ -216,7 +215,7 @@ export default class LocalizedString
 	 */
 	remove( locale )
 	{
-		delete this._values[ ( locale == null ) ? "" : locale ];
+		delete this._values[ locale || '' ];
 	}
 
 	/**
@@ -229,19 +228,19 @@ export default class LocalizedString
 	equals( other )
 	{
 		let result = false;
-		if ( other == this )
+		if ( other === this )
 		{
 			result = true;
 		}
 		else if ( other instanceof LocalizedString )
 		{
 			var keys = Object.keys( this._values );
-			result = ( keys.length == Object.keys( other._values ).length );
+			result = ( keys.length === Object.keys( other._values ).length );
 			if ( result )
 			{
 				for ( let key of keys )
 				{
-					if ( this._values[ key ] != other._values[ key ] )
+					if ( this._values[ key ] !== other._values[ key ] )
 					{
 						result = false;
 						break;

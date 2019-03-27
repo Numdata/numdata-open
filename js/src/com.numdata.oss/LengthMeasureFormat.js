@@ -26,11 +26,10 @@
  */
 import { BigDecimal, BigInteger, RoundingMode } from 'bigdecimal';
 import bigRat from 'big-rational';
+import LengthMeasurePreferences from './LengthMeasurePreferences';
 
 const BigRational = bigRat.one.constructor;
 BigRational.parse = bigRat;
-
-import LengthMeasurePreferences from './LengthMeasurePreferences';
 
 /**
  * Class for formatting and parsing lengths.
@@ -292,7 +291,7 @@ export default class LengthMeasureFormat
 		{
 			result = new BigDecimal( number );
 		}
-		else if ( typeof number == 'number' )
+		else if ( typeof number === 'number' )
 		{
 			result = new BigDecimal( number );
 		}
@@ -337,7 +336,7 @@ export default class LengthMeasureFormat
 	/**
 	 * Formats a {@link BigDecimal}.
 	 *
-	 * @param {BigDecimal} number     Number to format.
+	 * @param {BigDecimal} number Number to format.
 	 * @param {string} [toAppendTo] String to append the result to.
 	 *
 	 * @return {string} Formatted number.
@@ -362,14 +361,14 @@ export default class LengthMeasureFormat
 		if ( preferences.isFeet() )
 		{
 			let feet = whole.toBigInteger().divide( LengthMeasureFormat.TWELVE );
-			if ( preferences.isFeetZero() || ( feet.signum() != 0 ) )
+			if ( preferences.isFeetZero() || ( feet.signum() !== 0 ) )
 			{
 				toAppendTo += feet.toString();
 				toAppendTo += preferences.getFeetSymbol();
 
 				whole = whole.subtract( new BigDecimal( feet.multiply( LengthMeasureFormat.TWELVE ) ) );
 
-				if ( preferences.isInchesZero() || ( whole.signum() != 0 ) )
+				if ( preferences.isInchesZero() || ( whole.signum() !== 0 ) )
 				{
 					toAppendTo += preferences.getFeetInchesSeparator();
 				}
@@ -380,13 +379,13 @@ export default class LengthMeasureFormat
 			}
 		}
 
-		if ( whole != null )
+		if ( whole )
 		{
 			let wholeString = whole.toPlainString();
 			let decimalSeparator = this.getDecimalFormatSymbols().decimalSeparator;
-			toAppendTo += ( decimalSeparator == '.' ) ? wholeString : wholeString.replace( '.', decimalSeparator );
+			toAppendTo += ( decimalSeparator === '.' ) ? wholeString : wholeString.replace( '.', decimalSeparator );
 
-			if ( preferences.getDisplayUnit() == LengthMeasurePreferences.LengthUnit.INCH )
+			if ( preferences.getDisplayUnit() === LengthMeasurePreferences.LengthUnit.INCH )
 			{
 				toAppendTo += preferences.getInchSymbol();
 			}
@@ -708,6 +707,6 @@ export default class LengthMeasureFormat
 	 */
 	static isPowerOfTwo( value )
 	{
-		return ( value !== 0 ) && ( ( value & ( value - 1 ) ) == 0 );
+		return ( value !== 0 ) && ( ( value & ( value - 1 ) ) === 0 );
 	}
 }

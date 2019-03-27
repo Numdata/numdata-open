@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -100,8 +100,8 @@ export default class EventDispatcher
 	 */
 	removeFilter( filter )
 	{
-		var index = this._filters.indexOf( filter );
-		if ( index != -1 )
+		const index = this._filters.indexOf( filter );
+		if ( index !== -1 )
 		{
 			this._filters.splice( index, 1 );
 		}
@@ -122,7 +122,7 @@ export default class EventDispatcher
 		{
 			throw new TypeError();
 		}
-		return filter == this._focusFilter;
+		return filter === this._focusFilter;
 	}
 
 	/**
@@ -177,7 +177,7 @@ export default class EventDispatcher
 			for ( let i = 0 ; filteredEvent && ( i < filters.length ) ; i++ )
 			{
 				let filter = filters[ i ];
-				if ( filter != focusFilter )
+				if ( filter !== focusFilter )
 				{
 					filteredEvent = filter.filterEvent( filteredEvent );
 				}
@@ -195,7 +195,7 @@ export default class EventDispatcher
 	 */
 	addListener( listener )
 	{
-		if ( listener && ( this._listeners.indexOf( listener ) == -1 ) )
+		if ( listener && ( this._listeners.indexOf( listener ) === -1 ) )
 		{
 			this._listeners.push( listener );
 		}
@@ -211,8 +211,8 @@ export default class EventDispatcher
 	{
 		if ( listener )
 		{
-			var index = this._listeners.indexOf( listener );
-			if ( index != -1 )
+			const index = this._listeners.indexOf( listener );
+			if ( index !== -1 )
 			{
 				this._listeners.splice( index, 1 );
 			}
