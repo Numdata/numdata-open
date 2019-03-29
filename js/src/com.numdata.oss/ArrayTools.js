@@ -75,7 +75,7 @@ export default
 			else if ( array1 instanceof Array && array2 instanceof Array )
 			{
 				const length = array1.length;
-				if ( length == array2.length )
+				if ( length === array2.length )
 				{
 					result = true;
 					for ( let i = 0 ; i < length ; i++ )

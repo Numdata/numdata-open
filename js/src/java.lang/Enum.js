@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 /**
  * Base class for enumeration types.
  */
-function Enum( name )
+export default function Enum( name )
 {
 	this.name = name;
 }
@@ -52,8 +52,8 @@ Enum.create = function( ...values )
 
 	EnumImpl.prototype = Object.create( Enum.prototype );
 
-	EnumImpl.values = values.map( ( value ) => new EnumImpl( value ) );
-	EnumImpl.values.forEach( ( value ) => EnumImpl[ value.name ] = value );
+	EnumImpl.values = values.map( value => new EnumImpl( value ) );
+	EnumImpl.values.forEach( value => EnumImpl[ value.name ] = value );
 
 	return EnumImpl;
 };
@@ -69,12 +69,10 @@ Enum.create = function( ...values )
  */
 Enum.valueOf = function( value )
 {
-	const result = this.values.find( e => e.valueOf() == value );
+	const result = this.values.find( e => e.name === value );
 	if ( !result )
 	{
 		throw new TypeError( value + " not found in " + this.name );
 	}
 	return result;
 };
-
-export default Enum;

@@ -95,7 +95,7 @@ export default class EventDispatcher
 	 */
 	removeFilter( filter )
 	{
-		var index = this._filters.indexOf( filter );
+		const index = this._filters.indexOf( filter );
 		if ( index !== -1 )
 		{
 			this._filters.splice( index, 1 );
@@ -206,7 +206,7 @@ export default class EventDispatcher
 	{
 		if ( listener )
 		{
-			var index = this._listeners.indexOf( listener );
+			const index = this._listeners.indexOf( listener );
 			if ( index !== -1 )
 			{
 				this._listeners.splice( index, 1 );
@@ -240,6 +240,7 @@ export default class EventDispatcher
 				 * Dispatch event to all registered listeners.
 				 */
 				/* NOTE: use indexed loop here to prevent ConcurrentModificationException's when listeners change the listener list */
+				//noinspection ForLoopReplaceableByForEach
 				for ( let i = 0; i < listeners.length; i++ )
 				{
 					listeners[ i ]( filteredEvent );

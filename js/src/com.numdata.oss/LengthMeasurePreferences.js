@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,7 @@ class LengthUnit
 	 */
 	isImperial()
 	{
-		return ( this == LengthUnit.INCH ) || ( this == LengthUnit.FOOT );
+		return ( this === LengthUnit.INCH ) || ( this === LengthUnit.FOOT );
 	}
 
 	/**
@@ -131,14 +131,14 @@ class LengthUnit
 	{
 		let result = value;
 
-		if ( toUnit != this )
+		if ( toUnit !== this )
 		{
-			if ( this != LengthUnit.METER )
+			if ( this !== LengthUnit.METER )
 			{
 				result = result.multiply( this._decimalToMeters );
 			}
 
-			if ( toUnit != LengthUnit.METER )
+			if ( toUnit !== LengthUnit.METER )
 			{
 				result = result.divide( toUnit._decimalToMeters, maxScale, RoundingMode.HALF_UP() );
 			}
@@ -157,7 +157,7 @@ class LengthUnit
 	 */
 	convertBR( value, toUnit )
 	{
-		return ( toUnit == this ) ? value : value.multiply( this._rationalToMeters ).divide( toUnit._rationalToMeters );
+		return ( toUnit === this ) ? value : value.multiply( this._rationalToMeters ).divide( toUnit._rationalToMeters );
 	}
 
 	/**
