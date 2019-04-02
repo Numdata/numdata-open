@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@ public class BeanTools
 	 * Create instance of the given class using its default constructor.
 	 *
 	 * @param clazz Class to create instance of.
+	 * @param <T>   Bean class.
 	 *
 	 * @return Instance of requested class.
 	 */
@@ -235,11 +236,12 @@ public class BeanTools
 	 *
 	 * @param clazz      Class to get the bean property accessors from.
 	 * @param exceptions Names of properties to exclude from result.
+	 * @param <T>        Bean class.
 	 *
 	 * @return Bean property accessors for class.
 	 */
 	@NotNull
-	public static List<Accessor> getPropertyAccessors( @NotNull final Class<?> clazz, final String... exceptions )
+	public static <T> List<Accessor<T>> getPropertyAccessors( @NotNull final Class<T> clazz, final String... exceptions )
 	{
 		return getPropertyAccessors( clazz, true, exceptions );
 	}
@@ -251,15 +253,16 @@ public class BeanTools
 	 * @param includeReadOnly If true, include read-only properties; if false,
 	 *                        only return read-write properties.
 	 * @param exceptions      Names of properties to exclude from result.
+	 * @param <T>             Bean class.
 	 *
 	 * @return Bean property accessors for class.
 	 */
 	@NotNull
-	public static List<Accessor> getPropertyAccessors( @NotNull final Class<?> clazz, final boolean includeReadOnly, final String... exceptions )
+	public static <T> List<Accessor<T>> getPropertyAccessors( @NotNull final Class<T> clazz, final boolean includeReadOnly, final String... exceptions )
 	{
 		final List<String> exceptionList = Arrays.asList( exceptions );
 		final List<PropertyDescriptor> propertyDescriptors = getPropertyDescriptors( clazz );
-		final List<Accessor> result = new ArrayList<Accessor>( propertyDescriptors.size() - exceptionList.size() - 1 );
+		final List<Accessor<T>> result = new ArrayList<Accessor<T>>( propertyDescriptors.size() - exceptionList.size() - 1 );
 
 		for ( final PropertyDescriptor propertyDescriptor : propertyDescriptors )
 		{
@@ -270,7 +273,7 @@ public class BeanTools
 				{
 					if ( includeReadOnly || ( propertyDescriptor.getWriteMethod() != null ) )
 					{
-						result.add( new Accessor( clazz, propertyDescriptor ) );
+						result.add( new Accessor<T>( clazz, propertyDescriptor ) );
 					}
 				}
 			}
@@ -466,7 +469,7 @@ public class BeanTools
 	 * @return {@link PropertyDescriptor}; {@code null} if property not found.
 	 */
 	@Nullable
-	public static PropertyDescriptor getPropertyDescriptor( final @NotNull Class<?> clazz, final @NotNull String propertyName )
+	public static PropertyDescriptor getPropertyDescriptor( @NotNull final Class<?> clazz, @NotNull final String propertyName )
 	{
 		PropertyDescriptor propertyDescriptor = null;
 		for ( final PropertyDescriptor candidate : getPropertyDescriptors( clazz ) )
@@ -489,7 +492,7 @@ public class BeanTools
 	 * @return {@link PropertyDescriptor} list.
 	 */
 	@NotNull
-	public static List<PropertyDescriptor> getPropertyDescriptors( final @NotNull Class<?> clazz )
+	public static List<PropertyDescriptor> getPropertyDescriptors( @NotNull final Class<?> clazz )
 	{
 		final BeanInfo info;
 		try
@@ -507,13 +510,13 @@ public class BeanTools
 	 * This is a bean property accessor. It encapsulates information about and
 	 * provides access to a single bean property.
 	 */
-	public static class Accessor
+	public static class Accessor<T>
 	{
 		/**
 		 * Bean class.
 		 */
 		@NotNull
-		private final Class<?> _beanClass;
+		private final Class<T> _beanClass;
 
 		/**
 		 * Getter method.
@@ -527,7 +530,7 @@ public class BeanTools
 		 * @param beanClass    Bean class.
 		 * @param propertyName Property name.
 		 */
-		public Accessor( @NotNull final Class<?> beanClass, @NotNull final String propertyName )
+		public Accessor( @NotNull final Class<T> beanClass, @NotNull final String propertyName )
 		{
 			_beanClass = beanClass;
 
@@ -545,7 +548,7 @@ public class BeanTools
 		 * @param beanClass          Bean class.
 		 * @param propertyDescriptor Property descriptor.
 		 */
-		public Accessor( @NotNull final Class<?> beanClass, @NotNull final PropertyDescriptor propertyDescriptor )
+		public Accessor( @NotNull final Class<T> beanClass, @NotNull final PropertyDescriptor propertyDescriptor )
 		{
 			_beanClass = beanClass;
 			_propertyDescriptor = propertyDescriptor;
@@ -557,7 +560,7 @@ public class BeanTools
 		 * @return Bean class.
 		 */
 		@NotNull
-		public Class<?> getBeanClass()
+		public Class<T> getBeanClass()
 		{
 			return _beanClass;
 		}
@@ -647,10 +650,11 @@ public class BeanTools
 		 * Gets property value from a bean.
 		 *
 		 * @param bean Bean to get property from.
+		 * @param <B>  Bean class.
 		 *
 		 * @return Bean property value.
 		 */
-		public Object getValue( @NotNull final Object bean )
+		public <B extends T> Object getValue( @NotNull final B bean )
 		{
 			return BeanTools.getValue( getGetter(), bean );
 		}
@@ -660,8 +664,9 @@ public class BeanTools
 		 *
 		 * @param bean  Bean to set value in.
 		 * @param value Property value.
+		 * @param <B>   Bean class.
 		 */
-		public void setValue( @NotNull final Object bean, @Nullable final Object value )
+		public <B extends T> void setValue( @NotNull final B bean, @Nullable final Object value )
 		{
 			final Method setter = getSetter();
 			if ( setter == null )
@@ -679,9 +684,10 @@ public class BeanTools
 		 *
 		 * @param bean  Bean to set value in.
 		 * @param value String value.
+		 * @param <B>   Bean class.
 		 */
 		@SuppressWarnings( { "ObjectEquality", "ChainOfInstanceofChecks" } )
-		public void setValueFromString( @NotNull final Object bean, final String value )
+		public <B extends T> void setValueFromString( @NotNull final B bean, final String value )
 		{
 			final Class<?> type = getType();
 
@@ -727,7 +733,6 @@ public class BeanTools
 			}
 			else if ( type.isEnum() )
 			{
-				//noinspection unchecked
 				setValue( bean, Enum.valueOf( type.asSubclass( Enum.class ), value ) );
 			}
 			else
