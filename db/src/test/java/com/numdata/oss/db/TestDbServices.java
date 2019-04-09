@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,12 +27,13 @@
 package com.numdata.oss.db;
 
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.*;
 
 import org.jetbrains.annotations.*;
 import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  * This class tests the {@link DbServices} class.
@@ -56,6 +57,7 @@ public class TestDbServices
 	 */
 	private DbServices _otherDb = null;
 
+	@SuppressWarnings( "JavaDoc" )
 	@Before
 	public void setUp()
 	throws Exception
@@ -86,6 +88,7 @@ public class TestDbServices
 		}
 	}
 
+	@SuppressWarnings( "JavaDoc" )
 	@After
 	public void tearDown()
 	throws Exception
@@ -95,7 +98,6 @@ public class TestDbServices
 		{
 			( (HsqlDbServices)db ).shutdown();
 		}
-
 	}
 
 	/**
@@ -119,7 +121,7 @@ public class TestDbServices
 		firstRecord.localizedString.set( "defaultString" );
 		firstRecord.localizedString.set( "nl", "Nederlands" );
 		db.storeObject( firstRecord );
-		Assert.assertEquals( "First record has wrong id", 0, firstRecord.ID );
+		assertEquals( "First record has wrong id", 0, firstRecord.ID );
 
 		/* Test SELECT single object  - compare with inserted record */
 
@@ -128,8 +130,8 @@ public class TestDbServices
 
 		{
 			final SampleRecord firstRead = db.retrieveObject( selectFirst );
-			Assert.assertNotNull( "Did not find back record", firstRead );
-			assertEquals( "Data lost after read-back of first record", firstRecord, firstRead );
+			assertNotNull( "Did not find back record", firstRead );
+			assertRecordEquals( "Data lost after read-back of first record", firstRecord, firstRead );
 		}
 
 		/* Test UPDATE */
@@ -139,31 +141,67 @@ public class TestDbServices
 		firstRecord.localizedString.set( "de", "Deutsch" );
 		final int firstRecordID = firstRecord.ID;
 		db.storeObject( firstRecord );
-		Assert.assertEquals( "ID should not change after UPDATE", firstRecordID, firstRecord.ID );
+		assertEquals( "ID should not change after UPDATE", firstRecordID, firstRecord.ID );
 
 		/* Test SELECT single object  - compare with updated record */
 
 		{
 			final SampleRecord secondRead = db.retrieveObject( selectFirst );
-			Assert.assertNotNull( "Lost object after update", secondRead );
-			assertEquals( "Data was not updated in the database", firstRecord, secondRead );
+			assertNotNull( "Lost object after update", secondRead );
+			assertRecordEquals( "Data was not updated in the database", firstRecord, secondRead );
 		}
 
 		/* Test second INSERT */
 
 		final SampleRecord secondRecord = new SampleRecord();
 		db.storeObject( secondRecord );
-		Assert.assertTrue( "Second record has wrong id: " + secondRecord.ID, secondRecord.ID > firstRecord.ID );
+		assertTrue( "Second record has wrong id: " + secondRecord.ID, secondRecord.ID > firstRecord.ID );
 
 		/* Test SELECT list */
 
 		final SelectQuery<SampleRecord> selectList = new SelectQuery<SampleRecord>( SampleRecord.class );
 		selectList.orderBy( "ID" );
 		final List<SampleRecord> list = db.retrieveList( selectList );
-		Assert.assertEquals( "Unexpected number of records", 2, list.size() );
+		assertEquals( "Unexpected number of records", 2, list.size() );
 
-		assertEquals( "list[0] should be first recorD", firstRecord, list.get( 0 ) );
-		assertEquals( "list[1] should be second recorD", secondRecord, list.get( 1 ) );
+		assertRecordEquals( "list[0] should be first recorD", firstRecord, list.get( 0 ) );
+		assertRecordEquals( "list[1] should be second recorD", secondRecord, list.get( 1 ) );
+	}
+
+	/**
+	 * Tests {@link DbServices#deleteObject}.
+	 *
+	 * @throws SQLException if an error occurs while accessing the database.
+	 */
+	@Test
+	public void testDelete()
+	throws SQLException
+	{
+		final String where = CLASS_NAME + ".testDelete()";
+		System.out.println( where );
+
+		final DbServices db = _db;
+
+		final SampleRecord record1 = new SampleRecord();
+		assertEquals( "Unexpected record ID before store.", -1, record1.ID );
+		db.storeObject( record1 );
+		assertTrue( "Unexpected record ID after store.", record1.ID >= 0 );
+
+		final SampleRecord record2 = new SampleRecord();
+		assertEquals( "Unexpected record ID before store.", -1, record2.ID );
+		db.storeObject( record2 );
+		assertTrue( "Unexpected record ID after store.", record2.ID >= 0 );
+
+		final int record1Id = record1.ID;
+		final int record2Id = record2.ID;
+
+		db.deleteObject( record1 );
+		assertEquals( "Unexpected record ID after delete.", -1, record1.ID );
+		assertNull( "Failed to delete record.", selectById( db, record1Id ) );
+
+		db.deleteObject( record2 );
+		assertEquals( "Unexpected record ID after delete.", -1, record2.ID );
+		assertNull( "Failed to delete record.", selectById( db, record2Id ) );
 	}
 
 	/**
@@ -187,12 +225,12 @@ public class TestDbServices
 		System.out.println( " - Store record 1" );
 		db.storeObject( record1 );
 		final SampleRecord otherRecord1 = selectById( otherDb, record1.ID );
-		Assert.assertNotNull( "Record 1 should have been committed.", otherRecord1 );
+		assertNotNull( "Record 1 should have been committed.", otherRecord1 );
 
 		System.out.println( " - Store record 2" );
 		db.storeObject( record2 );
 		final SampleRecord otherRecord2 = selectById( otherDb, record2.ID );
-		Assert.assertNotNull( "Record 2 should have been committed.", otherRecord2 );
+		assertNotNull( "Record 2 should have been committed.", otherRecord2 );
 
 		System.out.println( " - Start transaction" );
 		db.startTransaction( Connection.TRANSACTION_SERIALIZABLE );
@@ -205,8 +243,8 @@ public class TestDbServices
 			System.out.println( " - Check records from other data source" );
 			otherDb.refresh( otherRecord1 );
 			otherDb.refresh( otherRecord2 );
-			Assert.assertNull( "Update of record 1 should not have been committed.", otherRecord1.string );
-			Assert.assertNull( "Update of record 2 should not have been committed.", otherRecord2.string );
+			assertNull( "Update of record 1 should not have been committed.", otherRecord1.string );
+			assertNull( "Update of record 2 should not have been committed.", otherRecord2.string );
 
 			System.out.println( " - Update record 2" );
 			record2.string = "Commit";
@@ -215,8 +253,8 @@ public class TestDbServices
 			System.out.println( " - Check records from other data source" );
 			otherDb.refresh( otherRecord1 );
 			otherDb.refresh( otherRecord2 );
-			Assert.assertNull( "Update of record 1 should not have been committed.", otherRecord1.string );
-			Assert.assertNull( "Update of record 2 should not have been committed.", otherRecord2.string );
+			assertNull( "Update of record 1 should not have been committed.", otherRecord1.string );
+			assertNull( "Update of record 2 should not have been committed.", otherRecord2.string );
 		}
 		finally
 		{
@@ -227,14 +265,14 @@ public class TestDbServices
 		System.out.println( " - Check records from other data source" );
 		otherDb.refresh( otherRecord1 );
 		otherDb.refresh( otherRecord2 );
-		Assert.assertEquals( "Update of record 1 should have been committed.", "Hello", otherRecord1.string );
-		Assert.assertEquals( "Update of record 2 should have been committed.", "Commit", otherRecord2.string );
+		assertEquals( "Update of record 1 should have been committed.", "Hello", otherRecord1.string );
+		assertEquals( "Update of record 2 should have been committed.", "Commit", otherRecord2.string );
 
 		System.out.println( " - Check records from own data source" );
 		db.refresh( record1 );
 		db.refresh( record2 );
-		Assert.assertEquals( "Update of record 1 should have been committed.", "Hello", record1.string );
-		Assert.assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
+		assertEquals( "Update of record 1 should have been committed.", "Hello", record1.string );
+		assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
 
 		System.out.println( " - Start transaction" );
 		db.startTransaction( Connection.TRANSACTION_SERIALIZABLE );
@@ -247,14 +285,14 @@ public class TestDbServices
 			System.out.println( " - Check records from other data source" );
 			otherDb.refresh( otherRecord1 );
 			otherDb.refresh( otherRecord2 );
-			Assert.assertEquals( "Update of record 1 should not have been committed.", "Hello", otherRecord1.string );
-			Assert.assertEquals( "Update of record 2 should not have been committed.", "Commit", otherRecord2.string );
+			assertEquals( "Update of record 1 should not have been committed.", "Hello", otherRecord1.string );
+			assertEquals( "Update of record 2 should not have been committed.", "Commit", otherRecord2.string );
 
 			System.out.println( " - Check records from own data source" );
 			db.refresh( record1 );
 			db.refresh( record2 );
-			Assert.assertEquals( "Update of record 1 should have been committed.", "Bye", record1.string );
-			Assert.assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
+			assertEquals( "Update of record 1 should have been committed.", "Bye", record1.string );
+			assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
 
 			System.out.println( " - Update record 2" );
 			record2.string = "Rollback";
@@ -263,14 +301,14 @@ public class TestDbServices
 			System.out.println( " - Check records from other data source" );
 			otherDb.refresh( otherRecord1 );
 			otherDb.refresh( otherRecord2 );
-			Assert.assertEquals( "Update of record 1 should not have been committed.", "Hello", otherRecord1.string );
-			Assert.assertEquals( "Update of record 2 should not have been committed.", "Commit", otherRecord2.string );
+			assertEquals( "Update of record 1 should not have been committed.", "Hello", otherRecord1.string );
+			assertEquals( "Update of record 2 should not have been committed.", "Commit", otherRecord2.string );
 
 			System.out.println( " - Check records from own data source" );
 			db.refresh( record1 );
 			db.refresh( record2 );
-			Assert.assertEquals( "Update of record 1 should have been committed.", "Bye", record1.string );
-			Assert.assertEquals( "Update of record 2 should have been committed.", "Rollback", record2.string );
+			assertEquals( "Update of record 1 should have been committed.", "Bye", record1.string );
+			assertEquals( "Update of record 2 should have been committed.", "Rollback", record2.string );
 		}
 		finally
 		{
@@ -281,14 +319,14 @@ public class TestDbServices
 		System.out.println( " - Check records from other data source" );
 		otherDb.refresh( otherRecord1 );
 		otherDb.refresh( otherRecord2 );
-		Assert.assertEquals( "Update of record 1 should have been committed.", "Hello", otherRecord1.string );
-		Assert.assertEquals( "Update of record 2 should have been committed.", "Commit", otherRecord2.string );
+		assertEquals( "Update of record 1 should have been committed.", "Hello", otherRecord1.string );
+		assertEquals( "Update of record 2 should have been committed.", "Commit", otherRecord2.string );
 
 		System.out.println( " - Check records from own data source" );
 		db.refresh( record1 );
 		db.refresh( record2 );
-		Assert.assertEquals( "Update of record 1 should have been committed.", "Hello", record1.string );
-		Assert.assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
+		assertEquals( "Update of record 1 should have been committed.", "Hello", record1.string );
+		assertEquals( "Update of record 2 should have been committed.", "Commit", record2.string );
 	}
 
 	/**
@@ -311,40 +349,35 @@ public class TestDbServices
 	}
 
 	/**
-	 * Deletes the {@link SampleRecord} with the given id.
+	 * Asserts that the given sample records are equal.
 	 *
-	 * @param db Database services.
-	 * @param id Record id.
-	 *
-	 * @return Number of rows that were deleted.
-	 *
-	 * @throws SQLException if an error occurs while accessing the database.
+	 * @param message  Failure message prefix.
+	 * @param expected Expected value.
+	 * @param actual   Actual value.
 	 */
-	private static int deleteById( @NotNull final DbServices db, final int id )
-	throws SQLException
+	private static void assertRecordEquals( @NotNull final String message, @NotNull final SampleRecord expected, @NotNull final SampleRecord actual )
 	{
-		final DeleteQuery<SampleRecord> deleteQuery = new DeleteQuery<SampleRecord>( SampleRecord.class );
-		deleteQuery.whereEqual( SampleRecord.RECORD_ID, id );
-		return db.executeDelete( deleteQuery );
+		assertEquals( message + ": string", expected.string, actual.string );
+		assertNotSame( message + ": timestamp", expected.timestamp, actual.timestamp );
+		assertDateEquals( message + ": date", expected.date, actual.date );
+		assertEquals( message + ": localizedString", expected.localizedString, actual.localizedString );
+		assertEquals( message + ": stringList", expected.stringList, actual.stringList );
+		assertEquals( message + ": nestedProperties", expected.nestedProperties, actual.nestedProperties );
+		assertEquals( message + ": nullableNestedProperties", expected.nullableNestedProperties, actual.nullableNestedProperties );
 	}
 
-	private static void assertEquals( final String message, final SampleRecord expected, final SampleRecord actual )
-	{
-		Assert.assertEquals( message + ": string", expected.string, actual.string );
-		Assert.assertNotSame( message + ": timestamp", expected.timestamp, actual.timestamp );
-		assertEquals( message + ": date", expected.date, actual.date );
-		Assert.assertEquals( message + ": localizedString", expected.localizedString, actual.localizedString );
-		Assert.assertEquals( message + ": stringList", expected.stringList, actual.stringList );
-		Assert.assertEquals( message + ": nestedProperties", expected.nestedProperties, actual.nestedProperties );
-		Assert.assertEquals( message + ": nullableNestedProperties", expected.nullableNestedProperties, actual.nullableNestedProperties );
-	}
-
-	private static void assertEquals( final String message, final Date expected, final Date actual )
+	/**
+	 * Asserts that the given dates are (almost) equal.
+	 *
+	 * @param message  Failure message.
+	 * @param expected Expected value.
+	 * @param actual   Actual value.
+	 */
+	private static void assertDateEquals( @Nullable final String message, @Nullable final Date expected, @Nullable final Date actual )
 	{
 		if ( ( expected == null ) || ( actual == null ) || ( ( actual.getTime() - expected.getTime() ) > 1000L ) )
 		{
-			/* the following will always fail */
-			Assert.assertEquals( message, expected, actual );
+			assertEquals( message, expected, actual );
 		}
 	}
 
@@ -407,8 +440,8 @@ public class TestDbServices
 						db.refresh( update1 );
 						db.refresh( update2 );
 
-						Assert.assertEquals( "Unexpected value.", "First", update1.string );
-						Assert.assertEquals( "Unexpected value.", "First", update2.string );
+						assertEquals( "Unexpected value.", "First", update1.string );
+						assertEquals( "Unexpected value.", "First", update2.string );
 					}
 				};
 
@@ -454,8 +487,8 @@ public class TestDbServices
 						update1.string = "Second";
 						db.storeObject( update1 );
 
-						Assert.assertEquals( "Unexpected value.", "Second", update1.string );
-						Assert.assertEquals( "Unexpected value.", "Second", update2.string );
+						assertEquals( "Unexpected value.", "Second", update1.string );
+						assertEquals( "Unexpected value.", "Second", update2.string );
 					}
 				};
 
@@ -478,7 +511,14 @@ public class TestDbServices
 		final long end = System.nanoTime();
 		System.out.println( " - Test completed in " + (double)( ( end - start ) / 1000000L ) / 1000.0 + " s" );
 
-		Assert.assertEquals( "Failed to delete record 1", 1, deleteById( db, record1.ID ) );
-		Assert.assertEquals( "Failed to delete record 2", 1, deleteById( db, record2.ID ) );
+		final int record1Id = record1.ID;
+		db.deleteObject( record1 );
+		assertEquals( "Failed to delete record 1", -1, record1.ID );
+		assertNull( "Failed to delete record 1", selectById( db, record1Id ) );
+
+		final int record2Id = record2.ID;
+		db.deleteObject( record2 );
+		assertEquals( "Failed to delete record 2", -1, record2.ID );
+		assertNull( "Failed to delete record 2", selectById( db, record2Id ) );
 	}
 }

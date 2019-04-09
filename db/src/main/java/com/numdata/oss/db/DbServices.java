@@ -28,8 +28,8 @@ package com.numdata.oss.db;
 
 import java.lang.reflect.*;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.*;
 import javax.sql.*;
 
@@ -1352,6 +1352,36 @@ public class DbServices
 		finally
 		{
 			releaseConnection( connection );
+		}
+	}
+
+	/**
+	 * Deletes a single database record in the database. A DELETE query is
+	 * generated depending on the value of the 'ID' field. Afterwards the 'ID'
+	 * field is set to {@code -1}.
+	 *
+	 * @param object Object to store in the database.
+	 *
+	 * @throws IllegalArgumentException if reflection problems occur.
+	 * @throws SQLException the query could not be executed (due to a database
+	 * error or invalid query).
+	 */
+	public void deleteObject( @NotNull final Object object )
+	throws SQLException
+	{
+		final Class<?> objectClass = object.getClass();
+		final ClassHandler classHandler = getClassHandler( objectClass );
+
+		if ( classHandler.hasRecordId() )
+		{
+			final long recordId = classHandler.getRecordId( object );
+			if ( recordId >= 0L )
+			{
+				final DeleteQuery<Object> query = new DeleteQuery<Object>( classHandler.getTableName() );
+				query.whereEqual( classHandler.getRecordIdColumn(), recordId );
+				executeDelete( query );
+				classHandler.setRecordId( object, -1L );
+			}
 		}
 	}
 
