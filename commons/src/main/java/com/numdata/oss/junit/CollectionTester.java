@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package com.numdata.oss.junit;
 
 import java.util.*;
 
+import org.jetbrains.annotations.*;
 import org.junit.*;
 
 /**
@@ -51,8 +52,9 @@ public class CollectionTester
 	 * @param messagePrefix Prefix to failure messages.
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
+	 * @param <T>           Element type.
 	 */
-	public static <T> void assertEquals( final String messagePrefix, final Collection<T> expected, final Collection<T> actual )
+	public static <T> void assertEquals( @Nullable final String messagePrefix, @Nullable final Collection<T> expected, @Nullable final Collection<T> actual )
 	{
 		assertEquals( messagePrefix, "expected", "actual", expected, actual );
 	}
@@ -65,8 +67,9 @@ public class CollectionTester
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
 	 * @param elementTester Tests equality of elements.
+	 * @param <T>           Element type.
 	 */
-	public static <T> void assertEquals( final String messagePrefix, final Collection<T> expected, final Collection<T> actual, final AssertEquals elementTester )
+	public static <T> void assertEquals( @Nullable final String messagePrefix, @Nullable final Collection<T> expected, @Nullable final Collection<T> actual, @NotNull final AssertEquals elementTester )
 	{
 		assertEquals( messagePrefix, "expected", "actual", expected, actual, elementTester );
 	}
@@ -80,8 +83,9 @@ public class CollectionTester
 	 * @param actualName    Name of actual array.
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
+	 * @param <T>           Element type.
 	 */
-	public static <T> void assertEquals( final String messagePrefix, final String expectedName, final String actualName, final Collection<T> expected, final Collection<T> actual )
+	public static <T> void assertEquals( @Nullable final String messagePrefix, @NotNull final String expectedName, @NotNull final String actualName, @Nullable final Collection<T> expected, @Nullable final Collection<T> actual )
 	{
 		assertEquals( messagePrefix, expectedName, actualName, expected, actual, new AssertEquals() );
 	}
@@ -96,8 +100,9 @@ public class CollectionTester
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
 	 * @param elementTester Tests equality of elements.
+	 * @param <T>           Element type.
 	 */
-	public static <T> void assertEquals( final String messagePrefix, final String expectedName, final String actualName, final Collection<T> expected, final Collection<T> actual, final AssertEquals elementTester )
+	public static <T> void assertEquals( @Nullable final String messagePrefix, @NotNull final String expectedName, @NotNull final String actualName, @Nullable final Collection<T> expected, @Nullable final Collection<T> actual, @NotNull final AssertEquals elementTester )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + " - " : "" );
 
@@ -128,42 +133,6 @@ public class CollectionTester
 			}
 
 			Assert.assertEquals( actualPrefix + '\'' + expectedName + "' should have same length as '" + actualName + '\'', expected.size(), actual.size() );
-		}
-	}
-
-	/**
-	 * Helper for {@link CollectionTester#assertEquals} methods to determine
-	 * whether two elements of an array are equal.
-	 */
-	public static class AssertEquals
-	{
-		/**
-		 * Assert equality of {@code actualValue} to {@code expectedValue}.
-		 *
-		 * @param message       Message to display if assertion fails.
-		 * @param expectedValue Expected value.
-		 * @param actualValue   Actual value.
-		 */
-		public void assertEquals( final String message, final Object expectedValue, final Object actualValue )
-		{
-			if ( ( expectedValue instanceof Double ) && ( actualValue instanceof Double ) )
-			{
-				final double expectedDouble = (Double)expectedValue;
-				final double actualDouble = (Double)actualValue;
-
-				Assert.assertEquals( message, expectedDouble, actualDouble, 0.0001 );
-			}
-			else if ( ( expectedValue instanceof Float ) && ( actualValue instanceof Float ) )
-			{
-				final float expectedFloat = (Float)expectedValue;
-				final float actualFloat = (Float)actualValue;
-
-				Assert.assertEquals( message, expectedFloat, actualFloat, 0.0001f );
-			}
-			else
-			{
-				Assert.assertEquals( message, expectedValue, actualValue );
-			}
 		}
 	}
 }

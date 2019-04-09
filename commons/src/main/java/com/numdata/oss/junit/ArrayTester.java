@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package com.numdata.oss.junit;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.jetbrains.annotations.*;
 import org.junit.*;
 
 /**
@@ -53,7 +54,7 @@ public class ArrayTester
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
 	 */
-	public static void assertEquals( final String messagePrefix, final Object expected, final Object actual )
+	public static void assertEquals( @Nullable final String messagePrefix, @Nullable final Object expected, @Nullable final Object actual )
 	{
 		assertEquals( messagePrefix, "expected", "actual", expected, actual );
 	}
@@ -67,7 +68,7 @@ public class ArrayTester
 	 * @param actual        Actual array value.
 	 * @param elementTester Tests equality of elements.
 	 */
-	public static void assertEquals( final String messagePrefix, final Object expected, final Object actual, final AssertEquals elementTester )
+	public static void assertEquals( @Nullable final String messagePrefix, @Nullable final Object expected, @Nullable final Object actual, @NotNull final AssertEquals elementTester )
 	{
 		assertEquals( messagePrefix, "expected", "actual", expected, actual, elementTester );
 	}
@@ -82,7 +83,7 @@ public class ArrayTester
 	 * @param expected      Expected array value.
 	 * @param actual        Actual array value.
 	 */
-	public static void assertEquals( final String messagePrefix, final String expectedName, final String actualName, final Object expected, final Object actual )
+	public static void assertEquals( @Nullable final String messagePrefix, @NotNull final String expectedName, @NotNull final String actualName, @Nullable final Object expected, @Nullable final Object actual )
 	{
 		assertEquals( messagePrefix, expectedName, actualName, expected, actual, new AssertEquals() );
 	}
@@ -98,7 +99,7 @@ public class ArrayTester
 	 * @param actual        Actual array value.
 	 * @param elementTester Tests equality of elements.
 	 */
-	public static void assertEquals( final String messagePrefix, final String expectedName, final String actualName, final Object expected, final Object actual, final AssertEquals elementTester )
+	public static void assertEquals( @Nullable final String messagePrefix, @NotNull final String expectedName, @NotNull final String actualName, @Nullable final Object expected, @Nullable final Object actual, @NotNull final AssertEquals elementTester )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + " - " : "" );
 
@@ -157,7 +158,8 @@ public class ArrayTester
 	 *
 	 * @return String representation of array.
 	 */
-	public static String toString( final Object array )
+	@NotNull
+	public static String toString( @Nullable final Object array )
 	{
 		final String result;
 
@@ -237,39 +239,4 @@ public class ArrayTester
 		return result;
 	}
 
-	/**
-	 * Helper for {@link ArrayTester#assertEquals} methods to determine whether
-	 * two elements of an array are equal.
-	 */
-	public static class AssertEquals
-	{
-		/**
-		 * Assert equality of {@code actualValue} to {@code expectedValue}.
-		 *
-		 * @param message       Message to display if assertion fails.
-		 * @param expectedValue Expected value.
-		 * @param actualValue   Actual value.
-		 */
-		public void assertEquals( final String message, final Object expectedValue, final Object actualValue )
-		{
-			if ( ( expectedValue instanceof Double ) && ( actualValue instanceof Double ) )
-			{
-				final double expectedDouble = (Double)expectedValue;
-				final double actualDouble = (Double)actualValue;
-
-				Assert.assertEquals( message, expectedDouble, actualDouble, 0.0001 );
-			}
-			else if ( ( expectedValue instanceof Float ) && ( actualValue instanceof Float ) )
-			{
-				final float expectedFloat = (Float)expectedValue;
-				final float actualFloat = (Float)actualValue;
-
-				Assert.assertEquals( message, expectedFloat, actualFloat, 0.0001f );
-			}
-			else
-			{
-				Assert.assertEquals( message, expectedValue, actualValue );
-			}
-		}
-	}
 }
