@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,19 +32,19 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
- * This class tests the {@link ResourceBundleTester} class.
+ * This class tests the {@link ResourceBundleTesterApp} class.
  *
  * @author D. van 't Oever
  */
-public class TestResourceBundleTester
+public class TestResourceBundleTesterApp
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestResourceBundleTester.class.getName();
+	private static final String CLASS_NAME = TestResourceBundleTesterApp.class.getName();
 
 	/**
-	 * Test {@link ResourceBundleTester#check} method.
+	 * Test {@link ResourceBundleTesterApp#check} method.
 	 *
 	 * @throws Exception if the test fails.
 	 */
@@ -54,7 +54,7 @@ public class TestResourceBundleTester
 	{
 		System.out.println( CLASS_NAME + ".testCheck()" );
 
-		final ResourceBundleTester tester = new ResourceBundleTester( new PrintWriter( System.out, true ) );
+		final ResourceBundleTesterApp tester = new ResourceBundleTesterApp( new PrintWriter( System.out, true ) );
 
 		tester.load( new StringReader(
 		"# Comment #1\n" +
