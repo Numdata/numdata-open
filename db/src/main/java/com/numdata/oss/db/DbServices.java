@@ -776,7 +776,7 @@ public class DbServices
 		try
 		{
 			final long start = System.nanoTime();
-			final R result = JdbcTools.executeQueryStreaming( connection, processor, query, arguments );
+			final R result = JdbcTools.executeQueryStreaming( connection, getSqlDialect() == SqlDialect.MYSQL ? Integer.MIN_VALUE : 100, processor, query, arguments );
 			logSlowQuery( start, "executeQueryStreaming()", null, null, query, arguments );
 			return result;
 		}

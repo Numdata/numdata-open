@@ -623,8 +623,30 @@ public class JdbcTools
 	public static <R> R executeQueryStreaming( @NotNull final Connection connection, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
+		return executeQueryStreaming( connection, 100, processor, query, arguments );
+	}
+
+	/**
+	 * Execute query and feed its result set through a {@link ResultProcessor}.
+	 * Rows are fetched and processed row-by-row.
+	 *
+	 * @param connection Connection to database.
+	 * @param fetchSize  Fetch size to set. For MySQL/MariaDB, set this to
+	 *                   {@link Integer#MIN_VALUE} to really enable streaming.
+	 * @param processor  Result set processor.
+	 * @param query      Query to be executed.
+	 * @param arguments  Arguments used in the query.
+	 *
+	 * @return Result of processor.
+	 *
+	 * @throws SQLException the query could not be executed (due to a database
+	 * error or invalid query).
+	 */
+	public static <R> R executeQueryStreaming( @NotNull final Connection connection, final int fetchSize, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
+	throws SQLException
+	{
 		final PreparedStatement statement = connection.prepareStatement( query.toString() );
-		statement.setFetchSize( 100 );
+		statement.setFetchSize( fetchSize );
 		try
 		{
 			prepareStatement( statement, arguments );
