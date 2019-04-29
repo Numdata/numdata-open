@@ -776,7 +776,7 @@ public class DbServices
 		try
 		{
 			final long start = System.nanoTime();
-			final R result = JdbcTools.executeQueryStreaming( connection, processor, query, arguments );
+			final R result = JdbcTools.executeQueryStreaming( connection, getSqlDialect() == SqlDialect.MYSQL ? Integer.MIN_VALUE : 100, processor, query, arguments );
 			logSlowQuery( start, "executeQueryStreaming()", null, null, query, arguments );
 			return result;
 		}
@@ -1844,6 +1844,17 @@ public class DbServices
 		private String _columnPrefix = null;
 
 		/**
+		 * Whether the table name should be checked for each column to see if
+		 * it belongs to this database record class.
+		 *
+		 * The advantage over {@link #setColumnPrefix} is that this method works
+		 * with wildcards, e.g. '{@code SELECT t1.*, t2.* FROM Table1 AS t1,
+		 * Table2 AS t2}'. The disadvantage is that it can't distinguish between
+		 * multiple instances of the same table.
+		 */
+		private boolean _matchTableName = false;
+
+		/**
 		 * Construct processor.
 		 *
 		 * @param dbClass Database record class.
@@ -1900,26 +1911,31 @@ public class DbServices
 				result = new ArrayList<Duet<Integer, FieldHandler>>( columnCount );
 
 				final ClassHandler classHandler = getClassHandler( _dbClass );
+				final String tableName = classHandler.getTableName();
 				final String columnPrefix = _columnPrefix;
+				final boolean matchTableName = _matchTableName;
 
 				for ( int column = 1; column <= columnCount; column++ )
 				{
-					final String name = metaData.getColumnLabel( column ).toLowerCase();
+					if ( !matchTableName || tableName.equals( metaData.getTableName( column ) ) )
+					{
+						final String name = metaData.getColumnLabel( column ).toLowerCase();
 
-					FieldHandler handler = null;
-					if ( columnPrefix == null )
-					{
-						handler = classHandler.getFieldHandlerForColumn( name );
-					}
-					else if ( name.startsWith( columnPrefix ) )
-					{
-						final String baseName = name.substring( columnPrefix.length() );
-						handler = classHandler.getFieldHandlerForColumn( baseName );
-					}
+						FieldHandler handler = null;
+						if ( columnPrefix == null )
+						{
+							handler = classHandler.getFieldHandlerForColumn( name );
+						}
+						else if ( name.startsWith( columnPrefix ) )
+						{
+							final String baseName = name.substring( columnPrefix.length() );
+							handler = classHandler.getFieldHandlerForColumn( baseName );
+						}
 
-					if ( handler != null )
-					{
-						result.add( new BasicDuet<Integer, FieldHandler>( column, handler ) );
+						if ( handler != null )
+						{
+							result.add( new BasicDuet<Integer, FieldHandler>( column, handler ) );
+						}
 					}
 				}
 
@@ -1947,6 +1963,16 @@ public class DbServices
 		public String getColumnPrefix()
 		{
 			return _columnPrefix;
+		}
+
+		public boolean isMatchTableName()
+		{
+			return _matchTableName;
+		}
+
+		public void setMatchTableName( final boolean matchTableName )
+		{
+			_matchTableName = matchTableName;
 		}
 	}
 
