@@ -24,21 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import equals from '../equals';
 import ArrayTools from './ArrayTools';
-
-/**
- * Tests if two objects are equal, using an equals method if available or
- * the strict equality operator (===) otherwise.
- *
- * @param o1 First value.
- * @param o2 Second value.
- *
- * @returns {boolean} true if the values are equal; false otherwise.
- */
-function equals( o1, o2 )
-{
-	return o1 && o1.equals ? o1.equals( o2 ) : o1 === o2;
-}
 
 /**
  * Javascript implementation of <code>com.numdata.oss.AugmentedArrayList</code>.

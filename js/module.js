@@ -26,6 +26,7 @@
  */
 
 import clamp from './lib/clamp';
+import equals from './lib/equals';
 import naturalOrder from './lib/naturalOrder';
 import scrollToElement from './lib/scrollToElement';
 import { difference as moduloDifference, nearest as moduloNearest } from './lib/Modulo';
@@ -50,6 +51,7 @@ import Enum from './lib/java.lang/Enum';
 
 export {
 	clamp,
+	equals,
 	naturalOrder,
 	scrollToElement,
 	moduloDifference,
