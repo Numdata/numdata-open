@@ -72,7 +72,7 @@ export default
 			{
 				result = array1.equals( array2 );
 			}
-			else if ( array1 instanceof Array && array2 instanceof Array )
+			else if ( Array.isArray( array1 ) && Array.isArray( array2 ) )
 			{
 				const length = array1.length;
 				if ( length === array2.length )
