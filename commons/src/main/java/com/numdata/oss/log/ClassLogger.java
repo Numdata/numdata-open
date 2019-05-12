@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2000-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ import org.jetbrains.annotations.*;
  * @see Log4jTarget
  * @see ConsoleTarget
  */
-@SuppressWarnings( { "SynchronizationOnStaticField", "AccessOfSystemProperties" } )
+@SuppressWarnings( { "SynchronizationOnStaticField", "AccessOfSystemProperties", "RedundantSuppression", "FinalClass", "ConstantConditions" } )
 public final class ClassLogger
 {
 	/**
@@ -95,7 +95,7 @@ public final class ClassLogger
 	 * {@code false}, log messages are send directly from the application
 	 * thread.
 	 */
-	private static boolean ASYNCHRONOUS_LOGGING = true;
+	private static boolean asynchronousLogging = true;
 
 	/**
 	 * Registered log targets.
@@ -299,7 +299,7 @@ public final class ClassLogger
 		 */
 		try
 		{
-			ASYNCHRONOUS_LOGGING = "true".equals( System.getProperty( "asynchronous.logging" ) );
+			asynchronousLogging = "true".equals( System.getProperty( "asynchronous.logging" ) );
 		}
 		catch ( final SecurityException e )
 		{
@@ -393,7 +393,7 @@ public final class ClassLogger
 	 * @param argType    First and only argument type.
 	 * @param argValue   First and only argument value.
 	 *
-	 * @return Result from inoked method ({@code null} if void).
+	 * @return Result from invoked method ({@code null} if void).
 	 */
 	@Nullable
 	private static Object invokeStatic( final String className, final String methodName, final Class<?> argType, final Object argValue )
@@ -409,7 +409,7 @@ public final class ClassLogger
 	 * @param argTypes   Argument types.
 	 * @param argValues  Argument values.
 	 *
-	 * @return Result from inoked method ({@code null} if void).
+	 * @return Result from invoked method ({@code null} if void).
 	 */
 	@Nullable
 	private static Object invokeStatic( final String className, final String methodName, final Class<?>[] argTypes, final Object[] argValues )
@@ -496,6 +496,19 @@ public final class ClassLogger
 	 * Send log message with an associated throwable object to all registered
 	 * log targets.
 	 *
+	 * @param level     Log level.
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void log( final int level, final MessageSupplier message, final Throwable throwable )
+	{
+		log( getName(), level, message, throwable );
+	}
+
+	/**
+	 * Send log message with an associated throwable object to all registered
+	 * log targets.
+	 *
 	 * @param name      Name of log.
 	 * @param level     Log level.
 	 * @param message   Log message.
@@ -505,32 +518,63 @@ public final class ClassLogger
 	{
 		if ( isLevelEnabled( name, level ) )
 		{
-			final Thread currentThread = Thread.currentThread();
-			final String threadName = currentThread.getName();
+			logImpl( name, level, throwable, message );
+		}
+	}
 
-			if ( ASYNCHRONOUS_LOGGING )
+	/**
+	 * Send log message with an associated throwable object to all registered
+	 * log targets.
+	 *
+	 * @param name      Name of log.
+	 * @param level     Log level.
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	private static void log( final String name, final int level, final MessageSupplier message, final Throwable throwable )
+	{
+		if ( isLevelEnabled( name, level ) )
+		{
+			logImpl( name, level, throwable, ( message != null ) ? message.get() : null );
+		}
+	}
+
+	/**
+	 * Send log message with an associated throwable object to all registered
+	 * log targets. This method does not check whether the given level.
+	 *
+	 * @param name      Name of log.
+	 * @param level     Log level.
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	private static void logImpl( final String name, final int level, final Throwable throwable, final String message )
+	{
+		final Thread currentThread = Thread.currentThread();
+		final String threadName = currentThread.getName();
+
+		if ( asynchronousLogging )
+		{
+			ExecutorService executor = executorService;
+			if ( executor == null )
 			{
-				ExecutorService executor = executorService;
-				if ( executor == null )
-				{
-					final DefaultThreadFactory threadFactory = new DefaultThreadFactory();
-					threadFactory.setNamePrefix( ClassLogger.class.getName() );
-					threadFactory.setDaemon( true );
+				final DefaultThreadFactory threadFactory = new DefaultThreadFactory();
+				threadFactory.setNamePrefix( ClassLogger.class.getName() );
+				threadFactory.setDaemon( true );
 
-					executor = Executors.newSingleThreadExecutor( threadFactory );
-					executorService = executor;
-				}
-
-				executor.submit( new LogTask( name, level, message, throwable, threadName ) );
+				executor = Executors.newSingleThreadExecutor( threadFactory );
+				executorService = executor;
 			}
-			else
+
+			executor.submit( new LogTask( name, level, message, throwable, threadName ) );
+		}
+		else
+		{
+			synchronized ( LOG_TARGETS )
 			{
-				synchronized ( LOG_TARGETS )
+				for ( final LogTarget target : LOG_TARGETS )
 				{
-					for ( final LogTarget target : LOG_TARGETS )
-					{
-						target.log( name, level, message, throwable, threadName );
-					}
+					target.log( name, level, message, throwable, threadName );
 				}
 			}
 		}
@@ -642,11 +686,31 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'fatal' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void fatal( final MessageSupplier message )
+	{
+		fatal( message, null );
+	}
+
+	/**
 	 * Log 'error' message.
 	 *
 	 * @param message Log message.
 	 */
 	public void error( final String message )
+	{
+		error( message, null );
+	}
+
+	/**
+	 * Log 'error' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void error( final MessageSupplier message )
 	{
 		error( message, null );
 	}
@@ -662,11 +726,31 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'warn' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void warn( final MessageSupplier message )
+	{
+		warn( message, null );
+	}
+
+	/**
 	 * Log 'info' message.
 	 *
 	 * @param message Log message.
 	 */
 	public void info( final String message )
+	{
+		info( message, null );
+	}
+
+	/**
+	 * Log 'info' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void info( final MessageSupplier message )
 	{
 		info( message, null );
 	}
@@ -682,11 +766,31 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'debug' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void debug( final MessageSupplier message )
+	{
+		debug( message, null );
+	}
+
+	/**
 	 * Log 'trace' message.
 	 *
 	 * @param message Log message.
 	 */
 	public void trace( final String message )
+	{
+		trace( message, null );
+	}
+
+	/**
+	 * Log 'trace' message.
+	 *
+	 * @param message Log message.
+	 */
+	public void trace( final MessageSupplier message )
 	{
 		trace( message, null );
 	}
@@ -703,12 +807,34 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'fatal' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void fatal( final MessageSupplier message, final Throwable throwable )
+	{
+		log( FATAL, message, throwable );
+	}
+
+	/**
 	 * Log 'error' message with an associated throwable object.
 	 *
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
 	public void error( final String message, final Throwable throwable )
+	{
+		log( ERROR, message, throwable );
+	}
+
+	/**
+	 * Log 'error' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void error( final MessageSupplier message, final Throwable throwable )
 	{
 		log( ERROR, message, throwable );
 	}
@@ -725,12 +851,34 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'warn' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void warn( final MessageSupplier message, final Throwable throwable )
+	{
+		log( WARN, message, throwable );
+	}
+
+	/**
 	 * Log 'info' message with an associated throwable object.
 	 *
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
 	public void info( final String message, final Throwable throwable )
+	{
+		log( INFO, message, throwable );
+	}
+
+	/**
+	 * Log 'info' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void info( final MessageSupplier message, final Throwable throwable )
 	{
 		log( INFO, message, throwable );
 	}
@@ -747,12 +895,34 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Log 'debug' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void debug( final MessageSupplier message, final Throwable throwable )
+	{
+		log( DEBUG, message, throwable );
+	}
+
+	/**
 	 * Log 'trace' message with an associated throwable object.
 	 *
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
 	public void trace( final String message, final Throwable throwable )
+	{
+		log( TRACE, message, throwable );
+	}
+
+	/**
+	 * Log 'trace' message with an associated throwable object.
+	 *
+	 * @param message   Log message.
+	 * @param throwable Throwable associated with log message.
+	 */
+	public void trace( final MessageSupplier message, final Throwable throwable )
 	{
 		log( TRACE, message, throwable );
 	}
@@ -825,6 +995,7 @@ public final class ClassLogger
 	 *
 	 * @param methodName Name of exited method.
 	 * @param result     Result value.
+	 * @param <T>        Return type.
 	 *
 	 * @return Result value (returned as-is).
 	 */
@@ -940,6 +1111,7 @@ public final class ClassLogger
 	 *
 	 * @param methodName Method from which the exception is thrown.
 	 * @param throwable  Throwable that is thrown.
+	 * @param <T>        Throwable type.
 	 *
 	 * @return Throwable that is thrown (returned as-is).
 	 */
@@ -954,6 +1126,7 @@ public final class ClassLogger
 	 * @param logLevel   Level to log message at.
 	 * @param methodName Method from which the exception is thrown.
 	 * @param throwable  Throwable that is thrown.
+	 * @param <T>        Throwable type.
 	 *
 	 * @return Throwable that is thrown (returned as-is).
 	 */
@@ -982,7 +1155,7 @@ public final class ClassLogger
 	/**
 	 * Append object value to the string buffer. This method tries to provide
 	 * the best suitable string representation of the object (e.g. recognizing
-	 * arrays, primative types, strings, etc).
+	 * arrays, primitive types, strings, etc).
 	 *
 	 * @param sb    String buffer to append to.
 	 * @param value Value to print.
@@ -1089,7 +1262,7 @@ public final class ClassLogger
 	}
 
 	/**
-	 * This task sends a log messages to all registred log targets.
+	 * This task sends a log messages to all registered log targets.
 	 */
 	private static class LogTask
 	implements Runnable
@@ -1149,5 +1322,19 @@ public final class ClassLogger
 				}
 			}
 		}
+	}
+
+	/**
+	 * Interface to provide a message string.
+	 */
+	//@FunctionalInterface
+	public interface MessageSupplier
+	{
+		/**
+		 * Returns message.
+		 *
+		 * @return Message.
+		 */
+		String get();
 	}
 }
