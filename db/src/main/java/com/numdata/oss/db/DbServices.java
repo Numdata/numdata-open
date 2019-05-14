@@ -114,7 +114,19 @@ public class DbServices
 	 * should not be used!). The value is the earliest possible value for a
 	 * {@code Date} object, roughly 300 million years BC.
 	 */
-	public static final Date NOW = new Date( Long.MIN_VALUE );
+	public static final Date NOW = new Date( Long.MIN_VALUE )
+	{
+		/**
+		 * Serialized data version.
+		 */
+		private static final long serialVersionUID = 8861780300207263703L;
+
+		@Override
+		public String toString()
+		{
+			return "DbServices.NOW";
+		}
+	};
 
 	/**
 	 * Database pool to use for database services.
