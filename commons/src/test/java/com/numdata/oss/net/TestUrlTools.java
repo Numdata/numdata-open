@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,47 +138,41 @@ public class TestUrlTools
 
 	/**
 	 * Test {@link UrlTools#appendParameter} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
 	@Test
 	public void testAppendParameter()
-	throws Exception
 	{
-		assertEquals( "Test #1a", "?a=b", UrlTools.appendParameter( "", "a", "b" ) );
-		final StringBuilder sb1 = new StringBuilder( "" );
-		UrlTools.appendParameter( sb1, "a", "b" );
-		assertEquals( "Test #1b", "?a=b", sb1.toString() );
+		assertAppendParameter( "Test #1", "?a=b", "", "a", "b" );
+		assertAppendParameter( "Test #2", "?a=b", "?", "a", "b" );
+		assertAppendParameter( "Test #3", "page?a=b", "page", "a", "b" );
+		assertAppendParameter( "Test #4", "page?a=b", "page?", "a", "b" );
+		assertAppendParameter( "Test #5", "page?x=1&a=b", "page?x=1", "a", "b" );
+		assertAppendParameter( "Test #6", "page?x=1&y=2&a=b", "page?x=1&y=2", "a", "b" );
+		assertAppendParameter( "Test #7", "page?x=1&y=2&a=b", "page?x=1&y=2&", "a", "b" );
+        assertAppendParameter( "Test #8", "?%7Ba%7D=%7Bb%7D", "", "{a}", "{b}" );
+		assertAppendParameter( "Test #9", "?%7Ba%7D=%7Bb%7D", "?", "{a}", "{b}" );
+		assertAppendParameter( "Test #10", "page?%7Ba%7D=%7Bb%7D", "page", "{a}", "{b}" );
+		assertAppendParameter( "Test #11", "page?%7Ba%7D=%7Bb%7D", "page?", "{a}", "{b}" );
+		assertAppendParameter( "Test #12", "page?x=1&%7Ba%7D=%7Bb%7D", "page?x=1", "{a}", "{b}" );
+		assertAppendParameter( "Test #13", "page?x=1&y=2&%7Ba%7D=%7Bb%7D", "page?x=1&y=2", "{a}", "{b}" );
+		assertAppendParameter( "Test #14", "page?x=1&y=2&%7Ba%7D=%7Bb%7D", "page?x=1&y=2&", "{a}", "{b}" );
+	}
 
-		assertEquals( "Test #2a", "?a=b", UrlTools.appendParameter( "?", "a", "b" ) );
-		final StringBuilder sb2 = new StringBuilder( "?" );
-		UrlTools.appendParameter( sb2, "a", "b" );
-		assertEquals( "Test #2b", "?a=b", sb2.toString() );
-
-		assertEquals( "Test #3a", "page?a=b", UrlTools.appendParameter( "page", "a", "b" ) );
-		final StringBuilder sb3 = new StringBuilder( "page" );
-		UrlTools.appendParameter( sb3, "a", "b" );
-		assertEquals( "Test #3b", "page?a=b", sb3.toString() );
-
-		assertEquals( "Test #4a", "page?a=b", UrlTools.appendParameter( "page?", "a", "b" ) );
-		final StringBuilder sb4 = new StringBuilder( "page?" );
-		UrlTools.appendParameter( sb4, "a", "b" );
-		assertEquals( "Test #4b", "page?a=b", sb4.toString() );
-
-		assertEquals( "Test #5a", "page?x=1&a=b", UrlTools.appendParameter( "page?x=1", "a", "b" ) );
-		final StringBuilder sb5 = new StringBuilder( "page?x=1" );
-		UrlTools.appendParameter( sb5, "a", "b" );
-		assertEquals( "Test #5b", "page?x=1&a=b", sb5.toString() );
-
-		assertEquals( "Test #6a", "page?x=1&y=2&a=b", UrlTools.appendParameter( "page?x=1&y=2", "a", "b" ) );
-		final StringBuilder sb6 = new StringBuilder( "page?x=1&y=2" );
-		UrlTools.appendParameter( sb6, "a", "b" );
-		assertEquals( "Test #6b", "page?x=1&y=2&a=b", sb6.toString() );
-
-		assertEquals( "Test #7a", "page?x=1&y=2&a=b", UrlTools.appendParameter( "page?x=1&y=2&", "a", "b" ) );
-		final StringBuilder sb7 = new StringBuilder( "page?x=1&y=2&" );
-		UrlTools.appendParameter( sb7, "a", "b" );
-		assertEquals( "Test #7b", "page?x=1&y=2&a=b", sb7.toString() );
+	/**
+	 * Asserts that {@link UrlTools#appendParameter} yields the expected result.
+	 *
+	 * @param message  Message.
+	 * @param expected Expected result.
+	 * @param input    Input to append a parameter to.
+	 * @param name     Name of the appended parameter.
+	 * @param value    Value of the appended parameter.
+	 */
+	private static void assertAppendParameter( final String message, final String expected, final String input, final String name, final String value )
+	{
+		assertEquals( message + "a", expected, UrlTools.appendParameter( input, name, value ) );
+		final StringBuilder sb = new StringBuilder( input );
+		UrlTools.appendParameter( sb, name, value );
+		assertEquals( message + "b", expected, sb.toString() );
 	}
 
 	/**
