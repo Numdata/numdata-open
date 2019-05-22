@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -231,7 +231,7 @@ public class HTMLTools
 	}
 
 	/**
-	 * Replace HTML code (ISO 8879) with Java character (unicode).
+	 * Replace HTML code (ISO 8879) with Java character (Unicode).
 	 *
 	 * @param source Source string.
 	 * @param pos    Position of code in source string (should point at '&').
@@ -923,31 +923,12 @@ public class HTMLTools
 	 */
 	public static void escapeAttributeValue( @NotNull final StringBuilder builder, @NotNull final CharSequence source )
 	{
-		final int length = source.length();
-		for ( int i = 0; i < length; i++ )
+		try
 		{
-			final char c = source.charAt( i );
-			switch ( c )
-			{
-				case '<':
-					builder.append( "&lt;" );
-					break;
-				case '>':
-					builder.append( "&gt;" );
-					break;
-				case '&':
-					builder.append( "&amp;" );
-					break;
-				case '"':
-					builder.append( "&quot;" );
-					break;
-				case '\'':
-					builder.append( "&#39;" );
-					break;
-				default:
-					builder.append( c );
-					break;
-			}
+			escapeAttributeValue( (Appendable)builder, source );
+		}
+		catch ( IOException ignored )
+		{
 		}
 	}
 
@@ -1059,61 +1040,10 @@ public class HTMLTools
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public static void writePlainText( @NotNull final Reader in, @NotNull final Appendable out )
-	throws IOException
-	{
-		int read;
-		while ( ( read = in.read() ) != -1 )
-		{
-			switch ( read )
-			{
-				case '<':
-					out.append( "&lt;" );
-					break;
-				case '>':
-					out.append( "&gt;" );
-					break;
-				case '&':
-					out.append( "&amp;" );
-					break;
-				default:
-					out.append( (char)read );
-					break;
-			}
-		}
-	}
-
-	/**
-	 * Writes plain text as HTML, escaping any characters that have special
-	 * meaning in HTML.
-	 *
-	 * @param in  Provides the text to be written
-	 * @param out Receives an escaped version of the input text.
-	 *
-	 * @throws IOException if an I/O error occurs.
-	 */
 	public static void writePlainText( @NotNull final CharSequence in, @NotNull final Appendable out )
 	throws IOException
 	{
-		for ( int i = 0; i < in.length(); i++ )
-		{
-			final char c = in.charAt( i );
-			switch ( c )
-			{
-				case '<':
-					out.append( "&lt;" );
-					break;
-				case '>':
-					out.append( "&gt;" );
-					break;
-				case '&':
-					out.append( "&amp;" );
-					break;
-				default:
-					out.append( c );
-					break;
-			}
-		}
+		escapeCharacterData( out, in );
 	}
 
 	/**
