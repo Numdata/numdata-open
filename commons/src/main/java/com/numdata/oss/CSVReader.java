@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,7 +227,7 @@ public class CSVReader
 						quotedValue = true;
 						quotesStarted = true;
 						quotesEnded = false;
-						valueStarted = false;
+						valueStarted = true; // Because empty values can be quoted too.
 
 						whitespace -= value.length();
 						value.setLength( 0 ); // All characters before the quotes are ignored.
@@ -243,7 +243,7 @@ public class CSVReader
 							value.append( ch );
 							valueStarted = true;
 						}
-						else if ( valueStarted ) // Include contained whitespace.
+						else if ( valueStarted && !quotesEnded ) // Include contained whitespace.
 						{
 							value.append( ch );
 							whitespace++;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,9 +75,15 @@ public class TestCSVTools
 			/* Test 12 */ { " 1 , 2 , 3 ", new String[] { "1", "2", "3" } },
 			/* Test 13 */ { "\"a\",\" b \",\"c d\"", new String[] { "a", " b ", "c d" } },
 			/* Test 14 */ { "ignore-\"a\",\"b\",\"c\"-ignore", new String[] { "a", "b", "c" } },
-			/* Test 15 */ { "a,b c,d", new String[] { "a", "b c", "d" } },
-			/* Test 16 */ { "a,x \"b\",c", new String[] { "a", "b", "c" } },
-			/* Test 17 */ { "a,x  \"b\",c", new String[] { "a", "b", "c" } },
+			/* Test 15 */ { "ignore \"a\",\"b\",\"c\" ignore", new String[] { "a", "b", "c" } },
+			/* Test 16 */ { "a,b c,d", new String[] { "a", "b c", "d" } },
+			/* Test 17 */ { "a,x \"b\",c", new String[] { "a", "b", "c" } },
+			/* Test 18 */ { "a,x  \"b\",c", new String[] { "a", "b", "c" } },
+			/* Test 19 */ { "\"\",b,c,", new String[] { "", "b", "c" } },
+			/* Test 20 */ { "a,\"\",c,", new String[] { "a", "", "c" } },
+			/* Test 21 */ { "a,b,\"\"", new String[] { "a", "b", "" } },
+			/* Test 22 */ { "a,b,\"\",", new String[] { "a", "b", "" } },
+			/* Test 23 */ { "a,b,\"\"\n", new String[] { "a", "b", "" } },
 			};
 
 		/*
