@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -213,7 +213,7 @@ extends FormField
 		if ( link != null )
 		{
 			iw.write( "<a href=\"" );
-			iw.write( link );
+			HTMLTools.escapeAttributeValue( iw, link );
 			iw.write( "\">" );
 		}
 
@@ -228,7 +228,6 @@ extends FormField
 	@NotNull
 	@Override
 	public SubmitStatus submitData( @NotNull final HttpServletRequest request )
-	throws InvalidFormDataException
 	{
 		final SubmitStatus result;
 
@@ -263,7 +262,7 @@ extends FormField
 		final String value = getValue();
 		final int selectedIndex = optionValues.indexOf( value );
 
-		out.append( ( selectedIndex < 0 ) ? ( value == null ) ? "" : value : optionLabels.get( selectedIndex ) );
+		HTMLTools.escapeCharacterData( out, ( selectedIndex < 0 ) ? ( value == null ) ? "" : value : optionLabels.get( selectedIndex ) );
 
 		if ( selectedIndex < 0 )
 		{

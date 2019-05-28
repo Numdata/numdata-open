@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ implements HTMLFormFactory
 		if ( title != null )
 		{
 			iw.print( "<div class=\"title\">" );
-			iw.print( title );
+			HTMLTools.escapeCharacterData( iw, title );
 			iw.println( "</div>" );
 		}
 
@@ -169,7 +169,7 @@ implements HTMLFormFactory
 		if ( errorMessage != null )
 		{
 			iw.print( "<p class=\"error\">" );
-			iw.print( errorMessage );
+			HTMLTools.escapeCharacterData( iw, errorMessage );
 			iw.print( "</p>" );
 		}
 	}
@@ -178,7 +178,7 @@ implements HTMLFormFactory
 	public void writeBackButton( @Nullable final String contextPath, @NotNull final JspWriter out, @NotNull final String text )
 	throws IOException
 	{
-		writeButton( out, "javascript:history.back();", text, null );
+		writeButtonImpl( out, "history.back();", text, null );
 	}
 
 	@Override
@@ -194,10 +194,16 @@ implements HTMLFormFactory
 	public void writeButton( @NotNull final JspWriter out, @NotNull final String link, @NotNull final String text, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
+		writeButtonImpl( out, "window.location='" + link + "';", text, attributes );
+	}
+
+	private static void writeButtonImpl( @NotNull final JspWriter out, final String onclick, @NotNull final String text, @Nullable final Map<String, String> attributes )
+	throws IOException
+	{
 		final Map<String, String> input = new LinkedHashMap<String, String>();
 		input.put( "type", "button" );
 		input.put( "value", text );
-		input.put( "onClick", "parent.location='" + link + '\'' );
+		input.put( "onclick", onclick );
 
 		if ( attributes != null )
 		{
@@ -324,7 +330,7 @@ implements HTMLFormFactory
 						labelString = labelString.substring( 0, newline );
 					}
 
-					HTMLTools.writeText( iw, labelString );
+					HTMLTools.escapeCharacterData( iw, labelString );
 				}
 				iw.println( "</option>" );
 			}
@@ -335,7 +341,7 @@ implements HTMLFormFactory
 		else if ( selectedIndex >= 0 )
 		{
 			final int savedIndent = suspendIndent( out );
-			iw.print( labels.get( selectedIndex ) );
+			HTMLTools.escapeCharacterData( iw, labels.get( selectedIndex ) );
 			restoreIndent( out, savedIndent );
 		}
 		else
