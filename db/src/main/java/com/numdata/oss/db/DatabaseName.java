@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,16 +40,16 @@ import org.jetbrains.annotations.*;
 public class DatabaseName
 {
 	/**
-	 * Database name.
+	 * SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
 	 */
 	@Nullable
-	private String _host;
+	private String _tunnel;
 
 	/**
 	 * Host name.
 	 */
 	@Nullable
-	private String _database;
+	private String _host;
 
 	/**
 	 * Port number.
@@ -58,67 +58,45 @@ public class DatabaseName
 	private Integer _port;
 
 	/**
-	 * Constructs a new instance.
-	 *
-	 * @param database Database name.
+	 * Database name.
 	 */
-	public DatabaseName( @Nullable final String database )
-	{
-		this( database, null, null );
-	}
+	@Nullable
+	private String _database;
 
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param database Database name.
-	 * @param host     Host name.
-	 */
-	public DatabaseName( @Nullable final String database, @Nullable final String host )
-	{
-		this( database, host, null );
-	}
-
-	/**
-	 * Constructs a new instance.
-	 *
-	 * @param database Database name.
+	 * @param tunnel   SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
 	 * @param host     Host name.
 	 * @param port     Port number.
+	 * @param database Database name.
 	 */
-	public DatabaseName( @Nullable final String database, @Nullable final String host, @Nullable final Integer port )
+	public DatabaseName( @Nullable final String tunnel, @Nullable final String host, @Nullable final Integer port, @Nullable final String database )
 	{
+		_tunnel = tunnel;
 		_database = database;
 		_host = host;
 		_port = port;
 	}
 
-	/**
-	 * Returns the database name.
-	 *
-	 * @return Database name.
-	 */
+	@Nullable
+	public String getTunnel()
+	{
+		return _tunnel;
+	}
+
 	@Nullable
 	public String getDatabase()
 	{
 		return _database;
 	}
 
-	/**
-	 * Returns the host name.
-	 *
-	 * @return Host name.
-	 */
 	@Nullable
 	public String getHost()
 	{
 		return _host;
 	}
 
-	/**
-	 * Returns the port number.
-	 *
-	 * @return Port number.
-	 */
 	@Nullable
 	public Integer getPort()
 	{
@@ -128,22 +106,11 @@ public class DatabaseName
 	@Override
 	public String toString()
 	{
-		final String result;
-
-		if ( _host == null )
-		{
-			result = _database;
-		}
-		else if ( _port == null )
-		{
-			result = _database + "@" + _host;
-		}
-		else
-		{
-			result = _database + "@" + _host + ":" + _port;
-		}
-
-		return result;
+		return _host == null ? _database :
+		       _tunnel == null ? _port == null ? _database + '@' + _host
+		                                       : _database + '@' + _host + ':' + _port
+		                       : _port == null ? _database + '@' + _host + '@' + _tunnel
+		                                       : _database + '@' + _host + ':' + _port + '@' + _tunnel;
 	}
 
 	/**
@@ -160,7 +127,7 @@ public class DatabaseName
 	@NotNull
 	public static DatabaseName valueOf( @NotNull final String string )
 	{
-		final Pattern pattern = Pattern.compile( "(\\w+)(?:@([\\w\\.]+)(?::([0-9]+))?)?" );
+		final Pattern pattern = Pattern.compile( "(\\w+)(?:@([\\w.]+)(?::([0-9]+))?(?:@(.+))?)?" );
 		final Matcher matcher = pattern.matcher( string );
 		if ( !matcher.matches() )
 		{
@@ -170,8 +137,9 @@ public class DatabaseName
 		final String database = matcher.group( 1 );
 		final String host = matcher.group( 2 );
 		final String port = matcher.group( 3 );
+		final String tunnel = matcher.group( 4 );
 
-		return new DatabaseName( database, host, ( port == null ) ? null : Integer.valueOf( port ) );
+		return new DatabaseName( tunnel, host, ( port == null ) ? null : Integer.valueOf( port ), database );
 	}
 
 	/**
@@ -190,6 +158,11 @@ public class DatabaseName
 	public static DatabaseName valueOf( @NotNull final String string, @NotNull final DatabaseName defaultValue )
 	{
 		final DatabaseName result = valueOf( string );
+
+		if ( result._tunnel == null )
+		{
+			result._tunnel = defaultValue.getTunnel();
+		}
 
 		if ( result._host == null )
 		{
