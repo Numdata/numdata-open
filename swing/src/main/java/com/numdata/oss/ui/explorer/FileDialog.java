@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2001-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -265,7 +265,7 @@ implements ActionListener
 		}
 
 		_folders = folders;
-		_currentFolder = initialFolder;
+		_currentFolder = TextTools.isEmpty( initialFolder ) && !folders.isEmpty() ? folders.get( 0 ).getPath() : initialFolder;
 		_filename = ( filename == null ) ? "" : filename;
 		_typeFilter = typeFilter;
 		_folderContent = null;
