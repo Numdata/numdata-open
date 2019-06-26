@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2000-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1923,9 +1923,9 @@ public class DbServices
 				result = new ArrayList<Duet<Integer, FieldHandler>>( columnCount );
 
 				final ClassHandler classHandler = getClassHandler( _dbClass );
-				final String tableName = classHandler.getTableName();
-				final String columnPrefix = _columnPrefix;
 				final boolean matchTableName = _matchTableName;
+				final String tableName = matchTableName ? classHandler.getTableName() : null;
+				final String columnPrefix = _columnPrefix;
 
 				for ( int column = 1; column <= columnCount; column++ )
 				{
