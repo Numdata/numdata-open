@@ -35,10 +35,17 @@ import org.jetbrains.annotations.*;
  * port number. Useful for command-line tools where a full JDBC URL would result
  * in excessive typing.
  *
+ * Syntax: &lt;databaseName&gt;[@&lt;databaseServer&gt;[:&lt;databasePort&gt;][;user=&lt;databaseUser&gt;][;pass=&lt;databasePassword&gt;][@[&lt;user&gt;[:&lt;pass&gt;]@]&lt;host&gt;[:&lt;port&gt;]]]
+ *
  * @author G. Meinders
  */
 public class DatabaseName
 {
+	/**
+	 * Regex pattern to match syntax (see class comment).
+	 */
+	private static final Pattern PATTERN = Pattern.compile( "(\\w+)(?:@([\\w.]+)(?::([0-9]{1,5}))?(?:;user=([^;@]+))?(?:;pass=([^;@]+))?(?:@(.+))?)?" );
+
 	/**
 	 * SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
 	 */
@@ -64,17 +71,33 @@ public class DatabaseName
 	private String _database;
 
 	/**
+	 * Database user.
+	 */
+	@Nullable
+	private String _user;
+
+	/**
+	 * Database password.
+	 */
+	@Nullable
+	private String _password;
+
+	/**
 	 * Constructs a new instance.
 	 *
-	 * @param tunnel   SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
 	 * @param host     Host name.
 	 * @param port     Port number.
 	 * @param database Database name.
+	 * @param user     Database user.
+	 * @param password Database password.
+	 * @param tunnel   SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
 	 */
-	public DatabaseName( @Nullable final String tunnel, @Nullable final String host, @Nullable final Integer port, @Nullable final String database )
+	public DatabaseName( @Nullable final String host, @Nullable final Integer port, @Nullable final String database, @Nullable final String user, @Nullable final String password, @Nullable final String tunnel )
 	{
 		_tunnel = tunnel;
 		_database = database;
+		_user = user;
+		_password = password;
 		_host = host;
 		_port = port;
 	}
@@ -103,14 +126,46 @@ public class DatabaseName
 		return _port;
 	}
 
+	@Nullable
+	public String getUser()
+	{
+		return _user;
+	}
+
+	@Nullable
+	public String getPassword()
+	{
+		return _password;
+	}
+
 	@Override
 	public String toString()
 	{
-		return _host == null ? _database :
-		       _tunnel == null ? _port == null ? _database + '@' + _host
-		                                       : _database + '@' + _host + ':' + _port
-		                       : _port == null ? _database + '@' + _host + '@' + _tunnel
-		                                       : _database + '@' + _host + ':' + _port + '@' + _tunnel;
+		final String result;
+
+		if ( _host == null )
+		{
+			result = String.valueOf( _database );
+		}
+		else
+		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append( _database );
+
+			sb.append( '@' ).append( _host );
+			if ( _port != null )
+			{
+				sb.append( ':' ).append( _port );
+			}
+
+			if ( _tunnel != null )
+			{
+				sb.append( '@' ).append( _tunnel );
+			}
+			result = sb.toString();
+		}
+
+		return result;
 	}
 
 	/**
@@ -127,8 +182,7 @@ public class DatabaseName
 	@NotNull
 	public static DatabaseName valueOf( @NotNull final String string )
 	{
-		final Pattern pattern = Pattern.compile( "(\\w+)(?:@([\\w.]+)(?::([0-9]+))?(?:@(.+))?)?" );
-		final Matcher matcher = pattern.matcher( string );
+		final Matcher matcher = PATTERN.matcher( string );
 		if ( !matcher.matches() )
 		{
 			throw new IllegalArgumentException( string );
@@ -137,9 +191,11 @@ public class DatabaseName
 		final String database = matcher.group( 1 );
 		final String host = matcher.group( 2 );
 		final String port = matcher.group( 3 );
-		final String tunnel = matcher.group( 4 );
+		final String user = matcher.group( 4 );
+		final String pass = matcher.group( 5 );
+		final String tunnel = matcher.group( 6 );
 
-		return new DatabaseName( tunnel, host, ( port == null ) ? null : Integer.valueOf( port ), database );
+		return new DatabaseName( host, ( port == null ) ? null : Integer.valueOf( port ), database, user, pass, tunnel );
 	}
 
 	/**
@@ -159,6 +215,11 @@ public class DatabaseName
 	{
 		final DatabaseName result = valueOf( string );
 
+		if ( result._database == null )
+		{
+			result._database = defaultValue.getDatabase();
+		}
+
 		if ( result._tunnel == null )
 		{
 			result._tunnel = defaultValue.getTunnel();
@@ -172,6 +233,16 @@ public class DatabaseName
 		if ( result._port == null )
 		{
 			result._port = defaultValue.getPort();
+		}
+
+		if ( result._user == null )
+		{
+			result._user = defaultValue.getUser();
+		}
+
+		if ( result._password == null )
+		{
+			result._password = defaultValue.getPassword();
 		}
 
 		return result;

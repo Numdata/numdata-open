@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2002-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import javax.sql.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.log.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class provides database connectivity using a pooling mechanism to reduce
@@ -102,7 +103,7 @@ implements DataSource
 	 *
 	 * @throws SQLException if the specified JDBC driver is not available.
 	 */
-	public JdbcDataSource( final String jdbcDriver, final String databaseURL, final String user, final String password )
+	public JdbcDataSource( @Nullable final String jdbcDriver, final String databaseURL, @Nullable final String user, @Nullable final String password )
 	throws SQLException
 	{
 		LOG.debug( "JdbcDataSource( " + TextTools.quote( jdbcDriver ) + ", " + TextTools.quote( databaseURL ) + ", " + TextTools.quote( user ) + " )" );
@@ -190,6 +191,7 @@ implements DataSource
 	 *
 	 * @throws SQLException if no connection could be established.
 	 */
+	@SuppressWarnings( { "JDBCResourceOpenedButNotSafelyClosed", "CallToDriverManagerGetConnection" } )
 	private Connection allocateConnection()
 	throws SQLException
 	{
@@ -287,28 +289,24 @@ implements DataSource
 
 	@Override
 	public PrintWriter getLogWriter()
-	throws SQLException
 	{
 		return _log;
 	}
 
 	@Override
 	public void setLogWriter( final PrintWriter out )
-	throws SQLException
 	{
 		_log = out;
 	}
 
 	@Override
 	public void setLoginTimeout( final int seconds )
-	throws SQLException
 	{
 		_loginTimeout = seconds;
 	}
 
 	@Override
 	public int getLoginTimeout()
-	throws SQLException
 	{
 		return _loginTimeout;
 	}
@@ -328,7 +326,6 @@ implements DataSource
 
 	@Override
 	public boolean isWrapperFor( final Class<?> iface )
-	throws SQLException
 	{
 		return false;
 	}
@@ -336,7 +333,7 @@ implements DataSource
 	/**
 	 * Wrapper for JDBC connection.
 	 */
-	@SuppressWarnings( "override" )
+	@SuppressWarnings( "JDBCPrepareStatementWithNonConstantString" )
 	private class WrappedConnection
 	implements Connection
 	{
