@@ -28,6 +28,7 @@ package com.numdata.oss.db;
 
 import java.util.regex.*;
 
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -156,6 +157,14 @@ public class DatabaseName
 			if ( _port != null )
 			{
 				sb.append( ':' ).append( _port );
+			}
+			if ( _user != null )
+			{
+				sb.append( ";user=" ).append( _user );
+			}
+			if ( _password != null )
+			{
+				TextTools.appendFixed( sb.append( ";pass=" ), "", _password.length(), false, '*' );
 			}
 
 			if ( _tunnel != null )
