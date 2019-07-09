@@ -52,7 +52,7 @@ public class ResourceBundleTester
 {
 	/**
 	 * Class to test resource bundles for.
- 	 */
+	 */
 	@Nullable
 	private final Class<?> _forClass;
 
@@ -102,7 +102,8 @@ public class ResourceBundleTester
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param forClass Class to test resource bundles for, include resource bundles for super-classes.
+	 * @param forClass Class to test resource bundles for, include resource
+	 *                 bundles for super-classes.
 	 */
 	public ResourceBundleTester( @Nullable final Class<?> forClass )
 	{
@@ -113,7 +114,8 @@ public class ResourceBundleTester
 	 * Constructs a new instance.
 	 *
 	 * @param forClass         Class to test resource bundles for.
-	 * @param includeHierarchy {@code true} to include resource bundles for super-classes.
+	 * @param includeHierarchy {@code true} to include resource bundles for
+	 *                         super-classes.
 	 */
 	public ResourceBundleTester( @Nullable final Class<?> forClass, final boolean includeHierarchy )
 	{
@@ -142,20 +144,20 @@ public class ResourceBundleTester
 
 	public void addExpectedKey( final String expectedKey )
 	{
-		assertTrue( "Unnecessary expected key", _expectedKeys.add( expectedKey ) );
+		assertTrue( "Unnecessary expected key '" + expectedKey + '\'', _expectedKeys.add( expectedKey ) );
 	}
 
 	public void addExpectedKeysWithSuffix( final String suffix )
 	{
 		for ( final String expectedKey : new ArrayList<String>( _expectedKeys ) )
 		{
-			_expectedKeys.add( expectedKey + suffix );
+			addExpectedKey( expectedKey + suffix );
 		}
 	}
 
 	public void removeExpectedKey( final String expectedKey )
 	{
-		assertTrue( "Missing expected property", _expectedKeys.remove( expectedKey ) );
+		assertTrue( "Missing expected key '" + expectedKey + '\'', _expectedKeys.remove( expectedKey ) );
 	}
 
 	/**
@@ -604,7 +606,8 @@ public class ResourceBundleTester
 	 *
 	 * @return Bean property names.
 	 *
-	 * @deprecated Use {@link BeanTools#getPropertyNames(Class, boolean, String...)} instead. (Note that the boolean parameter is reversed!)
+	 * @deprecated Use {@link BeanTools#getPropertyNames(Class, boolean,
+	 * String...)} instead. (Note that the boolean parameter is reversed!)
 	 */
 	@Deprecated
 	public static Set<String> getBeanPropertyNames( final Class<?> beanClass, final boolean setterRequired, final String... excludeProperties )
