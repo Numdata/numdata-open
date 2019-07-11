@@ -159,6 +159,23 @@ extends FileSystemMonitor
 	}
 
 	@Override
+	void moveFile( @NotNull final Object handle, @NotNull final URI location )
+	throws IOException
+	{
+		final SmbFile file = (SmbFile)handle;
+		final String scheme = location.getScheme();
+		if ( "smb".equals( scheme ) || ( scheme == null ) )
+		{
+			final SmbFile newFile = new SmbFile( file.getParent(), location.toString() );
+			file.renameTo( newFile );
+		}
+		else
+		{
+			super.moveFile( handle, location );
+		}
+	}
+
+	@Override
 	public void deleteFile( @NotNull final Object handle )
 	throws IOException
 	{

@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import com.numdata.oss.*;
+import com.numdata.oss.io.*;
 import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
@@ -534,6 +535,70 @@ implements ResourceMonitor
 	 */
 	public abstract void deleteFile( @NotNull Object handle )
 	throws IOException;
+
+	/**
+	 * Moves the specified file to the given location.
+	 *
+	 * @param handle   Identifies the file to be deleted.
+	 * @param location Target location.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	void moveFile( @NotNull final Object handle, @NotNull final URI location )
+	throws IOException
+	{
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( "moveFile( " + handle + ", " + location );
+		}
+
+		InputStream in = null;
+		OutputStream out = null;
+		try
+		{
+			final String path = getPath( handle );
+			final String srcName = path.substring( Math.max( path.lastIndexOf( '/' ), path.lastIndexOf( '\\' ) ) + 1 );
+
+			in = readFile( handle );
+
+			if ( "file".equals( location.getScheme() ) )
+			{
+				final File dst = new File( location );
+				final boolean directory = TextTools.endsWith( location.getPath(), '/' ) || dst.isDirectory();
+				final File dstFile = directory ? new File( dst, srcName ) : dst;
+
+				final File parentFile = dstFile.getParentFile();
+				if ( parentFile != null )
+				{
+					parentFile.mkdirs();
+				}
+
+				out = new FileOutputStream( dstFile );
+			}
+			else
+			{
+				final boolean directory = TextTools.endsWith( location.getPath(), '/' );
+				final URL dstUrl = ( directory ? location.resolve( srcName ) : location ).toURL();
+
+				out = dstUrl.openConnection().getOutputStream();
+			}
+
+			DataStreamTools.pipe( out, in );
+		}
+		finally
+		{
+			if ( in != null )
+			{
+				in.close();
+			}
+			if ( out != null )
+			{
+				out.close();
+			}
+		}
+
+		deleteFile( handle );
+	}
 
 	/**
 	 * Returns whether the resource being monitored is available.
