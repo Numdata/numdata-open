@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,11 @@ implements ResourceMonitor
 		 * Keep only last of newly found files.
 		 */
 		KEEP_LAST,
+
+		/**
+		 * Keep only if single file was found.
+		 */
+		KEEP_SINGLE,
 
 		/**
 		 * Do not keep any newly found files.
@@ -398,7 +403,8 @@ implements ResourceMonitor
 				if ( oldLastModified == null )
 				{
 					final boolean keep = ( newFileHandling == NewFileHandling.KEEP_ALL ) ||
-					                     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() );
+					                     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() ) ||
+					                     ( newFileHandling == NewFileHandling.KEEP_SINGLE && ( files.size() == 1 ) );
 					if ( trace )
 					{
 						LOG.trace( "new file: " + getPath( file ) + ", newFileHandling=" + newFileHandling + " => keep=" + keep );
