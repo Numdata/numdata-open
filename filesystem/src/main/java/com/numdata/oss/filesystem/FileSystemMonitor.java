@@ -154,7 +154,7 @@ implements ResourceMonitor
 		{
 			try
 			{
-				result = new SMBFolderMonitor( uri.toString(), delay );
+				result = new SMBFileSystemMonitor( uri.toString(), delay );
 			}
 			catch ( final MalformedURLException e )
 			{
@@ -164,7 +164,7 @@ implements ResourceMonitor
 		else if ( "file".equalsIgnoreCase( scheme ) )
 		{
 			final File file = new File( uri );
-			if ( file.isDirectory() )
+			if ( TextTools.endsWith( uri.getPath(), '/' ) || file.isDirectory() )
 			{
 				result = new LocalFolderMonitor( file, delay );
 			}

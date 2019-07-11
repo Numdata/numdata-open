@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,18 +41,18 @@ import org.jetbrains.annotations.*;
  * @author G. Meinders
  */
 @SuppressWarnings( "OverlyStrongTypeCast" )
-public class SMBFolderMonitor
+public class SMBFileSystemMonitor
 extends FileSystemMonitor
 {
 	/**
 	 * Log used for messages related to this class.
 	 */
-	private static final ClassLogger LOG = ClassLogger.getFor( SMBFolderMonitor.class );
+	private static final ClassLogger LOG = ClassLogger.getFor( SMBFileSystemMonitor.class );
 
 	/**
 	 * Folder to be monitored.
 	 */
-	private final SmbFile _folder;
+	private final SmbFile _smbFile;
 
 	/**
 	 * Constructs a new part information source that monitors the specified SMB
@@ -63,18 +63,19 @@ extends FileSystemMonitor
 	 *
 	 * @throws MalformedURLException if the given URL is invalid.
 	 */
-	public SMBFolderMonitor( @NotNull final String url, final long delay )
+	public SMBFileSystemMonitor( @NotNull final String url, final long delay )
 	throws MalformedURLException
 	{
 		super( delay );
-		_folder = new SmbFile( url );
+		setAlwaysModified( true );
+		_smbFile = new SmbFile( url );
 	}
 
 	@NotNull
 	@Override
 	public String getName()
 	{
-		return _folder.getPath();
+		return _smbFile.getPath();
 	}
 
 	@Override
@@ -84,7 +85,7 @@ extends FileSystemMonitor
 
 		try
 		{
-			result = _folder.exists();
+			result = _smbFile.exists();
 		}
 		catch ( final SmbException e )
 		{
@@ -99,8 +100,19 @@ extends FileSystemMonitor
 	protected List<Object> listFiles()
 	throws IOException
 	{
-		final SmbFile[] files = _folder.listFiles();
-		return ( files == null ) ? Collections.emptyList() : Arrays.asList( (Object[])files );
+		final List<Object> result;
+
+		if ( _smbFile.isDirectory() )
+		{
+			final SmbFile[] files = _smbFile.listFiles();
+			result = ( files == null ) ? Collections.emptyList() : Arrays.asList( (Object[])files );
+		}
+		else
+		{
+			result = Collections.<Object>singletonList( _smbFile );
+		}
+
+		return result;
 	}
 
 	@Override
@@ -160,7 +172,7 @@ extends FileSystemMonitor
 		boolean result = false;
 		try
 		{
-			result = _folder.exists();
+			result = _smbFile.exists();
 		}
 		catch ( final SmbException e )
 		{
