@@ -28,6 +28,7 @@ package com.numdata.oss.filesystem;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
@@ -50,7 +51,12 @@ implements FileSystemMonitorListener
 	/**
 	 * Whether to delete the file after processing.
 	 */
-	private boolean _delete = false;
+	private boolean _deleteAfterProcessing = false;
+
+	/**
+	 * Delete files older than this amount of minutes.
+	 */
+	private int _maximumAge = -1;
 
 	/**
 	 * URI to move file to after processing.
@@ -58,14 +64,24 @@ implements FileSystemMonitorListener
 	@Nullable
 	private URI _moveLocation = null;
 
-	public boolean isDelete()
+	public boolean isDeleteAfterProcessing()
 	{
-		return _delete;
+		return _deleteAfterProcessing;
 	}
 
-	public void setDelete( final boolean delete )
+	public void setDeleteAfterProcessing( final boolean deleteAfterProcessing )
 	{
-		_delete = delete;
+		_deleteAfterProcessing = deleteAfterProcessing;
+	}
+
+	public int getMaximumAge()
+	{
+		return _maximumAge;
+	}
+
+	public void setMaximumAge( final int maximumAge )
+	{
+		_maximumAge = maximumAge;
 	}
 
 	@Nullable
@@ -77,6 +93,34 @@ implements FileSystemMonitorListener
 	public void setMoveLocation( @Nullable final URI moveLocation )
 	{
 		_moveLocation = moveLocation;
+	}
+
+
+	@Override
+	public void fileSkipped( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle, @NotNull final SkipReason reason )
+	{
+		final int maximumAge = getMaximumAge();
+		if ( maximumAge > 0 )
+		{
+			switch ( reason )
+			{
+				case SINGLE_FILE:
+				case INITIAL_FILE_HANDLING:
+				case NOT_MODIFIED:
+					try
+					{
+						final Date lastModified = monitor.lastModified( handle );
+						if ( ( lastModified != null ) && ( ( System.currentTimeMillis() - lastModified.getTime() ) ) > ( maximumAge * 60000L ) )
+						{
+							monitor.deleteFile( handle );
+						}
+					}
+					catch ( final Exception e )
+					{
+						LOG.warn( "Failed to apply 'maximumAge' rule to " + monitor.getPath( handle ) + ": " + e, e );
+					}
+			}
+		}
 	}
 
 	@Override
@@ -155,7 +199,7 @@ implements FileSystemMonitorListener
 	protected void postProcess( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	throws IOException
 	{
-		if ( isDelete() )
+		if ( isDeleteAfterProcessing() )
 		{
 			if ( LOG.isDebugEnabled() )
 			{

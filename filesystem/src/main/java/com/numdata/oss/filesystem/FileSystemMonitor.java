@@ -349,8 +349,10 @@ implements ResourceMonitor
 				}
 				for ( final Iterator<Object> it = files.iterator(); it.hasNext(); )
 				{
-					if ( !pathFilter.matcher( getPath( it.next() ) ).matches() )
+					final Object file = it.next();
+					if ( !pathFilter.matcher( getPath( file ) ).matches() )
 					{
+						fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.PATH_FILTER );
 						it.remove();
 					}
 				}
@@ -384,6 +386,10 @@ implements ResourceMonitor
 			if ( isSingleFile() && ( files.size() > 1 ) )
 			{
 				final Object file = files.getLast();
+				for ( int i = 0; i < files.size() - 1; i++ )
+				{
+					fireFileSkippedEvent( files.get( i ), FileSystemMonitorListener.SkipReason.SINGLE_FILE );
+				}
 				files.removeRange( 0, files.size() - 1 );
 
 				final Date lastModified = newModificationTimeByFile.get( file );
@@ -414,6 +420,10 @@ implements ResourceMonitor
 					{
 						fireFileAddedEvent( file );
 					}
+					else
+					{
+						fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.INITIAL_FILE_HANDLING );
+					}
 				}
 				else if ( isAlwaysModified() || !newLastModified.equals( oldLastModified ) )
 				{
@@ -422,6 +432,10 @@ implements ResourceMonitor
 						LOG.trace( "modified file: " + getPath( file ) );
 					}
 					fireFileModifiedEvent( file );
+				}
+				else
+				{
+					fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.NOT_MODIFIED );
 				}
 			}
 
@@ -625,6 +639,32 @@ implements ResourceMonitor
 	public void removeListener( @NotNull final FileSystemMonitorListener listener )
 	{
 		_listeners.remove( listener );
+	}
+
+	/**
+	 * Notifies listeners that the specified file was skipped.
+	 *
+	 * @param file   Identifies the file that was skipped.
+	 * @param reason Reason why file was skipped.
+	 */
+	protected void fireFileSkippedEvent( @NotNull final Object file, @NotNull final FileSystemMonitorListener.SkipReason reason )
+	{
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( "fireFileSkippedEvent( " + getPath( file ) + " )" );
+		}
+
+		for ( final FileSystemMonitorListener listener : _listeners )
+		{
+			try
+			{
+				listener.fileSkipped( this, file, reason );
+			}
+			catch ( final Exception e )
+			{
+				LOG.error( "Unhandled exception in 'fileSkipped' method of " + listener, e );
+			}
+		}
 	}
 
 	/**
