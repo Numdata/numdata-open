@@ -267,6 +267,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
 							<tags>
 								<tag>
 									<name>noinspection</name>
