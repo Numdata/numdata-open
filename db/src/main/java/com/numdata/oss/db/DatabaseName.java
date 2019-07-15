@@ -26,9 +26,12 @@
  */
 package com.numdata.oss.db;
 
+import java.io.*;
+import java.util.*;
 import java.util.regex.*;
 
 import com.numdata.oss.*;
+import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -42,6 +45,11 @@ import org.jetbrains.annotations.*;
  */
 public class DatabaseName
 {
+	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final ClassLogger LOG = ClassLogger.getFor( DatabaseName.class );
+
 	/**
 	 * Regex pattern to match syntax (see class comment).
 	 */
@@ -191,20 +199,134 @@ public class DatabaseName
 	@NotNull
 	public static DatabaseName valueOf( @NotNull final String string )
 	{
-		final Matcher matcher = PATTERN.matcher( string );
-		if ( !matcher.matches() )
+		String database;
+		String host;
+		String port;
+		String user;
+		String password;
+		String tunnel;
+
+		if ( TextTools.startsWith( string, '@' ) )
 		{
-			throw new IllegalArgumentException( string );
+			final Properties properties = new Properties();
+			final String path = string.substring( 1 );
+			final boolean debug = LOG.isDebugEnabled();
+			if ( debug )
+			{
+				LOG.debug( "valueOf() propertiesFile=" + path );
+			}
+			try
+			{
+				File file = new File( path );
+				boolean found = file.exists();
+				if ( !found )
+				{
+					// automatically add '.properties' extension
+					if ( !path.endsWith( ".properties" ) )
+					{
+						file = new File( path + ".properties" );
+						found = file.exists();
+					}
+
+					if ( !found )
+					{
+						throw new RuntimeException( "Missing database properties file '" + path + '\'' );
+					}
+				}
+
+				final InputStream in = new FileInputStream( file );
+				try
+				{
+					properties.load( in );
+				}
+				finally
+				{
+					in.close();
+				}
+			}
+			catch ( final IOException e )
+			{
+				throw new RuntimeException( "Failed to read database properties from '" + path + "' file", e );
+			}
+
+			database = properties.getProperty( "databaseName" );
+			if ( database == null )
+			{
+				database = properties.getProperty( "database" );
+			}
+
+			host = null;
+			if ( database != null )
+			{
+				final int databaseAt = database.indexOf( '@' );
+				if ( databaseAt > 0 )
+				{
+					host = database.substring( databaseAt + 1 );
+					database = database.substring( 0, databaseAt );
+				}
+			}
+			host = properties.getProperty( "databaseHost", host );
+			if ( host == null )
+			{
+				host = properties.getProperty( "host" );
+			}
+
+			port = properties.getProperty( "databasePort" );
+			if ( port == null )
+			{
+				port = properties.getProperty( "port" );
+			}
+
+			user = properties.getProperty( "databaseUser" );
+			if ( user == null )
+			{
+				user = properties.getProperty( "user" );
+			}
+
+			password = properties.getProperty( "databasePassword" );
+			if ( password == null )
+			{
+				password = properties.getProperty( "databasePass" );
+				if ( password == null )
+				{
+					password = properties.getProperty( "password" );
+					if ( password == null )
+					{
+						password = properties.getProperty( "pass" );
+					}
+				}
+			}
+
+			tunnel = properties.getProperty( "tunnel" );
+			if ( tunnel == null )
+			{
+				final String sshUser = properties.getProperty( "sshUser" );
+				final String sshPassword = properties.getProperty( "sshPassword", properties.getProperty( "sshPass" ) );
+				final String sshHost = properties.getProperty( "sshHost" );
+				final String sshPort = properties.getProperty( "sshPort" );
+				if ( sshHost != null )
+				{
+					tunnel = ( ( sshUser != null ) ? sshUser + ( ( sshPassword != null ) ? ':' + sshPassword : "" ) + '@' : "" ) + sshHost + ( ( sshPort != null ) ? ':' + sshPort : "" );
+				}
+			}
+		}
+		else
+		{
+			final Matcher matcher = PATTERN.matcher( string );
+			if ( !matcher.matches() )
+			{
+				throw new IllegalArgumentException( string );
+			}
+
+			database = matcher.group( 1 );
+			host = matcher.group( 2 );
+			port = matcher.group( 3 );
+			user = matcher.group( 4 );
+			password = matcher.group( 5 );
+			tunnel = matcher.group( 6 );
 		}
 
-		final String database = matcher.group( 1 );
-		final String host = matcher.group( 2 );
-		final String port = matcher.group( 3 );
-		final String user = matcher.group( 4 );
-		final String pass = matcher.group( 5 );
-		final String tunnel = matcher.group( 6 );
-
-		return new DatabaseName( host, ( port == null ) ? null : Integer.valueOf( port ), database, user, pass, tunnel );
+		return new DatabaseName( host, ( port == null ) ? null : Integer.valueOf( port ), database, user, password, tunnel );
 	}
 
 	/**
