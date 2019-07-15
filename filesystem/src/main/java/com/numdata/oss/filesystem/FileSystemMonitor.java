@@ -442,15 +442,16 @@ implements ResourceMonitor
 			/*
 			 * Check for removed files.
 			 */
-			for ( final Object file : oldModificationTimeByFile.keySet() )
+			for ( final Iterator<Object> it = oldModificationTimeByFile.keySet().iterator(); it.hasNext(); )
 			{
+				final Object file = it.next();
 				if ( !newModificationTimeByFile.containsKey( file ) )
 				{
 					if ( trace )
 					{
 						LOG.trace( "removed file: " + getPath( file ) );
 					}
-					oldModificationTimeByFile.remove( file );
+					it.remove();
 					fireFileRemovedEvent( file );
 				}
 			}

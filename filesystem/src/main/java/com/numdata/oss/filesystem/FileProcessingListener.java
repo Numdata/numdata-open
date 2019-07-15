@@ -117,7 +117,7 @@ implements FileSystemMonitorListener
 					}
 					catch ( final Exception e )
 					{
-						LOG.warn( "Failed to apply 'maximumAge' rule to " + monitor.getPath( handle ) + ": " + e, e );
+						LOG.debug( "Failed to apply 'maximumAge' rule to " + monitor.getPath( handle ) + ": " + e, e );
 					}
 			}
 		}
