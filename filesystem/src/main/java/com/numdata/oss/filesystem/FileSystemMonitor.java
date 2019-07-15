@@ -261,6 +261,8 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
+		LOG.debug( "run()" );
+
 		String lastException = null;
 		NewFileHandling newFileHandling = getInitialFileHandling();
 
@@ -652,7 +654,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isTraceEnabled() )
 		{
-			LOG.trace( "fireFileSkippedEvent( " + getPath( file ) + " )" );
+			LOG.trace( "fireFileSkippedEvent( " + getPath( file ) + ", " + reason + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -675,9 +677,9 @@ implements ResourceMonitor
 	 */
 	protected void fireFileAddedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileAddedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileAddedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -700,9 +702,9 @@ implements ResourceMonitor
 	 */
 	protected void fireFileModifiedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileModifiedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileModifiedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -726,9 +728,9 @@ implements ResourceMonitor
 	 */
 	protected void fireFileRemovedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileRemovedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileRemovedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )

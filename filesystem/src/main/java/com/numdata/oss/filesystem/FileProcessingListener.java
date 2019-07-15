@@ -99,75 +99,56 @@ implements FileSystemMonitorListener
 	@Override
 	public void fileSkipped( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle, @NotNull final SkipReason reason )
 	{
-		final int maximumAge = getMaximumAge();
-		if ( maximumAge > 0 )
+		//noinspection EnumSwitchStatementWhichMissesCases
+		switch ( reason )
 		{
-			switch ( reason )
-			{
-				case SINGLE_FILE:
-				case INITIAL_FILE_HANDLING:
-				case NOT_MODIFIED:
-					try
-					{
-						final Date lastModified = monitor.lastModified( handle );
-						if ( ( lastModified != null ) && ( ( System.currentTimeMillis() - lastModified.getTime() ) ) > ( maximumAge * 60000L ) )
-						{
-							monitor.deleteFile( handle );
-						}
-					}
-					catch ( final Exception e )
-					{
-						LOG.debug( "Failed to apply 'maximumAge' rule to " + monitor.getPath( handle ) + ": " + e, e );
-					}
-			}
+			case SINGLE_FILE:
+			case INITIAL_FILE_HANDLING:
+			case NOT_MODIFIED:
+				applyMaximumAge( monitor, handle );
+				break;
 		}
 	}
 
 	@Override
 	public void fileAdded( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	{
-		try
-		{
-			processFile( monitor, handle );
-		}
-		catch ( final IOException e )
-		{
-			LOG.warn( "Failed to process new file: " + monitor.getPath( handle ) + ": " + e, e );
-		}
-		finally
-		{
-			try
-			{
-				postProcess( monitor, handle );
-			}
-			catch ( final IOException e )
-			{
-				LOG.warn( "Failed to post-process new file: " + monitor.getPath( handle ) + ": " + e, e );
-			}
-		}
+		fileModified( monitor, handle );
 	}
 
 	@Override
 	public void fileModified( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	{
+		boolean process = false;
 		try
 		{
-			processFile( monitor, handle );
-			postProcess( monitor, handle );
+			process = preProcess( monitor, handle );
 		}
 		catch ( final IOException e )
 		{
-			LOG.warn( "Failed to process modified file: " + monitor.getPath( handle ) + ": " + e, e );
+			LOG.warn( "Failed to pre-process file: " + monitor.getPath( handle ) + ": " + e, e );
 		}
-		finally
+
+		if ( process )
 		{
 			try
 			{
-				postProcess( monitor, handle );
+				processFile( monitor, handle );
 			}
 			catch ( final IOException e )
 			{
-				LOG.warn( "Failed to post-process modified file: " + monitor.getPath( handle ) + ": " + e, e );
+				LOG.warn( "Failed to process file: " + monitor.getPath( handle ) + ": " + e, e );
+			}
+			finally
+			{
+				try
+				{
+					postProcess( monitor, handle );
+				}
+				catch ( final IOException e )
+				{
+					LOG.warn( "Failed to post-process file: " + monitor.getPath( handle ) + ": " + e, e );
+				}
 			}
 		}
 	}
@@ -178,12 +159,74 @@ implements FileSystemMonitorListener
 	}
 
 	/**
+	 * This method applies the {@link #getMaximumAge() maximum age} setting to
+	 * the given file.
+	 *
+	 * @param monitor File system monitor reporting the file.
+	 * @param handle  Identifies the file to process.
+	 *
+	 * @return {@code true} if file was deleted due to age.
+	 */
+	@SuppressWarnings( "WeakerAccess" )
+	protected boolean applyMaximumAge( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
+	{
+		boolean result = false;
+		final int maximumAge = getMaximumAge();
+		if ( maximumAge > 0 )
+		{
+			try
+			{
+				final Date lastModified = monitor.lastModified( handle );
+				if ( lastModified != null )
+				{
+					final long age = (int)( ( System.currentTimeMillis() - lastModified.getTime() ) / 60000L );
+					if ( age > maximumAge )
+					{
+						result = true;
+						if ( LOG.isDebugEnabled() )
+						{
+							LOG.debug( "Deleting old file: " + monitor.getPath( handle ) + " (age=" + age + ", maximumAge=" + maximumAge + ')' );
+						}
+						monitor.deleteFile( handle );
+					}
+				}
+			}
+			catch ( final Exception e )
+			{
+				if ( LOG.isDebugEnabled() )
+				{
+					LOG.debug( "Failed to apply 'maximumAge' rule to " + monitor.getPath( handle ) + ": " + e, e );
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Called before file is processed.
+	 *
+	 * @param monitor File system monitor reporting the file.
+	 * @param handle  Identifies the file to process.
+	 *
+	 * @return {@code true} if file should be processed.
+	 *
+	 * @throws IOException if there was a problem processing the file.
+	 */
+	@SuppressWarnings( { "RedundantThrows", "WeakerAccess" } )
+	protected boolean preProcess( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
+	throws IOException
+	{
+		return !applyMaximumAge( monitor, handle );
+	}
+
+	/**
 	 * Process file.
 	 *
 	 * @param monitor File system monitor reporting the file.
 	 * @param handle  Identifies the file to process.
 	 *
-	 * @throws IOException if there was a problem reading the file.
+	 * @throws IOException if there was a problem processing the file.
 	 */
 	protected abstract void processFile( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	throws IOException;
@@ -194,7 +237,7 @@ implements FileSystemMonitorListener
 	 * @param monitor File system monitor reporting the file.
 	 * @param handle  Identifies the file to process.
 	 *
-	 * @throws IOException if there was a problem reading the file.
+	 * @throws IOException if there was a problem processing the file.
 	 */
 	protected void postProcess( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	throws IOException
