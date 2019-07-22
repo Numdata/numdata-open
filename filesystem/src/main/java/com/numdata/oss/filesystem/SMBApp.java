@@ -27,6 +27,7 @@
 package com.numdata.oss.filesystem;
 
 import java.io.*;
+import java.util.*;
 
 import com.numdata.oss.io.*;
 import jcifs.smb.*;
@@ -180,19 +181,6 @@ public class SMBApp
 			}
 		}
 
-		if ( match( "exists", args ) )
-		{
-			System.out.print( "Exists? ................... " );
-			try
-			{
-				System.out.println( smbFile.exists() );
-			}
-			catch ( Exception e )
-			{
-				System.out.println( e );
-			}
-		}
-
 		if ( match( "directory", args ) )
 		{
 			System.out.print( "directory? ................ " );
@@ -232,6 +220,32 @@ public class SMBApp
 			}
 		}
 
+		if ( match( "canRead", args ) )
+		{
+			System.out.print( "Can read? ................. " );
+			try
+			{
+				System.out.println( smbFile.canRead() );
+			}
+			catch ( Exception e )
+			{
+				System.out.println( e );
+			}
+		}
+
+		if ( match( "canWrite", args ) )
+		{
+			System.out.print( "Can write? ................ " );
+			try
+			{
+				System.out.println( smbFile.canRead() );
+			}
+			catch ( Exception e )
+			{
+				System.out.println( e );
+			}
+		}
+
 		if ( match( "directory", args ) )
 		{
 			System.out.print( "directory? ................ " );
@@ -253,7 +267,7 @@ public class SMBApp
 			System.out.print( "Last modified ............. " );
 			try
 			{
-				System.out.println( smbFile.getLastModified() );
+				System.out.println( new Date( smbFile.lastModified() ) );
 			}
 			catch ( Exception e )
 			{
@@ -261,7 +275,8 @@ public class SMBApp
 			}
 		}
 
-		if ( match( "principal", args ) )
+		if ( match( "principal", args ) ||
+		     match( "auth", args ) )
 		{
 			System.out.print( "Principal ................. " );
 			try
@@ -274,12 +289,12 @@ public class SMBApp
 			}
 		}
 
-		if ( match( "permissions", args ) )
+		if ( match( "attributes", args ) )
 		{
-			System.out.print( "Permission ................ " );
+			System.out.print( "Attributes ................ " );
 			try
 			{
-				System.out.println( smbFile.getPermission() );
+				System.out.println( Integer.toHexString( smbFile.getAttributes() ) );
 			}
 			catch ( Exception e )
 			{
@@ -287,47 +302,12 @@ public class SMBApp
 			}
 		}
 
-		if ( match( "type", args ) ||
-		     match( "contentType", args ) ||
-		     match( "content type", args ) ||
-		     match( "content-type", args ) )
+		if ( match( "length", args ) )
 		{
-			System.out.print( "Content type .............. " );
+			System.out.print( "Length .................... " );
 			try
 			{
-				System.out.println( smbFile.getContentType() );
-			}
-			catch ( Exception e )
-			{
-				System.out.println( e );
-			}
-		}
-
-		if ( match( "encoding", args ) ||
-		     match( "contentEncoding", args ) ||
-		     match( "content encoding", args ) ||
-		     match( "content-encoding", args ) )
-		{
-			System.out.print( "Content encoding .......... " );
-			try
-			{
-				System.out.println( smbFile.getContentEncoding() );
-			}
-			catch ( Exception e )
-			{
-				System.out.println( e );
-			}
-		}
-
-		if ( match( "length", args ) ||
-		     match( "contentLength", args ) ||
-		     match( "content length", args ) ||
-		     match( "content-length", args ) )
-		{
-			System.out.print( "Content length ............ " );
-			try
-			{
-				System.out.println( smbFile.getContentLengthLong() );
+				System.out.println( smbFile.length() );
 			}
 			catch ( Exception e )
 			{
