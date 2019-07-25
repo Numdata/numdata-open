@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,35 +26,72 @@
  */
 package com.numdata.oss.filesystem;
 
+import org.jetbrains.annotations.*;
+
 /**
- * Interface for objects interested in file system changes reported by a
- * {@link FileSystemMonitor}.
+ * Interface for objects interested in file system changes reported by a {@link
+ * FileSystemMonitor}.
  *
- * @author  G. Meinders
+ * @author G. Meinders
  */
 public interface FileSystemMonitorListener
 {
 	/**
+	 * Reason for {@link #fileSkipped} method.
+	 */
+	enum SkipReason
+	{
+		/**
+		 * Due to {@link FileSystemMonitor#getPathFilter()}.
+		 */
+		PATH_FILTER,
+
+		/**
+		 * Due to {@link FileSystemMonitor#isSingleFile()}.
+		 */
+		SINGLE_FILE,
+
+		/**
+		 * Due to {@link FileSystemMonitor#getInitialFileHandling()}.
+		 */
+		INITIAL_FILE_HANDLING,
+
+		/**
+		 * File is not modified.
+		 */
+		NOT_MODIFIED
+	}
+
+	/**
+	 * Notifies the listener that a file was skipped.
+	 *
+	 * @param monitor File system monitor reporting the change.
+	 * @param handle  Identifies the file that was skipped.
+	 * @param reason  Reason why file was skipped.
+	 */
+	void fileSkipped( @NotNull FileSystemMonitor monitor, @NotNull Object handle, @NotNull SkipReason reason );
+
+	/**
 	 * Notifies the listener that a file was added to the file system.
 	 *
-	 * @param   monitor     File system monitor reporting the change.
-	 * @param   handle      Identifies the file that was added.
+	 * @param monitor File system monitor reporting the change.
+	 * @param handle  Identifies the file that was added.
 	 */
-	void fileAdded( final FileSystemMonitor monitor , final Object handle );
+	void fileAdded( @NotNull FileSystemMonitor monitor, @NotNull Object handle );
 
 	/**
 	 * Notifies the listener that a file in the file system was modified.
 	 *
-	 * @param   monitor     File system monitor reporting the change.
-	 * @param   handle      Identifies the file that was modified.
+	 * @param monitor File system monitor reporting the change.
+	 * @param handle  Identifies the file that was modified.
 	 */
-	void fileModified( final FileSystemMonitor monitor , final Object handle );
+	void fileModified( @NotNull FileSystemMonitor monitor, @NotNull Object handle );
 
 	/**
 	 * Notifies the listener that a file was removed to the file system.
 	 *
-	 * @param   monitor     File system monitor reporting the change.
-	 * @param   handle      Identifies the file that was removed.
+	 * @param monitor File system monitor reporting the change.
+	 * @param handle  Identifies the file that was removed.
 	 */
-	void fileRemoved( final FileSystemMonitor monitor , final Object handle );
+	void fileRemoved( @NotNull FileSystemMonitor monitor, @NotNull Object handle );
 }

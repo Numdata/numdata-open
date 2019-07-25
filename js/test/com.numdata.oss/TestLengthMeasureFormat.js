@@ -27,12 +27,10 @@
 import { expect } from 'chai';
 import { BigDecimal } from 'bigdecimal';
 import bigRat from 'big-rational';
-
-const BigRational = bigRat.one.constructor;
-BigRational.parse = bigRat;
-
 import LengthMeasurePreferences from '../../lib/com.numdata.oss/LengthMeasurePreferences';
 import Locale from '../../lib/com.numdata.oss/Locale';
+
+const parseBigRational = bigRat;
 
 /**
  * Unit test for {@link LengthMeasureFormat} class.
@@ -171,22 +169,22 @@ describe( "LengthMeasureFormat.format", () =>
 		new Test( new BigDecimal( "0.1" ), "0.1\"", LengthMeasurePreferences.getEngineeringInstance() ),
 		new Test( new BigDecimal( "0.1" ), "3/32\"", LengthMeasurePreferences.getArchitecturalInstance() ),
 		new Test( new BigDecimal( "0.1" ), "1/10", LengthMeasurePreferences.getFractionalInstance() ),
-		new Test( BigRational.parse( 1, 3 ), "0.333333", LengthMeasurePreferences.getMetricInstance() ),
-		new Test( BigRational.parse( 1, 3 ), "0.333333\"", LengthMeasurePreferences.getEngineeringInstance() ),
-		new Test( BigRational.parse( 1, 3 ), "21/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
-		new Test( BigRational.parse( 1, 3 ), "1/3", LengthMeasurePreferences.getFractionalInstance() ),
-		new Test( BigRational.parse( 1, 4 ), "0.25", LengthMeasurePreferences.getMetricInstance() ),
-		new Test( BigRational.parse( 1, 4 ), "0.25\"", LengthMeasurePreferences.getEngineeringInstance() ),
-		new Test( BigRational.parse( 1, 4 ), "1/4\"", LengthMeasurePreferences.getArchitecturalInstance() ),
-		new Test( BigRational.parse( 1, 4 ), "1/4", LengthMeasurePreferences.getFractionalInstance() ),
-		new Test( BigRational.parse( 1, 5 ), "0.2", LengthMeasurePreferences.getMetricInstance() ),
-		new Test( BigRational.parse( 1, 5 ), "0.2\"", LengthMeasurePreferences.getEngineeringInstance() ),
-		new Test( BigRational.parse( 1, 5 ), "13/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
-		new Test( BigRational.parse( 1, 5 ), "1/5", LengthMeasurePreferences.getFractionalInstance() ),
-		new Test( BigRational.parse( 1, 6 ), "0.166667", LengthMeasurePreferences.getMetricInstance() ),
-		new Test( BigRational.parse( 1, 6 ), "0.166667\"", LengthMeasurePreferences.getEngineeringInstance() ),
-		new Test( BigRational.parse( 1, 6 ), "11/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
-		new Test( BigRational.parse( 1, 6 ), "1/6", LengthMeasurePreferences.getFractionalInstance() )
+		new Test( parseBigRational( 1, 3 ), "0.333333", LengthMeasurePreferences.getMetricInstance() ),
+		new Test( parseBigRational( 1, 3 ), "0.333333\"", LengthMeasurePreferences.getEngineeringInstance() ),
+		new Test( parseBigRational( 1, 3 ), "21/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
+		new Test( parseBigRational( 1, 3 ), "1/3", LengthMeasurePreferences.getFractionalInstance() ),
+		new Test( parseBigRational( 1, 4 ), "0.25", LengthMeasurePreferences.getMetricInstance() ),
+		new Test( parseBigRational( 1, 4 ), "0.25\"", LengthMeasurePreferences.getEngineeringInstance() ),
+		new Test( parseBigRational( 1, 4 ), "1/4\"", LengthMeasurePreferences.getArchitecturalInstance() ),
+		new Test( parseBigRational( 1, 4 ), "1/4", LengthMeasurePreferences.getFractionalInstance() ),
+		new Test( parseBigRational( 1, 5 ), "0.2", LengthMeasurePreferences.getMetricInstance() ),
+		new Test( parseBigRational( 1, 5 ), "0.2\"", LengthMeasurePreferences.getEngineeringInstance() ),
+		new Test( parseBigRational( 1, 5 ), "13/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
+		new Test( parseBigRational( 1, 5 ), "1/5", LengthMeasurePreferences.getFractionalInstance() ),
+		new Test( parseBigRational( 1, 6 ), "0.166667", LengthMeasurePreferences.getMetricInstance() ),
+		new Test( parseBigRational( 1, 6 ), "0.166667\"", LengthMeasurePreferences.getEngineeringInstance() ),
+		new Test( parseBigRational( 1, 6 ), "11/64\"", LengthMeasurePreferences.getArchitecturalInstance() ),
+		new Test( parseBigRational( 1, 6 ), "1/6", LengthMeasurePreferences.getFractionalInstance() )
 	].forEach( test =>
 	{
 		var number = test._number;

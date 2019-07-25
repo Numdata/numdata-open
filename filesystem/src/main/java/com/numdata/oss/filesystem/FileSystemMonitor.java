@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import com.numdata.oss.*;
+import com.numdata.oss.io.*;
 import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
@@ -59,6 +60,11 @@ implements ResourceMonitor
 		 * Keep only last of newly found files.
 		 */
 		KEEP_LAST,
+
+		/**
+		 * Keep only if single file was found.
+		 */
+		KEEP_SINGLE,
 
 		/**
 		 * Do not keep any newly found files.
@@ -149,7 +155,7 @@ implements ResourceMonitor
 		{
 			try
 			{
-				result = new SMBFolderMonitor( uri.toString(), delay );
+				result = new SMBFileSystemMonitor( uri.toString(), delay );
 			}
 			catch ( final MalformedURLException e )
 			{
@@ -159,7 +165,7 @@ implements ResourceMonitor
 		else if ( "file".equalsIgnoreCase( scheme ) )
 		{
 			final File file = new File( uri );
-			if ( file.isDirectory() )
+			if ( TextTools.endsWith( uri.getPath(), '/' ) || file.isDirectory() )
 			{
 				result = new LocalFolderMonitor( file, delay );
 			}
@@ -255,6 +261,8 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
+		LOG.debug( "run()" );
+
 		String lastException = null;
 		NewFileHandling newFileHandling = getInitialFileHandling();
 
@@ -343,8 +351,10 @@ implements ResourceMonitor
 				}
 				for ( final Iterator<Object> it = files.iterator(); it.hasNext(); )
 				{
-					if ( !pathFilter.matcher( getPath( it.next() ) ).matches() )
+					final Object file = it.next();
+					if ( !pathFilter.matcher( getPath( file ) ).matches() )
 					{
+						fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.PATH_FILTER );
 						it.remove();
 					}
 				}
@@ -378,6 +388,10 @@ implements ResourceMonitor
 			if ( isSingleFile() && ( files.size() > 1 ) )
 			{
 				final Object file = files.getLast();
+				for ( int i = 0; i < files.size() - 1; i++ )
+				{
+					fireFileSkippedEvent( files.get( i ), FileSystemMonitorListener.SkipReason.SINGLE_FILE );
+				}
 				files.removeRange( 0, files.size() - 1 );
 
 				final Date lastModified = newModificationTimeByFile.get( file );
@@ -398,7 +412,8 @@ implements ResourceMonitor
 				if ( oldLastModified == null )
 				{
 					final boolean keep = ( newFileHandling == NewFileHandling.KEEP_ALL ) ||
-					                     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() );
+					                     ( newFileHandling == NewFileHandling.KEEP_LAST && !iterator.hasNext() ) ||
+					                     ( newFileHandling == NewFileHandling.KEEP_SINGLE && ( files.size() == 1 ) );
 					if ( trace )
 					{
 						LOG.trace( "new file: " + getPath( file ) + ", newFileHandling=" + newFileHandling + " => keep=" + keep );
@@ -406,6 +421,10 @@ implements ResourceMonitor
 					if ( keep )
 					{
 						fireFileAddedEvent( file );
+					}
+					else
+					{
+						fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.INITIAL_FILE_HANDLING );
 					}
 				}
 				else if ( isAlwaysModified() || !newLastModified.equals( oldLastModified ) )
@@ -416,20 +435,25 @@ implements ResourceMonitor
 					}
 					fireFileModifiedEvent( file );
 				}
+				else
+				{
+					fireFileSkippedEvent( file, FileSystemMonitorListener.SkipReason.NOT_MODIFIED );
+				}
 			}
 
 			/*
 			 * Check for removed files.
 			 */
-			for ( final Object file : oldModificationTimeByFile.keySet() )
+			for ( final Iterator<Object> it = oldModificationTimeByFile.keySet().iterator(); it.hasNext(); )
 			{
+				final Object file = it.next();
 				if ( !newModificationTimeByFile.containsKey( file ) )
 				{
 					if ( trace )
 					{
 						LOG.trace( "removed file: " + getPath( file ) );
 					}
-					oldModificationTimeByFile.remove( file );
+					it.remove();
 					fireFileRemovedEvent( file );
 				}
 			}
@@ -530,6 +554,70 @@ implements ResourceMonitor
 	throws IOException;
 
 	/**
+	 * Moves the specified file to the given location.
+	 *
+	 * @param handle   Identifies the file to be deleted.
+	 * @param location Target location.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	void moveFile( @NotNull final Object handle, @NotNull final URI location )
+	throws IOException
+	{
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( "moveFile( " + handle + ", " + location );
+		}
+
+		InputStream in = null;
+		OutputStream out = null;
+		try
+		{
+			final String path = getPath( handle );
+			final String srcName = path.substring( Math.max( path.lastIndexOf( '/' ), path.lastIndexOf( '\\' ) ) + 1 );
+
+			in = readFile( handle );
+
+			if ( "file".equals( location.getScheme() ) )
+			{
+				final File dst = new File( location );
+				final boolean directory = TextTools.endsWith( location.getPath(), '/' ) || dst.isDirectory();
+				final File dstFile = directory ? new File( dst, srcName ) : dst;
+
+				final File parentFile = dstFile.getParentFile();
+				if ( parentFile != null )
+				{
+					parentFile.mkdirs();
+				}
+
+				out = new FileOutputStream( dstFile );
+			}
+			else
+			{
+				final boolean directory = TextTools.endsWith( location.getPath(), '/' );
+				final URL dstUrl = ( directory ? location.resolve( srcName ) : location ).toURL();
+
+				out = dstUrl.openConnection().getOutputStream();
+			}
+
+			DataStreamTools.pipe( out, in );
+		}
+		finally
+		{
+			if ( in != null )
+			{
+				in.close();
+			}
+			if ( out != null )
+			{
+				out.close();
+			}
+		}
+
+		deleteFile( handle );
+	}
+
+	/**
 	 * Returns whether the resource being monitored is available.
 	 *
 	 * @return {@code true} if the resource is available.
@@ -557,15 +645,41 @@ implements ResourceMonitor
 	}
 
 	/**
+	 * Notifies listeners that the specified file was skipped.
+	 *
+	 * @param file   Identifies the file that was skipped.
+	 * @param reason Reason why file was skipped.
+	 */
+	protected void fireFileSkippedEvent( @NotNull final Object file, @NotNull final FileSystemMonitorListener.SkipReason reason )
+	{
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( "fireFileSkippedEvent( " + getPath( file ) + ", " + reason + " )" );
+		}
+
+		for ( final FileSystemMonitorListener listener : _listeners )
+		{
+			try
+			{
+				listener.fileSkipped( this, file, reason );
+			}
+			catch ( final Exception e )
+			{
+				LOG.error( "Unhandled exception in 'fileSkipped' method of " + listener, e );
+			}
+		}
+	}
+
+	/**
 	 * Notifies listeners that the specified file was added to the file system.
 	 *
 	 * @param file Identifies the file that was added.
 	 */
 	protected void fireFileAddedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileAddedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileAddedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -588,9 +702,9 @@ implements ResourceMonitor
 	 */
 	protected void fireFileModifiedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileModifiedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileModifiedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -614,9 +728,9 @@ implements ResourceMonitor
 	 */
 	protected void fireFileRemovedEvent( @NotNull final Object file )
 	{
-		if ( LOG.isTraceEnabled() )
+		if ( LOG.isDebugEnabled() )
 		{
-			LOG.trace( "fireFileRemovedEvent( " + getPath( file ) + " )" );
+			LOG.debug( "fireFileRemovedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )

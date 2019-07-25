@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ import org.jetbrains.annotations.*;
  */
 @SuppressWarnings( { "WeakerAccess", "unused" } )
 public class TextFileListener
-implements FileSystemMonitorListener
+extends FileProcessingListener
 {
 	/**
 	 * Log used for messages related to this class.
@@ -124,44 +124,6 @@ implements FileSystemMonitorListener
 	}
 
 	@Override
-	public void fileAdded( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
-	{
-		try
-		{
-			processFile( monitor, handle );
-		}
-		catch ( final IOException e )
-		{
-			LOG.warn( "Failed to process new file: " + monitor.getPath( handle ) + ": " + e, e );
-		}
-	}
-
-	@Override
-	public void fileModified( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
-	{
-		try
-		{
-			processFile( monitor, handle );
-		}
-		catch ( final IOException e )
-		{
-			LOG.warn( "Failed to process new file: " + monitor.getPath( handle ) + ": " + e, e );
-		}
-	}
-
-	@Override
-	public void fileRemoved( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
-	{
-	}
-
-	/**
-	 * Process file.
-	 *
-	 * @param monitor File system monitor reporting the file.
-	 * @param handle  Identifies the file to process.
-	 *
-	 * @throws IOException if there was a problem reading the file.
-	 */
 	protected void processFile( @NotNull final FileSystemMonitor monitor, @NotNull final Object handle )
 	throws IOException
 	{

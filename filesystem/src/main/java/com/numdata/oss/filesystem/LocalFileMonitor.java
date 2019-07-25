@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import com.numdata.oss.*;
+import com.numdata.oss.io.*;
 import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
@@ -149,6 +151,33 @@ extends FileSystemMonitor
 		if ( !file.delete() )
 		{
 			throw new IOException( "Failed to delete file: " + file );
+		}
+	}
+
+	@Override
+	void moveFile( @NotNull final Object handle, @NotNull final URI location )
+	throws IOException
+	{
+		if ( "file".equals( location.getScheme() ) || ( location.getScheme() == null ) )
+		{
+			final File src = (File)handle;
+			final File dst = new File( src, location.getPath() );
+			final File dstFile = TextTools.endsWith( location.getPath(), '/' ) || dst.isDirectory() ? new File( dst, src.getName() ) : dst;
+			final File parentFile = dstFile.getParentFile();
+			if ( parentFile != null )
+			{
+				parentFile.mkdirs();
+			}
+
+			if ( !src.renameTo( dstFile ) )
+			{
+				FileTools.copy( src, dstFile );
+				src.delete();
+			}
+		}
+		else
+		{
+			super.moveFile( handle, location );
 		}
 	}
 

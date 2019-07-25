@@ -109,11 +109,11 @@ public class CSVTools
 	public static List<List<String>> readCSV( @NotNull final Reader in, final char separator, final boolean skipComments, final boolean skipEmptyRows )
 	throws IOException
 	{
-		final CSVReader csvReader = new CSVReader( in );
-		csvReader.setSeparator( separator );
-		csvReader.setSkipComments( skipComments );
-		csvReader.setSkipEmptyRows( skipEmptyRows );
-		return csvReader.readAll();
+		final CSVParser csvParser = new CSVParser();
+		csvParser.setSeparator( separator );
+		csvParser.setSkipComments( skipComments );
+		csvParser.setSkipEmptyRows( skipEmptyRows );
+		return csvParser.readAll( in );
 	}
 
 	/**

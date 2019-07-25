@@ -32,7 +32,7 @@ import java.util.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Reads character-separated values (CSV) from a stream.
+ * Parses character-separated value (CSV) data.
  *
  * <p>The current implementation is not strictly RFC 4180 compliant:
  *
@@ -51,13 +51,8 @@ import org.jetbrains.annotations.*;
  * @see <a href="http://tools.ietf.org/html/rfc4180">RFC 4180: Common Format and
  * MIME Type for Comma-Separated Values (CSV) Files</a>
  */
-public class CSVReader
+public class CSVParser
 {
-	/**
-	 * Underlying stream.
-	 */
-	private final Reader _in;
-
 	/**
 	 * Value separator.
 	 */
@@ -72,21 +67,6 @@ public class CSVReader
 	 * Skip rows that have no non-empty columns.
 	 */
 	private boolean _skipEmptyRows = false;
-
-	/**
-	 * Look-ahead stored by {@link #readRow()}.
-	 */
-	private char _ch = (char)-1;
-
-	/**
-	 * Constructs a new instance.
-	 *
-	 * @param in Stream to read from.
-	 */
-	public CSVReader( final Reader in )
-	{
-		_in = in;
-	}
 
 	public char getSeparator()
 	{
@@ -119,42 +99,99 @@ public class CSVReader
 	}
 
 	/**
-	 * Reads all rows from the underlying stream.
+	 * Reads all rows from the given stream.
+	 *
+	 * @param reader Character stream to read from.
 	 *
 	 * @return Rows of CSV data.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
 	@NotNull
-	public List<List<String>> readAll()
+	public List<List<String>> readAll( @NotNull final Reader reader )
 	throws IOException
 	{
 		final List<List<String>> result = new ArrayList<List<String>>();
-		for ( List<String> row = readRow(); row != null; row = readRow() )
+
+		final BufferedReader bufferedReader = ( reader instanceof BufferedReader ) ? (BufferedReader)reader : new BufferedReader( reader );
+		for ( String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine() )
 		{
-			result.add( row );
+			final List<String> row = parseLine( line );
+			if ( row != null )
+			{
+				result.add( row );
+			}
 		}
 		return result;
 	}
 
 	/**
-	 * Reads the next row of CSV data from the underlying stream.
+	 * Reads next rom from the given stream.
 	 *
-	 * @return Row of CSV data; {@code null} at end of input.
+	 * @param reader Character stream to read from.
+	 *
+	 * @return Next from from CSV file; {@code null} if no more data is
+	 * available.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
 	@Nullable
-	public List<String> readRow()
+	public List<String> readRow( @NotNull final BufferedReader reader )
 	throws IOException
 	{
-		final Reader in = _in;
+		List<String> result = null;
 
+		for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+		{
+			final List<String> row = parseLine( line );
+			if ( row != null )
+			{
+				result = row;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Parses all the given lines.
+	 *
+	 * @param lines Lines to parse.
+	 *
+	 * @return Rows of CSV data.
+	 */
+	@NotNull
+	public List<List<String>> parseLines( @NotNull final Iterable<? extends CharSequence> lines )
+	{
+		final List<List<String>> result = new ArrayList<List<String>>( ( lines instanceof Collection<?> ) ? ( (Collection<CharSequence>)lines ).size() : 0 );
+
+		for ( final CharSequence line : lines )
+		{
+			final List<String> row = parseLine( line );
+			if ( row != null )
+			{
+				result.add( row );
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Reads the next row of CSV data from the given line.
+	 *
+	 * @param line Text line.
+	 *
+	 * @return Row of CSV data; {@code null} if the input yielded no CSV data.
+	 */
+	@Nullable
+	public List<String> parseLine( @NotNull final CharSequence line )
+	{
 		final char separator = _separator;
 		final boolean skipComments = _skipComments;
 		final boolean skipEmptyRows = _skipEmptyRows;
 
-		List<String> result = null;
 		final List<String> row = new ArrayList<String>();
 		final StringBuilder value = new StringBuilder();
 
@@ -166,22 +203,21 @@ public class CSVReader
 
 		int whitespace = 0;
 
-		char ch = _ch;
-		do
+		final int length = line.length();
+		int pos = 0;
+		while ( pos < length )
 		{
-			char next = (char)in.read();
+			final char ch = line.charAt( pos++ );
+			final char next = ( pos < length ) ? line.charAt( pos ) : (char)-1;
 
 			if ( ch != (char)-1 )
 			{
 				if ( ( ch == '#' ) && skipComments && !rowStarted )
 				{
-					while ( ( next != '\n' ) && ( next != (char)-1 ) )
-					{
-						ch = next;
-						next = (char)in.read();
-					}
+					break;
 				}
-				else if ( ch == separator )
+
+				if ( ch == separator )
 				{
 					if ( quotesStarted )
 					{
@@ -212,7 +248,7 @@ public class CSVReader
 					{
 						if ( next == '"' )
 						{
-							next = (char)in.read(); // Ignore next '"'.
+							pos++;
 							value.append( ch );
 							valueStarted = true;
 						}
@@ -236,18 +272,15 @@ public class CSVReader
 				}
 				else if ( Character.isWhitespace( ch ) )
 				{
-					if ( ch != '\n' )
+					if ( quotesStarted ) // Skip unquoted leading whitespace.
 					{
-						if ( quotesStarted ) // Skip unquoted leading whitespace.
-						{
-							value.append( ch );
-							valueStarted = true;
-						}
-						else if ( valueStarted && !quotesEnded ) // Include contained whitespace.
-						{
-							value.append( ch );
-							whitespace++;
-						}
+						value.append( ch );
+						valueStarted = true;
+					}
+					else if ( valueStarted && !quotesEnded ) // Include contained whitespace.
+					{
+						value.append( ch );
+						whitespace++;
 					}
 				}
 				else
@@ -268,58 +301,43 @@ public class CSVReader
 					}
 					rowStarted = true;
 				}
+			}
+		}
 
-				if ( ( ch == '\n' ) || ( next == (char)-1 ) )
+		List<String> result = null;
+
+		if ( rowStarted )
+		{
+			if ( valueStarted )
+			{
+				if ( whitespace > 0 )
 				{
-					if ( rowStarted )
+					value.setLength( value.length() - whitespace );
+				}
+
+				row.add( value.toString() );
+			}
+
+			boolean addRow = true;
+			if ( skipEmptyRows )
+			{
+				addRow = false;
+
+				for ( final String column : row )
+				{
+					if ( !column.isEmpty() )
 					{
-						if ( valueStarted )
-						{
-							if ( whitespace > 0 )
-							{
-								value.setLength( value.length() - whitespace );
-								whitespace = 0;
-							}
-
-							row.add( value.toString() );
-						}
-
-						boolean addRow = true;
-						if ( skipEmptyRows )
-						{
-							addRow = false;
-
-							for ( final String column : row )
-							{
-								if ( !column.isEmpty() )
-								{
-									addRow = true;
-									break;
-								}
-							}
-						}
-
-						if ( addRow )
-						{
-							_ch = next;
-							result = row;
-							break;
-						}
+						addRow = true;
+						break;
 					}
-
-					row.clear();
-					value.setLength( 0 );
-					quotedValue = false;
-					quotesStarted = false;
-					quotesEnded = false;
-					valueStarted = false;
-					rowStarted = false;
 				}
 			}
 
-			ch = next;
+			if ( addRow )
+			{
+				result = row;
+			}
 		}
-		while ( ch != (char)-1 );
 
 		return result;
 	}

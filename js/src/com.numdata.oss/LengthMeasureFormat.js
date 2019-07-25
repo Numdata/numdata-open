@@ -29,7 +29,7 @@ import bigRat from 'big-rational';
 import LengthMeasurePreferences from './LengthMeasurePreferences';
 
 const BigRational = bigRat.one.constructor;
-BigRational.parse = bigRat;
+const parseBigRational = bigRat;
 
 /**
  * Class for formatting and parsing lengths.
@@ -414,11 +414,11 @@ export default class LengthMeasureFormat
 		else if ( number instanceof BigDecimal ||
 		          number instanceof BigInteger )
 		{
-			result = BigRational.parse( number.toString() );
+			result = parseBigRational( number.toString() );
 		}
 		else if ( typeof number === 'number' )
 		{
-			result = BigRational.parse( number );
+			result = parseBigRational( number );
 		}
 		else
 		{
@@ -445,7 +445,7 @@ export default class LengthMeasureFormat
 		if ( displayUnit.isImperial() )
 		{
 			let precision = 1 << preferences.getMaxScale();
-			result = BigRational.parse( bigRational.multiply( precision ).round().numerator, precision );
+			result = parseBigRational( bigRational.multiply( precision ).round().numerator, precision );
 		}
 		else
 		{
@@ -453,7 +453,7 @@ export default class LengthMeasureFormat
 
 			if ( bigRational.denominator.compareTo( precision ) > 0 )
 			{
-				result = BigRational.parse( bigRational.multiply( precision ).round().numerator, precision );
+				result = parseBigRational( bigRational.multiply( precision ).round().numerator, precision );
 			}
 			else
 			{
@@ -600,11 +600,11 @@ export default class LengthMeasureFormat
 			if ( decimalGroup !== undefined ) // ['-'] [<feet>] <decimal>
 			{
 				let decimalSeparator = this.getDecimalFormatSymbols().decimalSeparator;
-				value = BigRational.parse( ( decimalSeparator === '.' ) ? decimalGroup : decimalGroup.replace( decimalSeparator, '.' ) );
+				value = parseBigRational( ( decimalSeparator === '.' ) ? decimalGroup : decimalGroup.replace( decimalSeparator, '.' ) );
 
 				if ( feetGroup !== undefined )
 				{
-					value = value.add( BigRational.parse( feetGroup ).multiply( 12 ) );
+					value = value.add( parseBigRational( feetGroup ).multiply( 12 ) );
 					displayUnit = LengthMeasurePreferences.LengthUnit.INCH;
 				}
 
@@ -640,12 +640,12 @@ export default class LengthMeasureFormat
 						numerator = -numerator;
 					}
 
-					value = BigRational.parse( numerator, denominator );
+					value = parseBigRational( numerator, denominator );
 				}
 			}
 			else if ( feetGroup !== undefined ) // <feet>
 			{
-				value = BigRational.parse( feetGroup );
+				value = parseBigRational( feetGroup );
 				displayUnit = LengthMeasurePreferences.LengthUnit.FOOT;
 			}
 			else

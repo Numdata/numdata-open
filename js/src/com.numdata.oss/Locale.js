@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,14 +167,14 @@ export default class Locale
 		}
 		return result;
 	}
-}
 
-/**
- * Returns the default locale.
- *
- * @returns {Locale} Default locale.
- */
-Locale.getDefault = function()
-{
-	return Locale.ENGLISH;
-};
+	/**
+	 * Returns the default locale.
+	 *
+	 * @returns {Locale} Default locale.
+	 */
+	static getDefault()
+	{
+		return Locale.ENGLISH;
+	}
+}
