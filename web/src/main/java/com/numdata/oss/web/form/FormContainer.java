@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -376,16 +376,10 @@ extends FormComponent
 	@NotNull
 	public FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
 	{
-		final Collection<String> optionValues = new ArrayList<String>( optionMap.size() );
-		final Collection<String> optionLabels = new ArrayList<String>( optionMap.size() );
-
-		for ( final Map.Entry<String, String> entry : optionMap.entrySet() )
-		{
-			optionValues.add( entry.getKey() );
-			optionLabels.add( entry.getValue() );
-		}
-
-		return addChoice( bundle, resourceKey, target, optionValues, optionLabels );
+		final FormChoice choice = new FormChoice( target, optionMap );
+		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), choice ) );
+		addComponent( choice );
+		return choice;
 	}
 
 	/**

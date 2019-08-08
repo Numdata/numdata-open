@@ -136,6 +136,29 @@ extends FormField
 		_autoSubmit = false;
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param target    Target object of field.
+	 * @param optionMap Available options for choice.
+	 */
+	public FormChoice( final FieldTarget target, final Map<String, String> optionMap )
+	{
+		super( target );
+
+		final List<String> optionValues = new ArrayList<String>( optionMap.size() );
+		final List<String> optionLabels = new ArrayList<String>( optionMap.size() );
+
+		for ( final Map.Entry<String, String> entry : optionMap.entrySet() )
+		{
+			optionValues.add( entry.getKey() );
+			optionLabels.add( entry.getValue() );
+		}
+
+		_optionValues = optionValues;
+		_optionLabels = optionLabels;
+	}
+
 	public boolean isAutoSubmit()
 	{
 		return _autoSubmit;
