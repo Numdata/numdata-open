@@ -222,6 +222,17 @@ extends FormField
 		_linkFunction = linkFunction;
 	}
 
+	/**
+	 * Sets the label for the specified option.
+	 *
+	 * @param index Option index.
+	 * @param label Option label.
+	 */
+	protected void setOptionLabel( final int index, final String label )
+	{
+		_optionLabels.set( index, label );
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
