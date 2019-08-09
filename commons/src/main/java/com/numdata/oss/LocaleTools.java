@@ -225,9 +225,8 @@ public class LocaleTools
 
 	/**
 	 * Singleton instance of this class.
-	 *
-	 * @noinspection StaticNonFinalField
 	 */
+	@SuppressWarnings( "StaticNonFinalField" )
 	private static LocaleTools _instance = null;
 
 	/**
@@ -247,9 +246,8 @@ public class LocaleTools
 
 	/**
 	 * Construct instance.
-	 *
-	 * @noinspection AssignmentToStaticFieldFromInstanceMethod
 	 */
+	@SuppressWarnings( "AssignmentToStaticFieldFromInstanceMethod" )
 	private LocaleTools()
 	{
 		if ( _instance != null )

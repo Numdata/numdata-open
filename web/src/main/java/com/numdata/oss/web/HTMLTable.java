@@ -215,8 +215,8 @@ public class HTMLTable
 	 * @return IndentingJspWriter to use for output (possible wrapped).
 	 *
 	 * @throws IOException if an I/O error occurs while generating data.
-	 * @noinspection FieldRepeatedlyAccessedInMethod
 	 */
+	@SuppressWarnings( "FieldRepeatedlyAccessedInMethod" )
 	public IndentingJspWriter endRow( @NotNull final JspWriter out )
 	throws IOException
 	{
@@ -256,8 +256,8 @@ public class HTMLTable
 	 * @return IndentingJspWriter to use for output (possible wrapped).
 	 *
 	 * @throws IOException if an I/O error occurs while generating data.
-	 * @noinspection FieldRepeatedlyAccessedInMethod
 	 */
+	@SuppressWarnings( "FieldRepeatedlyAccessedInMethod" )
 	public IndentingJspWriter endTable( @NotNull final JspWriter out )
 	throws IOException
 	{
@@ -534,8 +534,8 @@ public class HTMLTable
 	 * @return IndentingJspWriter actually used for output (possibly wrapped).
 	 *
 	 * @throws IOException if an error occurred while writing content.
-	 * @noinspection FieldRepeatedlyAccessedInMethod
 	 */
+	@SuppressWarnings( "FieldRepeatedlyAccessedInMethod" )
 	public IndentingJspWriter newColumn( @NotNull final JspWriter out, final boolean isHead, final int colspan, @NotNull final HorizontalAlignment align, @Nullable final Properties attributes )
 	throws IOException
 	{
@@ -544,7 +544,7 @@ public class HTMLTable
 		/*
 		 * Do state preparation.
 		 *
-		 * STATE GUARANTEEED AFTER THIS SWITCH: BEFORE_COLUMN
+		 * STATE GUARANTEED AFTER THIS SWITCH: BEFORE_COLUMN
 		 */
 		switch ( _state )
 		{
@@ -870,8 +870,8 @@ public class HTMLTable
 	 * @return IndentingJspWriter actually used for output (possibly wrapped).
 	 *
 	 * @throws IOException if an error occurred while writing content.
-	 * @noinspection FieldRepeatedlyAccessedInMethod
 	 */
+	@SuppressWarnings( "FieldRepeatedlyAccessedInMethod" )
 	public IndentingJspWriter newRow( @NotNull final JspWriter out, final int rowspan, @Nullable final Properties attributes )
 	throws IOException
 	{

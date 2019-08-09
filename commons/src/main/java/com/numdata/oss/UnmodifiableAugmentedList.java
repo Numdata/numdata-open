@@ -98,7 +98,7 @@ implements AugmentedList<E>
 	{
 		return new Iterator<E>()
 		{
-			/** @noinspection JavaDoc*/
+			@SuppressWarnings( "JavaDoc" )
 			private final Iterator<? extends E> _iterator = _list.iterator();
 
 			@Override
@@ -163,7 +163,7 @@ implements AugmentedList<E>
 		throw new UnsupportedOperationException();
 	}
 
-	/** @noinspection EqualsWhichDoesntCheckParameterClass, JavaDoc */
+	@SuppressWarnings( { "EqualsWhichDoesntCheckParameterClass" } )
 	public boolean equals( final Object o )
 	{
 		return o == this || _list.equals( o );
@@ -229,7 +229,7 @@ implements AugmentedList<E>
 	{
 		return new ListIterator<E>()
 		{
-			/** @noinspection JavaDoc*/
+			@SuppressWarnings( "JavaDoc" )
 			private final ListIterator<? extends E> _iterator = _list.listIterator( index );
 
 			@Override

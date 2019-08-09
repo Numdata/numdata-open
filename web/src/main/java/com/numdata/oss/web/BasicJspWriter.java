@@ -34,9 +34,8 @@ import javax.servlet.jsp.*;
  * another {@link Writer}.
  *
  * @author  Peter S. Heijnen
- *
- * @noinspection SynchronizeOnNonFinalField
  */
+@SuppressWarnings( "SynchronizeOnNonFinalField" )
 public class BasicJspWriter
 	extends JspWriter
 {

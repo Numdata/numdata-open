@@ -1794,8 +1794,8 @@ public class DbServices
 	 * @param body Operations to perform within a transaction.
 	 *
 	 * @throws SQLException if an error occurs while accessing the database.
-	 * @noinspection MethodWithMultipleReturnPoints
 	 */
+	@SuppressWarnings( "MethodWithMultipleReturnPoints" )
 	public void transactionWithRetry( final TransactionBody body )
 	throws SQLException
 	{

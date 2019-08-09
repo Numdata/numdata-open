@@ -26,30 +26,20 @@
  */
 package com.numdata.oss.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import javax.swing.*;
+import javax.xml.parsers.*;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 
 /**
  * Class to access Flick Web Service. Only for demo purposes. Code copied from
  * Sun's web site.
- *
- * @noinspection JavaDoc
  */
+@SuppressWarnings( "JavaDoc" )
 public class FlickrWebClient
 	extends DefaultHandler
 {
@@ -185,9 +175,8 @@ public class FlickrWebClient
 
 	/**
 	 * Information about an image from the Flickr service.
-	 *
-	 * @noinspection JavaDoc
 	 */
+	@SuppressWarnings( "JavaDoc" )
 	public static class ImageInfo
 		implements Comparable<ImageInfo>
 	{

@@ -177,25 +177,25 @@ public class HttpServletTestResponse
 		throw new AssertionError( "not implemented" );
 	}
 
-	/** @noinspection MethodNamesDifferingOnlyByCase*/
+	@SuppressWarnings( "MethodNamesDifferingOnlyByCase" )
 	public String encodeURL( final String s )
 	{
 		throw new AssertionError( "not implemented" );
 	}
 
-	/** @noinspection MethodNamesDifferingOnlyByCase*/
+	@SuppressWarnings( "MethodNamesDifferingOnlyByCase" )
 	public String encodeRedirectURL( final String s )
 	{
 		throw new AssertionError( "not implemented" );
 	}
 
-	/** @noinspection MethodNamesDifferingOnlyByCase*/
+	@SuppressWarnings( "MethodNamesDifferingOnlyByCase" )
 	public String encodeUrl( final String s )
 	{
 		throw new AssertionError( "not implemented" );
 	}
 
-	/** @noinspection MethodNamesDifferingOnlyByCase*/
+	@SuppressWarnings( "MethodNamesDifferingOnlyByCase" )
 	public String encodeRedirectUrl( final String s )
 	{
 		throw new AssertionError( "not implemented" );

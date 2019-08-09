@@ -36,10 +36,9 @@ import org.jetbrains.annotations.*;
 /**
  * Tool class that can be used in template engines like Apache Velocity.
  *
- * @noinspection JavaDoc,ConstantConditions
- *
  * @author  Peter S. Heijnen
  */
+@SuppressWarnings( { "JavaDoc", "ConstantConditions" } )
 public final class TextTool
 {
 	public String getFixed( final int length, final char fillChar )
