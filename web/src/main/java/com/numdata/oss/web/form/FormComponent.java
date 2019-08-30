@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,6 +101,7 @@ public abstract class FormComponent
 	/**
 	 * Container of this component.
 	 */
+	@Nullable
 	private FormContainer _parent;
 
 	/**
@@ -235,6 +236,7 @@ public abstract class FormComponent
 	 *
 	 * @return Container of this component.
 	 */
+	@Nullable
 	public FormContainer getParent()
 	{
 		return _parent;
@@ -272,7 +274,7 @@ public abstract class FormComponent
 	public FormComponent getPrevious()
 	{
 		final FormContainer parent = getParent();
-		final int i = parent.getComponentIndex( this );
+		final int i = parent == null ? 0 : parent.getComponentIndex( this );
 		return ( i > 0 ) ? parent.getComponent( i - 1 ) : null;
 	}
 
@@ -286,7 +288,7 @@ public abstract class FormComponent
 	public FormComponent getNext()
 	{
 		final FormContainer parent = getParent();
-		final int i = parent.getComponentIndex( this );
+		final int i = parent == null ? -1 : parent.getComponentIndex( this );
 		return ( ( i >= 0 ) && ( i < ( parent.getComponentCount() - 1 ) ) ) ? parent.getComponent( i + 1 ) : null;
 	}
 
@@ -299,7 +301,7 @@ public abstract class FormComponent
 	public boolean isFirst()
 	{
 		final FormContainer parent = getParent();
-		return ( parent.getComponentIndex( this ) == 0 );
+		return ( parent != null ) && ( parent.getComponentIndex( this ) == 0 );
 	}
 
 	/**
@@ -311,7 +313,7 @@ public abstract class FormComponent
 	public boolean isLast()
 	{
 		final FormContainer parent = getParent();
-		final int i = parent.getComponentIndex( this );
+		final int i = parent == null ? -1 : parent.getComponentIndex( this );
 		return ( i >= 0 ) && ( i == ( parent.getComponentCount() - 1 ) );
 	}
 
@@ -320,7 +322,7 @@ public abstract class FormComponent
 	 *
 	 * @param parent Container of this component.
 	 */
-	protected void setParent( final FormContainer parent )
+	protected void setParent( @Nullable final FormContainer parent )
 	{
 		_parent = parent;
 	}
@@ -371,6 +373,14 @@ public abstract class FormComponent
 	public abstract SubmitStatus submitData( @NotNull HttpServletRequest request )
 	throws InvalidFormDataException;
 
+	/**
+	 * Writes a text representation of the form component.
+	 *
+	 * @param out    Stream to write to.
+	 * @param indent Current indentation.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
 	public void writeAsText( @NotNull final Appendable out, @NotNull final String indent )
 	throws IOException
 	{
