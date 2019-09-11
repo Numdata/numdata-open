@@ -30,18 +30,22 @@ import Enum from '../../lib/java.lang/Enum';
 class Enum1 extends Enum
 {
 }
-Enum1.A = new Enum1( "A" );
-Enum1.B = new Enum1( "B" );
-Enum1.C = new Enum1( "C" );
-Enum1.values = [ Enum1.A, Enum1.B, Enum1.C ];
+
+Enum1.values = [
+	Enum1.A = new Enum1( "A" ),
+	Enum1.B = new Enum1( "B" ),
+	Enum1.C = new Enum1( "C" )
+]
 
 class Enum2 extends Enum
 {
 }
-Enum2.A = new Enum2( "A" );
-Enum2.B = new Enum2( "B" );
-Enum2.C = new Enum2( "C" );
-Enum2.values = [ Enum2.A, Enum2.B, Enum2.C ];
+
+Enum2.values = [
+	Enum2.A = new Enum2( "A" ),
+	Enum2.B = new Enum2( "B" ),
+	Enum2.C = new Enum2( "C" )
+];
 
 describe( "Enum", function()
 {

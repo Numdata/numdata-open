@@ -27,52 +27,42 @@
 
 /**
  * Base class for enumeration types.
+ *
+ * @author Gerrit Meinders
  */
-export default function Enum( name )
+export default class Enum
 {
-	this.name = name;
+	constructor( name )
+	{
+		this.name = name;
+	}
+
+	valueOf()
+	{
+		return this.name;
+	}
+
+	toString()
+	{
+		return Object.getPrototypeOf( this ).constructor.name + "." + this.name;
+	}
+
+	/**
+	 * Returns the enum constant with the specified value.
+	 *
+	 * @param {string} value Value to find.
+	 *
+	 * @returns {Enum} Enum type.
+	 *
+	 * @throws TypeError if no matching enum constant is found.
+	 */
+	static valueOf( value )
+	{
+		const result = this.values.find( e => e.name === value );
+		if ( !result )
+		{
+			throw new TypeError( value + " not found in " + this.name );
+		}
+		return result;
+	}
 }
-
-Enum.prototype.valueOf = function()
-{
-	return this.name;
-};
-
-Enum.prototype.toString = function()
-{
-	return Object.getPrototypeOf( this ).constructor.name + "." + this.name;
-};
-
-Enum.create = function( ...values )
-{
-	function EnumImpl( name )
-	{
-		Enum.call( this, name );
-	}
-
-	EnumImpl.prototype = Object.create( Enum.prototype );
-
-	EnumImpl.values = values.map( value => new EnumImpl( value ) );
-	EnumImpl.values.forEach( value => EnumImpl[ value.name ] = value );
-
-	return EnumImpl;
-};
-
-/**
- * Returns the enum constant with the specified value.
- *
- * @param {string} value Value to find.
- *
- * @returns {Enum} Enum type.
- *
- * @throws TypeError if no matching enum constant is found.
- */
-Enum.valueOf = function( value )
-{
-	const result = this.values.find( e => e.name === value );
-	if ( !result )
-	{
-		throw new TypeError( value + " not found in " + this.name );
-	}
-	return result;
-};
