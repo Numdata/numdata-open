@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2000-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ import java.util.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
+import org.json.*;
 
 /**
  * {@link FieldHandler} implementation based on reflection.
@@ -408,9 +409,63 @@ implements FieldHandler
 					}
 				}
 			}
+			else if ( JSONObject.class.isAssignableFrom( type ) )
+			{
+				final String string = resultSet.getString( columnIndex );
+				final JSONObject json = TextTools.startsWith( string, '{' ) ? new JSONObject( string ) : null;
+
+				if ( Modifier.isFinal( field.getModifiers() ) ) /* can't set final field, but we can clear/overwrite it */
+				{
+					final JSONObject target = (JSONObject)field.get( object );
+					if ( target != null )
+					{
+						target.keySet().clear();
+						if ( json != null )
+						{
+							for ( final String key : json.keySet() )
+							{
+								target.put( key, json.opt( key ) );
+							}
+						}
+					}
+				}
+				else
+				{
+					field.set( object, json );
+				}
+			}
+			else if ( JSONArray.class.isAssignableFrom( type ) )
+			{
+				final String string = resultSet.getString( columnIndex );
+				final JSONArray json = TextTools.startsWith( string, '[' ) ? new JSONArray( string ) : null;
+
+				if ( Modifier.isFinal( field.getModifiers() ) ) /* can't set final field, but we can clear/overwrite it */
+				{
+					final JSONArray target = (JSONArray)field.get( object );
+					if ( target != null )
+					{
+						for ( int i = target.length(); --i >= 0; )
+						{
+							target.remove( i );
+						}
+
+						if ( json != null )
+						{
+							for ( int i = 0; i < json.length(); i++ )
+							{
+								target.put( json.get( i ) );
+							}
+						}
+					}
+				}
+				else
+				{
+					field.set( object, json );
+				}
+			}
 			else if ( Enum.class.isAssignableFrom( type ) )
 			{
-				@SuppressWarnings ("rawtypes") final Class<? extends Enum> enumType = (Class<? extends Enum>)type;
+				@SuppressWarnings( "rawtypes" ) final Class<? extends Enum> enumType = (Class<? extends Enum>)type;
 				final String name = resultSet.getString( columnIndex );
 				field.set( object, ( name == null ) ? null : Enum.valueOf( enumType, name ) );
 			}
