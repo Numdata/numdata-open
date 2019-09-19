@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2013-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -311,43 +311,62 @@ public class BigDecimalTools
 	}
 
 	/**
-	 * Test whether the given value is zero.
+	 * Test whether the given value is negative. Returns {@code false} if value
+	 * is {@code null}.
 	 *
 	 * @param value Value to test.
 	 *
-	 * @return {@code true} if value is zero.
+	 * @return {@code true} if value is negative.
 	 */
-	public static boolean isNegative( @NotNull final BigDecimal value )
+	public static boolean isNegative( @Nullable final BigDecimal value )
 	{
-		return ( value.signum() == -1 );
+		return ( value != null ) && ( value.signum() == -1 );
 	}
 
 	/**
-	 * Test whether the given value is zero.
+	 * Test whether the given value is zero. Returns {@code false} if value is
+	 * {@code null}.
 	 *
 	 * @param value Value to test.
 	 *
 	 * @return {@code true} if value is zero.
 	 */
-	public static boolean isZero( @NotNull final BigDecimal value )
+	public static boolean isZero( @Nullable final BigDecimal value )
 	{
-		return ( value.signum() == 0 );
+		return ( value != null ) && ( value.signum() == 0 );
 	}
 
 	/**
-	 * Test whether the given value is zero.
+	 * Test whether the given value is non-zero. Returns {@code false} if value
+	 * is {@code null}.
 	 *
 	 * @param value Value to test.
 	 *
-	 * @return {@code true} if value is zero.
+	 * @return {@code true} if value is non-zero.
 	 */
-	public static boolean isPositive( @NotNull final BigDecimal value )
+	public static boolean isNonZero( @Nullable final BigDecimal value )
 	{
-		return ( value.signum() == 1 );
+		return ( value != null ) && ( value.signum() != 0 );
+	}
+
+	/**
+	 * Test whether the given value is positive. Returns {@code false} if value
+	 * is {@code null}.
+	 *
+	 * @param value Value to test.
+	 *
+	 * @return {@code true} if value is positive.
+	 */
+	public static boolean isPositive( @Nullable final BigDecimal value )
+	{
+		return ( value != null ) && ( value.signum() == 1 );
 	}
 
 	/**
 	 * Test whether the first value is less than the second.
+	 *
+	 * NOTE: A {@code null}-value is always considered to be less than a
+	 * non-{@code null}-value.
 	 *
 	 * @param value1 First value to test.
 	 * @param value2 Second value to test.
@@ -356,11 +375,15 @@ public class BigDecimalTools
 	 */
 	public static boolean isLess( @Nullable final BigDecimal value1, @Nullable final BigDecimal value2 )
 	{
-		return ( value1 != null ) ? ( ( value2 != null ) && ( value1.compareTo( value2 ) < 0 ) ) : ( value2 == null );
+		return ( value1 != null ) && ( value2 != null ) && ( value1.compareTo( value2 ) < 0 );
 	}
 
 	/**
 	 * Test whether the first value is less than or equal to the second.
+	 *
+	 * NOTE: A {@code null}-value is always considered to be less than a
+	 * non-{@code null}-value and that two {@code null}-values are considered to
+	 * be equal.
 	 *
 	 * @param value1 First value to test.
 	 * @param value2 Second value to test.
@@ -375,6 +398,8 @@ public class BigDecimalTools
 	/**
 	 * Test whether the two given values are equal.
 	 *
+	 * NOTE: Two {@code null}-values are considered to be equal.
+	 *
 	 * @param value1 First value to test.
 	 * @param value2 Second value to test.
 	 *
@@ -388,6 +413,10 @@ public class BigDecimalTools
 	/**
 	 * Test whether the first value is greater than or equal to the second.
 	 *
+	 * NOTE: A non-{@code null}-value is always considered to be greater than a
+	 * {@code null}-value and that two {@code null}-values are considered to be
+	 * equal.
+	 *
 	 * @param value1 First value to test.
 	 * @param value2 Second value to test.
 	 *
@@ -395,11 +424,14 @@ public class BigDecimalTools
 	 */
 	public static boolean isGreaterOrEqual( @Nullable final BigDecimal value1, @Nullable final BigDecimal value2 )
 	{
-		return ( value1 != null ) ? ( ( value2 != null ) && ( value1.compareTo( value2 ) >= 0 ) ) : ( value2 == null );
+		return ( value1 != null ) ? ( ( value2 == null ) || ( value1.compareTo( value2 ) >= 0 ) ) : ( value2 == null );
 	}
 
 	/**
 	 * Test whether the first value is greater than the second.
+	 *
+	 * NOTE: A non-{@code null}-value is always considered to be greater than a
+	 * {@code null}-value.
 	 *
 	 * @param value1 First value to test.
 	 * @param value2 Second value to test.
@@ -408,7 +440,7 @@ public class BigDecimalTools
 	 */
 	public static boolean isGreater( @Nullable final BigDecimal value1, @Nullable final BigDecimal value2 )
 	{
-		return ( value1 != null ) ? ( ( value2 != null ) && ( value1.compareTo( value2 ) > 0 ) ) : ( value2 == null );
+		return ( value1 != null ) && ( ( value2 == null ) || ( value1.compareTo( value2 ) > 0 ) );
 	}
 
 	/**
