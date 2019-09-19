@@ -1,6 +1,6 @@
 /*
  * MySwing: Advanced Swing Utilites
- * Copyright (C) 2005  Santhosh Kumar T
+ * Copyright (C) 2014-2017  Santhosh Kumar T
  * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

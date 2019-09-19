@@ -1,6 +1,6 @@
 /* BigRational.java -- dynamically sized big rational numbers.
 **
-** Copyright (C) 2002-2010 Eric Laroche.  All rights reserved.
+** Copyright (C) 2014-2017 Eric Laroche.  All rights reserved.
 **
 ** @author Eric Laroche <laroche@lrdev.com>
 ** @version @(#)$Id: BigRational.java,v 1.3 2010/03/24 20:11:34 laroche Exp $
