@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,7 @@
  */
 package com.numdata.oss.web.form;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
-import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
@@ -39,32 +36,12 @@ import org.junit.*;
  */
 public class TestFormSection
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestFormSection.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final List<Locale> LOCALES = Arrays.asList( Locale.ENGLISH, Locale.FRENCH, Locale.GERMAN, Locale.ITALIAN, new Locale( "nl" ), new Locale( "sv" ) );
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
 		final Class<?> clazz = FormSection.class;
-
-		final Collection<String> expectedKeys = new HashSet<String>();
-		assertTrue( "Unnecessary expected key", expectedKeys.add( "required" ) );
-
-		ResourceBundleTester.testBundles( clazz, false, LOCALES, false, expectedKeys, false, true, false );
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKey( "required" );
+		tester.run();
 	}
 }

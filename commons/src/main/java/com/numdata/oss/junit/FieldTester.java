@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,14 @@ import java.util.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
-import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  * JUnit unit tool class to help with testing class field definitions.
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "WeakerAccess" )
 public class FieldTester
 {
 	/**
@@ -85,6 +86,7 @@ public class FieldTester
 			try
 			{
 				field.setAccessible( true );
+				//noinspection unchecked
 				result.add( (T)field.get( null ) );
 			}
 			catch ( final IllegalAccessException e )
@@ -174,6 +176,36 @@ public class FieldTester
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get list of constant field names by their value. This is useful when
+	 * trying to find constants without using explicit names.
+	 *
+	 * @param forClass Class to get the constants from.
+	 * @param values   Constant values.
+	 *
+	 * @return List of constant names.
+	 */
+	@NotNull
+	public static Set<String> getConstantNames( @NotNull final Class<?> forClass, @NotNull final Object... values )
+	{
+		return getConstantNames( forClass, Arrays.asList( values ) );
+	}
+
+	/**
+	 * Get list of constant field names by their value. This is useful when
+	 * trying to find constants without using explicit names.
+	 *
+	 * @param forClass Class to get the constants from.
+	 * @param values   Constant values.
+	 *
+	 * @return List of constant names.
+	 */
+	@NotNull
+	public static Set<String> getConstantNames( @NotNull final Class<?> forClass, @NotNull final Collection<?> values )
+	{
+		return getFieldNames( getConstantFieldsByValue( forClass, values ) );
 	}
 
 	/**
@@ -333,33 +365,34 @@ public class FieldTester
 
 			if ( Modifier.isVolatile( modifiers ) || Modifier.isTransient( modifiers ) || !Modifier.isFinal( modifiers ) )
 			{
-				Assert.fail( "Invalid modifiers '" + Modifier.toString( modifiers ) + "' for constant: " + forClass.getName() + '.' + name );
+				fail( "Invalid modifiers '" + Modifier.toString( modifiers ) + "' for constant: " + forClass.getName() + '.' + name );
 			}
 
 			if ( String.class.equals( type ) )
 			{
 				try
 				{
-					final CharSequence value = (CharSequence)field.get( null );
+					//noinspection TypeMayBeWeakened
+					final String value = (String)field.get( null );
 					if ( !value.equals( name ) )
 					{
 						final String constantNameForValue = TextTools.camelToUpperCase( value );
 						if ( !constantNameForValue.equals( name ) )
 						{
-							Assert.fail( "String constant " + forClass.getName() + '.' + name + "' does not match value '" + value + '\'' + ( !constantNameForValue.equals( value ) ? " (could also have been '" + constantNameForValue + "')" : "" ) );
+							fail( "String constant " + forClass.getName() + '.' + name + "' does not match value '" + value + '\'' + ( !constantNameForValue.equals( value ) ? " (could also have been '" + constantNameForValue + "')" : "" ) );
 						}
 					}
 				}
 				catch ( final Exception e )
 				{
-					Assert.fail( "failed to get value of '" + forClass.getName() + '.' + name + "' constant (" + e + ')' );
+					fail( "failed to get value of '" + forClass.getName() + '.' + name + "' constant (" + e + ')' );
 				}
 			}
 			else
 			{
 				if ( !allowNonString )
 				{
-					Assert.fail( "non-String constant '" + forClass.getName() + '.' + name + "' detected" );
+					fail( "non-String constant '" + forClass.getName() + '.' + name + "' detected" );
 				}
 			}
 		}

@@ -31,7 +31,6 @@ import java.util.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
-import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
@@ -48,8 +47,14 @@ import static org.junit.Assert.*;
  * @author D. van 't Oever
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "unused", "WeakerAccess" } )
 public class ResourceBundleTester
 {
+	/**
+	 * Default locales to test.
+	 */
+	public static final List<Locale> LOCALES = Collections.unmodifiableList( Arrays.asList( Locale.US, new Locale( "nl", "NL" ), Locale.GERMANY, Locale.FRANCE, new Locale( "sv", "SE" ), Locale.ITALY ) );
+
 	/**
 	 * Class to test resource bundles for.
 	 */
@@ -59,7 +64,7 @@ public class ResourceBundleTester
 	/**
 	 * {@code true} to include resource bundles for super-classes.
 	 */
-	private final boolean _includeHierarchy;
+	private boolean _includeHierarchy = true;
 
 	/**
 	 * Base name of resource bundles to test.
@@ -68,10 +73,10 @@ public class ResourceBundleTester
 	private final String _baseName;
 
 	/**
-	 * Minimum required locales.
+	 * Locales to test bundles for.
 	 */
 	@NotNull
-	private final Set<Locale> _locales = new LinkedHashSet<Locale>();
+	private final Set<Locale> _locales = new LinkedHashSet<Locale>( LOCALES );
 
 	/**
 	 * Allow differences between locales.
@@ -87,7 +92,7 @@ public class ResourceBundleTester
 	/**
 	 * Allow unknown keys (not in expectedKeys) in bundles.
 	 */
-	private boolean _allowUnknown = true;
+	private boolean _allowUnknown = false;
 
 	/**
 	 * Allow non-ASCII characters (>127) in values.
@@ -107,57 +112,8 @@ public class ResourceBundleTester
 	 */
 	public ResourceBundleTester( @Nullable final Class<?> forClass )
 	{
-		this( forClass, true );
-	}
-
-	/**
-	 * Constructs a new instance.
-	 *
-	 * @param forClass         Class to test resource bundles for.
-	 * @param includeHierarchy {@code true} to include resource bundles for
-	 *                         super-classes.
-	 */
-	public ResourceBundleTester( @Nullable final Class<?> forClass, final boolean includeHierarchy )
-	{
 		_forClass = forClass;
-		_includeHierarchy = includeHierarchy;
 		_baseName = null;
-	}
-
-	/**
-	 * Creates a new tester for the given class, including its class hierarchy,
-	 * with expected keys initialized to all of its bean properties.
-	 *
-	 * @param forClass Class to test resource bundles for.
-	 *
-	 * @return Created tester.
-	 */
-	public static ResourceBundleTester forBeanClass( final Class<?> forClass )
-	{
-		final ResourceBundleTester result = new ResourceBundleTester( forClass, true );
-		for ( final String expectedKey : BeanTools.getPropertyNames( forClass, false ) )
-		{
-			result.addExpectedKey( expectedKey );
-		}
-		return result;
-	}
-
-	public void addExpectedKey( final String expectedKey )
-	{
-		assertTrue( "Unnecessary expected key '" + expectedKey + '\'', _expectedKeys.add( expectedKey ) );
-	}
-
-	public void addExpectedKeysWithSuffix( final String suffix )
-	{
-		for ( final String expectedKey : new ArrayList<String>( _expectedKeys ) )
-		{
-			addExpectedKey( expectedKey + suffix );
-		}
-	}
-
-	public void removeExpectedKey( final String expectedKey )
-	{
-		assertTrue( "Missing expected key '" + expectedKey + '\'', _expectedKeys.remove( expectedKey ) );
 	}
 
 	/**
@@ -170,6 +126,184 @@ public class ResourceBundleTester
 		_forClass = null;
 		_includeHierarchy = false;
 		_baseName = baseName;
+	}
+
+	/**
+	 * Creates a resource bundle tester for the given class, including its
+	 * bundle hierarchy.
+	 *
+	 * @param clazz Class to test bundles of.
+	 *
+	 * @return Resource bundle tester.
+	 */
+	@NotNull
+	public static ResourceBundleTester forClass( @NotNull final Class<?> clazz )
+	{
+		return new ResourceBundleTester( clazz );
+	}
+
+	/**
+	 * Creates a new tester for the given class, including its bundle hierarchy,
+	 * with expected keys initialized to all of its bean properties.
+	 *
+	 * @param forClass Class to test resource bundles for.
+	 *
+	 * @return Created tester.
+	 */
+	public static ResourceBundleTester forBean( @NotNull final Class<?> forClass )
+	{
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( forClass );
+		tester.addExpectedKeys( BeanTools.getPropertyNames( forClass, false ) );
+		return tester;
+	}
+
+	/**
+	 * Creates a resource bundle tester for the given enum class, including its
+	 * bundle hierarchy, * with expected keys initialized to all of its values.
+	 *
+	 * @param enumClass Class to test.
+	 *
+	 * @return Resource bundle tester.
+	 */
+	@NotNull
+	public static ResourceBundleTester forEnum( @NotNull final Class<? extends Enum> enumClass )
+	{
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( enumClass );
+		tester.addEnumNames( enumClass );
+		return tester;
+	}
+
+	/**
+	 * Creates a resource bundle tester for the 'LocalStrings' bundle in the
+	 * same package as the given class.
+	 *
+	 * @param clazzInPackage Class in package to test 'LocalStrings' bundle of.
+	 *
+	 * @return Resource bundle tester.
+	 */
+	@NotNull
+	public static ResourceBundleTester forLocalStrings( @NotNull final Class<?> clazzInPackage )
+	{
+		final ResourceBundleTester tester = new ResourceBundleTester( clazzInPackage.getPackage().getName() + ".LocalStrings" );
+		return tester;
+	}
+
+	public void addDeclaredEnums( @NotNull final Class<?> clazz )
+	{
+		if ( clazz.isEnum() )
+		{
+			for ( final Object enumConstant : clazz.getEnumConstants() )
+			{
+				_expectedKeys.add( enumConstant.toString() );
+			}
+		}
+
+		for ( final Class<?> innerClass : clazz.getDeclaredClasses() )
+		{
+			addDeclaredEnums( innerClass );
+		}
+	}
+
+	public void addEnumNames( @NotNull final Class<? extends Enum> enumClass )
+	{
+		addEnumNames( null, enumClass );
+	}
+
+	public void addEnumNames( @Nullable final String prefix, @NotNull final Class<? extends Enum> enumClass, @NotNull final String... suffices )
+	{
+		for ( final Enum enumConstant : enumClass.getEnumConstants() )
+		{
+			final String name = enumConstant.name();
+			final String prefixed = ( prefix != null ) ? prefix + name : name;
+			_expectedKeys.add( prefixed );
+			for ( final String suffix : suffices )
+			{
+				_expectedKeys.add( prefixed + suffix );
+			}
+		}
+	}
+
+	public void addExpectedKey( @NotNull final String expectedKey )
+	{
+		assertTrue( "Unnecessary expected key '" + expectedKey + '\'', _expectedKeys.add( expectedKey ) );
+	}
+
+	public void addExpectedKeyUnchecked( @NotNull final String expectedKey )
+	{
+		_expectedKeys.add( expectedKey );
+	}
+
+	public void addExpectedKeyWithSuffix( @NotNull final String expectedKey, @NotNull final String suffix, @NotNull final String... additionalSuffices )
+	{
+		_expectedKeys.add( expectedKey );
+		addExpectedKey( expectedKey + suffix );
+		for ( final String additionalSuffix : additionalSuffices )
+		{
+			addExpectedKey( expectedKey + additionalSuffix );
+		}
+	}
+
+	public void addExpectedKeys( @NotNull final String... expectedKeys )
+	{
+		for ( final String expectedKey : expectedKeys )
+		{
+			addExpectedKey( expectedKey );
+		}
+	}
+
+	public void addExpectedKeys( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys )
+	{
+		for ( final String expectedKey : expectedKeys )
+		{
+			addExpectedKey( expectedKey );
+		}
+	}
+
+	public void addExpectedKeysWithSuffix( @NotNull final String suffix )
+	{
+		for ( final String expectedKey : new ArrayList<String>( _expectedKeys ) )
+		{
+			addExpectedKey( expectedKey + suffix );
+		}
+	}
+
+	public void addExpectedKeysWithSuffix( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys, @NotNull final String suffix, @NotNull final String... additionalSuffices )
+	{
+		for ( final String expectedKey : expectedKeys )
+		{
+			addExpectedKeyWithSuffix( expectedKey, suffix, additionalSuffices );
+		}
+	}
+
+	public void removeExpectedKey( @NotNull final String expectedKey )
+	{
+		assertTrue( "Missing expected key '" + expectedKey + '\'', _expectedKeys.remove( expectedKey ) );
+	}
+
+	public void removeExpectedKeys( @NotNull final String... expectedKeys )
+	{
+		for ( final String expectedKey : expectedKeys )
+		{
+			removeExpectedKey( expectedKey );
+		}
+	}
+
+	public void removeExpectedKeys( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys )
+	{
+		for ( final String expectedKey : expectedKeys )
+		{
+			removeExpectedKey( expectedKey );
+		}
+	}
+
+	public boolean isIncludeHierarchy()
+	{
+		return _includeHierarchy;
+	}
+
+	public void setIncludeHierarchy( final boolean includeHierarchy )
+	{
+		_includeHierarchy = includeHierarchy;
 	}
 
 	@NotNull
@@ -237,190 +371,100 @@ public class ResourceBundleTester
 	}
 
 	/**
-	 * Test resource bundles for a class.
-	 *
-	 * @param forClass         Class to test resource bundles for.
-	 * @param includeHierarchy {@code true} to include resource bundles for
-	 *                         super-classes.
-	 * @param minimumLocales   List of minimum required locales.
-	 * @param allowLocaleDiffs Allow differences between locales.
-	 * @param expectedKeys     List of keys that are required in all bundles.
-	 * @param allowUnknown     Allow unknown keys (not in expectedKeys) in
-	 *                         bundles.
-	 *
-	 * @return List with unknown keys that were found in the resource bundle.
-	 */
-	public static List<String> testBundles( @NotNull final Class<?> forClass, final boolean includeHierarchy, @NotNull final Collection<Locale> minimumLocales, final boolean allowLocaleDiffs, @NotNull final Collection<String> expectedKeys, final boolean allowUnknown )
-	{
-		return testBundles( forClass, includeHierarchy, minimumLocales.toArray( new Locale[ minimumLocales.size() ] ), allowLocaleDiffs, expectedKeys, allowUnknown, true, false );
-	}
-
-	/**
-	 * Test resource bundles for a class.
-	 *
-	 * @param forClass         Class to test resource bundles for.
-	 * @param includeHierarchy {@code true} to include resource bundles for
-	 *                         super-classes.
-	 * @param minimumLocales   List of minimum required locales.
-	 * @param allowLocaleDiffs Allow differences between locales.
-	 * @param expectedKeys     List of keys that are required in all bundles.
-	 * @param allowUnknown     Allow unknown keys (not in expectedKeys) in
-	 *                         bundles.
-	 * @param allowNonAscii    Allow non-ASCII characters (>127) in values.
-	 * @param allowHTML        Allow HTML tags in values.
-	 *
-	 * @return List with unknown keys that were found in the resource bundle.
-	 */
-	public static List<String> testBundles( @NotNull final Class<?> forClass, final boolean includeHierarchy, @NotNull final Locale[] minimumLocales, final boolean allowLocaleDiffs, @Nullable final Collection<String> expectedKeys, final boolean allowUnknown, final boolean allowNonAscii, final boolean allowHTML )
-	{
-		return testBundles( forClass, includeHierarchy, Arrays.asList( minimumLocales ), allowLocaleDiffs, ( expectedKeys != null ) ? expectedKeys : Collections.<String>emptySet(), allowUnknown, allowNonAscii, allowHTML );
-	}
-
-	/**
-	 * Test resource bundles for a class.
-	 *
-	 * @param forClass         Class to test resource bundles for.
-	 * @param includeHierarchy {@code true} to include resource bundles for
-	 *                         super-classes.
-	 * @param locales          List of minimum required locales.
-	 * @param allowLocaleDiffs Allow differences between locales.
-	 * @param expectedKeys     List of keys that are required in all bundles.
-	 * @param allowUnknown     Allow unknown keys (not in expectedKeys) in
-	 *                         bundles.
-	 * @param allowNonAscii    Allow non-ASCII characters (>127) in values.
-	 * @param allowHTML        Allow HTML tags in values.
-	 *
-	 * @return List with unknown keys that were found in the resource bundle.
-	 */
-	public static List<String> testBundles( @NotNull final Class<?> forClass, final boolean includeHierarchy, @NotNull final Collection<Locale> locales, final boolean allowLocaleDiffs, @NotNull final Collection<String> expectedKeys, final boolean allowUnknown, final boolean allowNonAscii, final boolean allowHTML )
-	{
-		final ResourceBundleTester tester = new ResourceBundleTester( forClass, includeHierarchy );
-		tester.setLocales( locales );
-		tester.setAllowLocaleDiffs( allowLocaleDiffs );
-		tester.setExpectedKeys( expectedKeys );
-		tester.setAllowUnknown( allowUnknown );
-		tester.setAllowNonAscii( allowNonAscii );
-		tester.setAllowHTML( allowHTML );
-		return tester.run();
-	}
-
-	/**
-	 * Test resource bundles for a class.
-	 *
-	 * @param baseName         Base name of resource bundles to test.
-	 * @param locales          List of locales to test.
-	 * @param allowLocaleDiffs Allow differences between locales.
-	 * @param expectedKeys     List of keys that are required in all bundles.
-	 * @param allowUnknown     Allow unknown keys (not in expectedKeys) in
-	 *                         bundles.
-	 * @param allowNonAscii    Allow non-ASCII characters (>127) in values.
-	 * @param allowHTML        Allow HTML tags in values.
-	 *
-	 * @return List with unknown keys that were found in the resource bundle.
-	 */
-	public static List<String> testBundles( @NotNull final String baseName, @NotNull final Collection<Locale> locales, final boolean allowLocaleDiffs, @NotNull final Collection<String> expectedKeys, final boolean allowUnknown, final boolean allowNonAscii, final boolean allowHTML )
-	{
-		final ResourceBundleTester tester = new ResourceBundleTester( baseName );
-		tester.setLocales( locales );
-		tester.setAllowLocaleDiffs( allowLocaleDiffs );
-		tester.setExpectedKeys( expectedKeys );
-		tester.setAllowUnknown( allowUnknown );
-		tester.setAllowNonAscii( allowNonAscii );
-		tester.setAllowHTML( allowHTML );
-		return tester.run();
-	}
-
-	/**
 	 * Tests the resource bundles.
 	 *
-	 * @return List with unknown keys that were found in the resource bundles.
+	 * @return Map with bundles that were tested mapped by requested locale.
 	 */
-	public List<String> run()
+	public Map<Locale, ResourceBundle> run()
 	{
-		if ( _forClass != null )
+		final Set<String> expectedKeys = getExpectedKeys();
+		final String baseName = _baseName;
+		final Class<?> forClass = _forClass;
+		final boolean includeHierarchy = isIncludeHierarchy();
+		final boolean allowUnknown = isAllowUnknown();
+		final boolean allowLocaleDiffs = isAllowLocaleDiffs();
+		final boolean allowNonAscii = isAllowNonAscii();
+		final boolean allowHTML = isAllowHTML();
+		final Set<Locale> tryLocales = getLocales();
+
+		if ( forClass != null )
 		{
-			System.out.println( " - class         : " + _forClass.getName() );
-			System.out.println( " - hierarchy     : " + _includeHierarchy );
+			System.out.println( " - class         : " + forClass.getName() );
+			System.out.println( " - hierarchy     : " + includeHierarchy );
 		}
 		else
 		{
-			System.out.println( " - baseName      : " + _baseName );
+			System.out.println( " - baseName      : " + baseName );
 		}
 
-		System.out.println( " - tried locales : " + _locales );
-		if ( _locales.isEmpty() )
+		System.out.println( " - test options  : includeHierarchy=" + isIncludeHierarchy() + ", allowLocaleDiffs=" + allowLocaleDiffs + ", allowUnknown=" + allowUnknown + ", allowNonAscii=" + allowNonAscii + ", allowHTML=" + allowHTML );
+		System.out.println( " - expectedKeys  : " + expectedKeys );
+		System.out.println( " - tried locales : " + tryLocales );
+		if ( tryLocales.isEmpty() )
 		{
 			throw new Error( "error in test: no locales specified to test" );
 		}
 
-		final Set<String> expectedKeys = _expectedKeys;
-		final boolean allowUnknown = _allowUnknown;
-		if ( !allowUnknown && expectedKeys.isEmpty() )
-		{
-			throw new Error( "error in test: no expected keys and no unknown keys allowed!?" );
-		}
-
 		final StringBuilder errors = new StringBuilder();
 		final Map<Locale, ResourceBundle> bundlesByLocale = new LinkedHashMap<Locale, ResourceBundle>();
+		final Map<Locale, ResourceBundle> localBundleByLocale = new HashMap<Locale, ResourceBundle>();
 
-		for ( final Locale locale : _locales )
+		for ( final Locale locale : tryLocales )
 		{
 			try
 			{
 				final ResourceBundle bundle;
-				if ( _forClass != null )
+				if ( forClass != null )
 				{
-					if ( _includeHierarchy )
+					if ( includeHierarchy )
 					{
-						bundle = ResourceBundleTools.getBundleHierarchy( _forClass, locale );
+						bundle = ResourceBundleTools.getBundleHierarchy( forClass, locale );
 					}
 					else
 					{
-						bundle = ResourceBundleTools.getBundle( _forClass, locale );
+						bundle = ResourceBundleTools.getBundle( forClass, locale );
+					}
+
+					try
+					{
+						localBundleByLocale.put( bundle.getLocale(), ResourceBundleTools.getBundle( forClass, locale ) );
+					}
+					catch ( final Exception ignored )
+					{
 					}
 				}
 				else
 				{
-					assert _baseName != null;
-					bundle = ResourceBundleTools.getBundle( _baseName, locale, null );
+					assert baseName != null;
+					bundle = ResourceBundleTools.getBundle( baseName, locale, null );
 				}
 				bundlesByLocale.put( bundle.getLocale(), bundle );
 			}
 			catch ( final MissingResourceException ignored )
 			{
-				errors.append( "\nBundle '" );
-				errors.append( _forClass != null ? _forClass.getName() : _baseName );
-				errors.append( "' not found for locale '" );
-				errors.append( locale );
-				errors.append( '\'' );
+				errors.append( "\nBundle '" ).append( forClass != null ? forClass.getName() : baseName ).append( "' not found for locale '" ).append( locale ).append( '\'' );
 			}
 		}
 
 		if ( errors.length() > 0 )
 		{
-			Assert.fail( "Error(s):" + errors );
+			fail( "Error(s):" + errors );
 		}
 
 		System.out.println( " - found locales : " + bundlesByLocale.keySet() );
-
-		final Collection<ResourceBundle> bundles = bundlesByLocale.values();
-		final boolean allowLocaleDiffs = _allowLocaleDiffs;
-		final boolean allowNonAscii = _allowNonAscii;
-		final boolean allowHTML = _allowHTML;
-
-		System.out.println( " - test options  : allowLocaleDiffs=" + allowLocaleDiffs + ", allowUnknown=" + allowUnknown + ", allowNonAscii=" + allowNonAscii + ", allowHTML=" + allowHTML );
-		System.out.println( " - expectedKeys  : " + expectedKeys );
-
-		if ( !allowUnknown && expectedKeys.isEmpty() )
+		if ( bundlesByLocale.isEmpty() )
 		{
-			throw new Error( "error in test: no expected keys and no unknown keys allowed!?" );
+			throw new AssertionError( "Found no " + ( ( forClass != null ) ? forClass.getName() : baseName ) + " bundle(s) to test" );
 		}
 
-		final Collection<Locale> seenLocales = new ArrayList<Locale>( bundles.size() );
-		final List<String> unknownKeys = new ArrayList<String>();
+		final Collection<ResourceBundle> bundles = bundlesByLocale.values();
 
-		for ( final ResourceBundle bundle : bundles )
+		final Collection<Locale> seenLocales = new ArrayList<Locale>( bundles.size() );
+		final Collection<String> unknownKeys = new ArrayList<String>();
+
+		for ( final Map.Entry<Locale, ResourceBundle> bundleEntry : bundlesByLocale.entrySet() )
 		{
+			final ResourceBundle bundle = bundleEntry.getValue();
 			Locale locale = bundle.getLocale();
 			if ( locale == null )
 			{
@@ -439,11 +483,7 @@ public class ResourceBundleTester
 				}
 				catch ( final MissingResourceException ignored )
 				{
-					errors.append( "\nMissing key '" );
-					errors.append( key );
-					errors.append( "' in " );
-					errors.append( bundleDesc );
-					errors.append( " bundle." );
+					errors.append( "\nMissing key '" ).append( key ).append( "' in " ).append( bundleDesc ).append( " bundle." );
 				}
 			}
 
@@ -453,11 +493,7 @@ public class ResourceBundleTester
 				{
 					if ( ResourceBundleTools.getString( bundle, key, null ) == null )
 					{
-						errors.append( "\nMissing key '" );
-						errors.append( key );
-						errors.append( "' in " );
-						errors.append( bundleDesc );
-						errors.append( " bundle." );
+						errors.append( "\nMissing key '" ).append( key ).append( "' in " ).append( bundleDesc ).append( " bundle." );
 					}
 				}
 			}
@@ -465,9 +501,10 @@ public class ResourceBundleTester
 			/*
 			 * Check for presence of unknown keys.
 			 */
-			for ( final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements(); )
+			final ResourceBundle localBundle = localBundleByLocale.get( bundleEntry.getKey() );
+			final Set<String> keysToTest = ( localBundle != null ) ? localBundle.keySet() : allowUnknown ? bundle.keySet() : Collections.<String>emptySet();
+			for ( final String key : keysToTest )
 			{
-				final String key = keys.nextElement();
 				final String keyDesc = "bundle '" + locale + ", key";
 				final String value = bundle.getString( key );
 				final String valueDesc = "resource '" + locale + '.' + key + "' value";
@@ -476,21 +513,11 @@ public class ResourceBundleTester
 				{
 					if ( !allowUnknown )
 					{
-						errors.append( "\nUnknown key '" );
-						errors.append( key );
-						errors.append( "' was found in " );
-						errors.append( bundleDesc );
-						errors.append( " bundle" );
+						errors.append( "\nUnknown key '" ).append( key ).append( "' was found in " ).append( bundleDesc ).append( " bundle" );
 					}
 					else if ( !seenLocales.isEmpty() && !allowLocaleDiffs )
 					{
-						errors.append( "\nKey '" );
-						errors.append( key );
-						errors.append( "' was found in " );
-						errors.append( bundleDesc );
-						errors.append( " bundle but not for previous locales (" );
-						errors.append( seenLocales );
-						errors.append( ')' );
+						errors.append( "\nKey '" ).append( key ).append( "' was found in " ).append( bundleDesc ).append( " bundle but not for previous locales (" ).append( seenLocales ).append( ')' );
 					}
 
 					unknownKeys.add( key );
@@ -514,10 +541,15 @@ public class ResourceBundleTester
 
 		if ( errors.length() > 0 )
 		{
-			Assert.fail( "Error(s):" + errors );
+			fail( "Error(s):" + errors );
 		}
 
-		return unknownKeys;
+		if ( !allowUnknown && expectedKeys.isEmpty() )
+		{
+			throw new Error( "error in test: no expected keys and no unknown keys allowed!?" );
+		}
+
+		return bundlesByLocale;
 	}
 
 	/**
@@ -530,7 +562,6 @@ public class ResourceBundleTester
 	 * @param s      String to test.
 	 *
 	 * @throws AssertionError if test fails.
-	 * @see #testBundles
 	 */
 	private static void testNonAscii( @NotNull final StringBuilder errors, @NotNull final String what, @Nullable final String s )
 	{
@@ -541,15 +572,7 @@ public class ResourceBundleTester
 				final char c = s.charAt( i );
 				if ( ( ( c < '\040' ) && ( c != '\b' ) && ( c != '\t' ) && ( c != '\n' ) && ( c != '\f' ) && ( c != '\r' ) && ( c != '\033' ) ) || ( c > '\177' ) )
 				{
-					errors.append( '\n' );
-					errors.append( what );
-					errors.append( " '" );
-					errors.append( s );
-					errors.append( "' contains non-ASCII character '" );
-					errors.append( c );
-					errors.append( "' (" );
-					errors.append( (int)c );
-					errors.append( ')' );
+					errors.append( '\n' ).append( what ).append( " '" ).append( s ).append( "' contains non-ASCII character '" ).append( c ).append( "' (" ).append( (int)c ).append( ')' );
 					break;
 				}
 			}
@@ -565,7 +588,6 @@ public class ResourceBundleTester
 	 * @param s      String to test.
 	 *
 	 * @throws AssertionError if test fails.
-	 * @see #testBundles
 	 */
 	private static void testHTML( @NotNull final StringBuilder errors, @NotNull final String what, @Nullable final String s )
 	{
@@ -585,12 +607,7 @@ public class ResourceBundleTester
 				final char next = s.charAt( pos );
 				if ( Character.isLetterOrDigit( next ) )
 				{
-					errors.append( '\n' );
-					errors.append( what );
-					errors.append( " '" );
-					errors.append( s );
-					errors.append( "' contains HTML text: " );
-					errors.append( s, pos - 1, s.length() );
+					errors.append( '\n' ).append( what ).append( " '" ).append( s ).append( "' contains HTML text: " ).append( s, pos - 1, s.length() );
 					break;
 				}
 			}

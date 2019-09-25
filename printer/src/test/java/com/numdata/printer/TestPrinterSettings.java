@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2007-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
  */
 package com.numdata.printer;
 
-import java.lang.reflect.*;
-import java.util.*;
 import javax.print.attribute.standard.*;
 
 import com.numdata.oss.*;
@@ -42,70 +40,24 @@ import org.junit.*;
  */
 public class TestPrinterSettings
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestPrinterSettings.class.getName();
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Locale[] locales = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY };
-
-		final Collection<String> expectedKeys = new ArrayList<String>();
-		expectedKeys.add( "title" );
-		expectedKeys.add( "settings" );
-
-		for ( final Field field : PrinterSettings.class.getDeclaredFields() )
-		{
-			final int modifiers = field.getModifiers();
-			final Class<?> type = field.getType();
-
-			if ( Modifier.isStatic( modifiers ) && Modifier.isFinal( modifiers ) && ( type == String.class ) )
-			{
-				final String propertyName = (String)field.get( null );
-
-				expectedKeys.add( propertyName );
-				expectedKeys.add( propertyName + "Tip" );
-				expectedKeys.add( propertyName + "Type" );
-			}
-		}
-
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.HOSTNAME + "Condition" ) );
-
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.METHOD + "Default" ) );
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.METHOD + "Values" ) );
-		for ( final PrinterSettings.Method method : PrinterSettings.Method.values() )
-		{
-			assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.METHOD + '.' + method ) );
-		}
-
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.NETWORK_PORT + "Condition" ) );
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.NETWORK_PORT + "Default" ) );
-
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.PAGE_ORIENTATION + "Values" ) );
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.PAGE_ORIENTATION + "Default" ) );
-		for ( final PrinterSettings.PageOrientation orientation : PrinterSettings.PageOrientation.values() )
-		{
-			assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.PAGE_ORIENTATION + '.' + orientation ) );
-		}
-
-		assertTrue( "Bad test set.", expectedKeys.add( PrinterSettings.QUEUE_NAME + "Condition" ) );
-
-		ResourceBundleTester.testBundles( PrinterSettings.class, true, locales, false, expectedKeys, false, true, false );
+		final Class<?> clazz = PrinterSettings.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKeysWithSuffix( FieldTester.getConstants( clazz, false, true, String.class ), "Tip", "Type" );
+		tester.addExpectedKeyWithSuffix( PrinterSettings.HOSTNAME, "Condition" );
+		tester.addExpectedKeyWithSuffix( PrinterSettings.METHOD, "Values", "Default" );
+		tester.addEnumNames( PrinterSettings.METHOD + '.', PrinterSettings.Method.class );
+		tester.addExpectedKeyWithSuffix( PrinterSettings.NETWORK_PORT, "Condition", "Default" );
+		tester.addExpectedKeyWithSuffix( PrinterSettings.PAGE_ORIENTATION, "Values", "Default" );
+		tester.addEnumNames( PrinterSettings.PAGE_ORIENTATION + '.', PrinterSettings.PageOrientation.class );
+		tester.addExpectedKeyWithSuffix( PrinterSettings.QUEUE_NAME, "Condition" );
+		tester.addExpectedKey( "title" );
+		tester.addExpectedKey( "settings" );
+		tester.run();
 	}
 
-	/**
-	 * Tests all imageable bounds.
-	 */
 	@Test
 	public void testImageableBounds()
 	{
@@ -131,9 +83,6 @@ public class TestPrinterSettings
 		assertEquals( "Page orientation", PrinterSettings.PageOrientation.LANDSCAPE, settings.getPageOrientation() );
 	}
 
-	/**
-	 * Tests {@link PrinterSettings#setMediaSize(MediaSize)}.
-	 */
 	@Test
 	public void testSetMediaSize()
 	{
@@ -163,10 +112,6 @@ public class TestPrinterSettings
 		assertEquals( "Imageable y", 13.0, settings.getImageableY(), delta );
 	}
 
-	/**
-	 * Tests {@link PrinterSettings#getMargins} and {@link
-	 * PrinterSettings#setMargins}.
-	 */
 	@Test
 	public void testMargins()
 	{
@@ -200,14 +145,6 @@ public class TestPrinterSettings
 		assertInsetEquals( "Margins", margins, settings.getMargins(), delta );
 	}
 
-	/**
-	 * Asserts that the given insets are equal.
-	 *
-	 * @param message  Message.
-	 * @param expected Expected insets.
-	 * @param actual   Actual insets.
-	 * @param delta    Maximum allowed deviation from expected values.
-	 */
 	private void assertInsetEquals( final String message, final Insets2D expected, final Insets2D actual, final double delta )
 	{
 		assertEquals( message + ": top", expected.getTop(), actual.getTop(), delta );

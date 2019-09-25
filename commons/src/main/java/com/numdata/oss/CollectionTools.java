@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -875,8 +875,8 @@ public class CollectionTools
 	 * ordering of its elements, while preserving the set of all pairs {@code
 	 * (sorted[i], related[i])}.
 	 *
-	 * This sort is guaranteed to be <em>stable</em>: equal elements will
-	 * not be reordered as a result of the sort.
+	 * This sort is guaranteed to be <em>stable</em>: equal elements will not be
+	 * reordered as a result of the sort.
 	 *
 	 * @param sorted  List to be sorted.
 	 * @param related List of related values to be re-ordered in exactly the
@@ -902,8 +902,8 @@ public class CollectionTools
 	 * comparator, while preserving the set of all pairs {@code (sorted[i],
 	 * related[i])}.
 	 *
-	 * This sort is guaranteed to be <em>stable</em>: equal elements will
-	 * not be reordered as a result of the sort.
+	 * This sort is guaranteed to be <em>stable</em>: equal elements will not be
+	 * reordered as a result of the sort.
 	 *
 	 * @param sorted     List to be sorted.
 	 * @param related    List of related values to be re-ordered in exactly the
@@ -927,8 +927,8 @@ public class CollectionTools
 	 * In other words, {@code sorted} will be sorted while preserving the set of
 	 * all pairs {@code (sorted[i], related[i])}.
 	 *
-	 * This sort is guaranteed to be <em>stable</em>: equal elements will
-	 * not be reordered as a result of the sort.
+	 * This sort is guaranteed to be <em>stable</em>: equal elements will not be
+	 * reordered as a result of the sort.
 	 *
 	 * @param sorted          List to be sorted.
 	 * @param related         List of related values to be re-ordered in exactly
@@ -975,8 +975,8 @@ public class CollectionTools
 	 * Concatenates two collections, appending the elements in {@code source} to
 	 * {@code destination}.
 	 *
-	 * Both arguments are optional. If no destination collection is given, a
-	 * new destination collection is created to add elements to. If no source
+	 * Both arguments are optional. If no destination collection is given, a new
+	 * destination collection is created to add elements to. If no source
 	 * collection is given, the destination collection is returned as-is. If
 	 * both collections are {@code null}, the result is also {@code null}.
 	 *
@@ -1062,5 +1062,34 @@ public class CollectionTools
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Wrap {@link Iterator} as {@link Iterable} whose {@link
+	 * Iterable#iterator()} method can only be called once.
+	 *
+	 * @param iterator {@link Iterator} to wrap as {@link Iterable}.
+	 * @param <T>      Element type.
+	 *
+	 * @return {@link Iterable}.
+	 */
+	public <T> Iterable<T> iterable( @NotNull final Iterator<T> iterator )
+	{
+		return new Iterable<T>()
+		{
+			boolean retrieved = false;
+
+			@NotNull
+			@Override
+			public Iterator<T> iterator()
+			{
+				if ( retrieved )
+				{
+					throw new IllegalStateException( "Can only retrieve iterator once from 'CollectionTools.iterable(" + iterator + " )'" );
+				}
+				retrieved = true;
+				return iterator;
+			}
+		};
 	}
 }

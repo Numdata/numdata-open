@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,8 @@
  */
 package com.numdata.email;
 
-import java.util.*;
-
 import com.numdata.oss.*;
 import com.numdata.oss.junit.*;
-import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
@@ -40,33 +37,13 @@ import org.junit.*;
  */
 public class TestEmailSettings
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestEmailSettings.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final List<Locale> LOCALES = Arrays.asList( Locale.ENGLISH, Locale.FRENCH, Locale.GERMAN, Locale.ITALIAN, new Locale( "nl" ), new Locale( "sv" ) );
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
 		final Class<?> clazz = EmailSettings.class;
-
-		final Collection<String> expectedKeys = new HashSet<String>();
-		expectedKeys.addAll( BeanTools.getPropertyNames( clazz ) );
-		assertTrue( "Unnecessary expected key", expectedKeys.add( "ID" ) );
-
-		ResourceBundleTester.testBundles( clazz, false, LOCALES, false, expectedKeys, false, true, false );
+		final ResourceBundleTester tester = new ResourceBundleTester( clazz );
+		tester.addExpectedKeys( BeanTools.getPropertyNames( clazz ) );
+		tester.addExpectedKey( "ID" );
+		tester.run();
 	}
 }
