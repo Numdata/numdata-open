@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2015-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,7 @@
  */
 package com.numdata.oss;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
-import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
@@ -39,42 +36,14 @@ import org.junit.*;
  */
 public class TestLengthMeasurePreferences
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestLengthMeasurePreferences.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final List<Locale> LOCALES = Arrays.asList( Locale.ENGLISH, Locale.FRENCH, Locale.GERMAN, Locale.ITALIAN, new Locale( "nl" ), new Locale( "sv" ) );
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Set<String> expectedKeys = new HashSet<String>();
-
-		for ( final String name : BeanTools.getPropertyNames( LengthMeasurePreferences.class, false ) )
-		{
-			expectedKeys.add( name );
-			expectedKeys.add( name + "Tip" );
-		}
-
-		assertTrue( "Unnecessary expected key", expectedKeys.add( "id" ) );
-
-		for ( final LengthMeasurePreferences.LengthUnit lengthUnit : LengthMeasurePreferences.LengthUnit.values() )
-		{
-			assertTrue( "Unnecessary expected key: " + lengthUnit.name(), expectedKeys.add( lengthUnit.name() ) );
-		}
-
-		ResourceBundleTester.testBundles( LengthMeasurePreferences.class, false, LOCALES, false, expectedKeys, false, true, false );
+		final Class<?> clazz = LengthMeasurePreferences.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addDeclaredEnums( clazz );
+		tester.addExpectedKeysWithSuffix( BeanTools.getPropertyNames( clazz, false ), "Tip" );
+		tester.addExpectedKey( "id" );
+		tester.run();
 	}
 }

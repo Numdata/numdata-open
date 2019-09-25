@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2007-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,6 @@
  */
 package com.numdata.oss.ui;
 
-import java.lang.reflect.*;
-import java.util.*;
-
 import com.numdata.oss.junit.*;
 import org.junit.*;
 
@@ -39,40 +36,12 @@ import org.junit.*;
  */
 public class TestStandardDialog
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestStandardDialog.class.getName();
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Locale[] locales = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY };
-
-		final List<String> expectedKeys = new ArrayList<String>();
-
-		for ( final Field field : StandardDialog.class.getDeclaredFields() )
-		{
-			try
-			{
-				if ( Modifier.isPublic( field.getModifiers() ) )
-				{
-					final String value = (String)field.get( null );
-					expectedKeys.add( value );
-				}
-			}
-			catch ( Exception e )
-			{ /* ignore invalid fields */ }
-		}
-
-		ResourceBundleTester.testBundles( StandardDialog.class, true, locales, false, expectedKeys, false, true, false );
+		final Class<StandardDialog> clazz = StandardDialog.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKeys( FieldTester.getConstants( clazz, false, true, String.class ) );
+		tester.run();
 	}
 }

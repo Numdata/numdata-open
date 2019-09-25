@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2007-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
  */
 package com.numdata.oss.ui;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
 import org.junit.*;
 
@@ -38,28 +36,13 @@ import org.junit.*;
  */
 public class TestWizardProgressPanel
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestWizardProgressPanel.class.getName();
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Locale[] locales = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY };
-
-		final List<String> expectedKeys = new ArrayList<String>();
-		expectedKeys.add( "progressTooltip" );
-		expectedKeys.add( "stepTooltip" );
-
-		ResourceBundleTester.testBundles( WizardProgressPanel.class, true, locales, false, expectedKeys, false, true, false );
+		final Class<?> clazz = WizardProgressPanel.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKey( "progressTooltip" );
+		tester.addExpectedKey( "stepTooltip" );
+		tester.run();
 	}
 }

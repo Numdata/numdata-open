@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
  */
 package com.numdata.oss.ui;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
 import org.junit.*;
 
@@ -38,31 +36,12 @@ import org.junit.*;
  */
 public class TestClientConnectionMonitor
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestClientConnectionMonitor.class.getName();
-
-	/**
-	 * List of supported locales.
-	 */
-	private static final Locale[] LOCALES = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY /*, Locale.ITALY*/ };
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Collection<String> expectedKeys = new ArrayList<String>();
-		expectedKeys.add( "disconnected" );
-		expectedKeys.add( "reconnected" );
-
-		ResourceBundleTester.testBundles( ClientConnectionMonitor.class, true, LOCALES, false, expectedKeys, false, false, true );
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( ClientConnectionMonitor.class );
+		tester.addExpectedKey( "disconnected" );
+		tester.addExpectedKey( "reconnected" );
+		tester.run();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,7 @@
  */
 package com.numdata.oss.web.form;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
-import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
@@ -39,36 +36,16 @@ import org.junit.*;
  */
 public class TestInvalidFormDataException
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestInvalidFormDataException.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final List<Locale> LOCALES = Arrays.asList( Locale.ENGLISH, Locale.FRENCH, Locale.GERMAN, Locale.ITALIAN, new Locale( "nl" ), new Locale( "sv" ) );
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
 		final Class<?> clazz = InvalidFormDataException.class;
-
-		final Collection<String> expectedKeys = new HashSet<String>();
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
 		for ( final InvalidFormDataException.Type type : InvalidFormDataException.Type.values() )
 		{
-			assertTrue( "Unnecessary expected key", expectedKeys.add( type + ".message" ) );
-			assertTrue( "Unnecessary expected key", expectedKeys.add( type + ".title" ) );
+			tester.addExpectedKey( type + ".message" );
+			tester.addExpectedKey( type + ".title" );
 		}
-
-		ResourceBundleTester.testBundles( clazz, false, LOCALES, false, expectedKeys, false, true, false );
+		tester.run();
 	}
 }
