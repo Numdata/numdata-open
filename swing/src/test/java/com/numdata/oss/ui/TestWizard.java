@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2005-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,9 +27,7 @@
 package com.numdata.oss.ui;
 
 import java.awt.*;
-import java.lang.reflect.*;
 import java.util.*;
-import java.util.List;
 
 import com.numdata.oss.junit.*;
 import com.numdata.oss.ui.test.*;
@@ -42,19 +40,9 @@ import org.junit.*;
  */
 public class TestWizard
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestWizard.class.getName();
-
-	/**
-	 * Test {@link Wizard#Wizard constructor}.
-	 */
 	@Test
 	public void testConstructor()
 	{
-		System.out.println( CLASS_NAME + ".testConstructor()" );
-
 		final Frame frame = new Frame();
 		final Locale locale = new Locale( "nl", "NL" );
 
@@ -78,40 +66,12 @@ public class TestWizard
 		WizardTester.assertFunctionalWizard( wizard );
 	}
 
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Locale[] locales = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY };
-
-		final List<String> expectedKeys = new ArrayList<String>();
-
-		for ( final Field field : Wizard.class.getFields() )
-		{
-			final int modifiers = field.getModifiers();
-			final Class<?> type = field.getType();
-
-			try
-			{
-				if ( Modifier.isStatic( modifiers ) && ( type == String.class ) )
-				{
-					final String value = (String)field.get( null );
-					expectedKeys.add( value );
-				}
-			}
-			catch ( Exception e )
-			{
-				e.printStackTrace();/* ignore invalid fields */
-			}
-		}
-
-		ResourceBundleTester.testBundles( Wizard.class, true, locales, false, expectedKeys, false, true, false );
+		final Class<?> clazz = Wizard.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKeys( FieldTester.getConstants( clazz, false, true, String.class ) );
+		tester.run();
 	}
 }

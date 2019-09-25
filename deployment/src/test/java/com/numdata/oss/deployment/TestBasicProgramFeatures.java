@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,9 @@
  */
 package com.numdata.oss.deployment;
 
-import java.util.*;
-
 import com.numdata.oss.deployment.ProgramFeatures.*;
 import static com.numdata.oss.deployment.ProgramFeatures.UserLevel.*;
 import com.numdata.oss.junit.*;
-import org.json.*;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -42,27 +39,9 @@ import org.junit.*;
  */
 public class TestBasicProgramFeatures
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestBasicProgramFeatures.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final List<Locale> LOCALES = Arrays.asList( new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY );
-
-	/**
-	 * Test the {@link BasicProgramFeatures#getCurrentUserLevel} method.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testGetCurrentUserLevel()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testGetCurrentUserLevel()" );
-
 		final BasicProgramFeatures programFeatures = new BasicProgramFeatures();
 		programFeatures.setDefaultUserLevel( CONFIGURATOR );
 		programFeatures.setExtendedUserLevel( DEVELOPER );
@@ -74,18 +53,10 @@ public class TestBasicProgramFeatures
 		assertEquals( "Did not get extended user level", DEVELOPER, programFeatures.getCurrentUserLevel() );
 	}
 
-	/**
-	 * Test the {@link BasicProgramFeatures#isDifferentForDefaultAndExtendedLevel}
-	 * method.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testIsDifferentForDefaultAndExtendedLevel()
-	throws Exception
 	{
-		final String here = CLASS_NAME + ".testIsDifferentForDefaultAndExtendedLevel()";
-		System.out.println( here );
+		final String here = getClass().getName() + ".testIsDifferentForDefaultAndExtendedLevel()";
 
 		class Test
 		{
@@ -114,16 +85,16 @@ public class TestBasicProgramFeatures
 		 */
 		final Test[] tests =
 		{
-			/* Test #1 */ new Test( NORMAL, NEVER, NORMAL, EXPERT, false ),
-			/* Test #2 */ new Test( ALWAYS, NORMAL, NORMAL, EXPERT, false ),
-			/* Test #3 */ new Test( ALWAYS, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #4 */ new Test( OBSERVER, NOVICE, NORMAL, EXPERT, false ),
-			/* Test #5 */ new Test( NOVICE, NORMAL, NORMAL, EXPERT, false ),
-			/* Test #6 */ new Test( NORMAL, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #7 */ new Test( EXPERT, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #8 */ new Test( CONFIGURATOR, DEVELOPER, NORMAL, EXPERT, false ),
-			/* Test #9 */ new Test( DEVELOPER, DEVELOPER, NORMAL, EXPERT, false ),
-			};
+		/* Test #1 */ new Test( NORMAL, NEVER, NORMAL, EXPERT, false ),
+		/* Test #2 */ new Test( ALWAYS, NORMAL, NORMAL, EXPERT, false ),
+		/* Test #3 */ new Test( ALWAYS, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #4 */ new Test( OBSERVER, NOVICE, NORMAL, EXPERT, false ),
+		/* Test #5 */ new Test( NOVICE, NORMAL, NORMAL, EXPERT, false ),
+		/* Test #6 */ new Test( NORMAL, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #7 */ new Test( EXPERT, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #8 */ new Test( CONFIGURATOR, DEVELOPER, NORMAL, EXPERT, false ),
+		/* Test #9 */ new Test( DEVELOPER, DEVELOPER, NORMAL, EXPERT, false ),
+		};
 
 		/*
 		 * Execute tests.
@@ -165,17 +136,10 @@ public class TestBasicProgramFeatures
 		}
 	}
 
-	/**
-	 * Test the {@link BasicProgramFeatures#isDifferentForLevels} method.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testIsDifferentForLevels()
-	throws Exception
 	{
-		final String here = CLASS_NAME + ".testIsDifferentForLevels()";
-		System.out.println( here );
+		final String here = getClass().getName() + ".testIsDifferentForLevels()";
 
 		class Test
 		{
@@ -204,16 +168,16 @@ public class TestBasicProgramFeatures
 		 */
 		final Test[] tests =
 		{
-			/* Test #1 */ new Test( NORMAL, NEVER, NORMAL, EXPERT, false ),
-			/* Test #2 */ new Test( ALWAYS, NORMAL, NORMAL, EXPERT, false ),
-			/* Test #3 */ new Test( ALWAYS, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #4 */ new Test( OBSERVER, NOVICE, NORMAL, EXPERT, false ),
-			/* Test #5 */ new Test( NOVICE, NORMAL, NORMAL, EXPERT, false ),
-			/* Test #6 */ new Test( NORMAL, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #7 */ new Test( EXPERT, EXPERT, NORMAL, EXPERT, true ),
-			/* Test #8 */ new Test( CONFIGURATOR, DEVELOPER, NORMAL, EXPERT, false ),
-			/* Test #9 */ new Test( DEVELOPER, DEVELOPER, NORMAL, EXPERT, false ),
-			};
+		/* Test #1 */ new Test( NORMAL, NEVER, NORMAL, EXPERT, false ),
+		/* Test #2 */ new Test( ALWAYS, NORMAL, NORMAL, EXPERT, false ),
+		/* Test #3 */ new Test( ALWAYS, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #4 */ new Test( OBSERVER, NOVICE, NORMAL, EXPERT, false ),
+		/* Test #5 */ new Test( NOVICE, NORMAL, NORMAL, EXPERT, false ),
+		/* Test #6 */ new Test( NORMAL, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #7 */ new Test( EXPERT, EXPERT, NORMAL, EXPERT, true ),
+		/* Test #8 */ new Test( CONFIGURATOR, DEVELOPER, NORMAL, EXPERT, false ),
+		/* Test #9 */ new Test( DEVELOPER, DEVELOPER, NORMAL, EXPERT, false ),
+		};
 
 		/*
 		 * Execute tests.
@@ -248,17 +212,10 @@ public class TestBasicProgramFeatures
 		}
 	}
 
-	/**
-	 * Test the {@link BasicProgramFeatures#isWritableAtAll} method.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testIsWritableAtAll()
-	throws Exception
 	{
-		final String here = CLASS_NAME + ".testIsWritableAtAll()";
-		System.out.println( here );
+		final String here = getClass().getName() + ".testIsWritableAtAll()";
 
 		final BasicProgramFeatures programFeatures = new BasicProgramFeatures();
 		programFeatures.disableUnknownFeatureWarnings();
@@ -290,18 +247,9 @@ public class TestBasicProgramFeatures
 		assertFalse( "isWritableAtAll( 'non-existing' )", programFeatures.isWritableAtAll( neverName ) );
 	}
 
-	/**
-	 * Test the {@link BasicProgramFeatures#save()} nad {@link BasicProgramFeatures#load(JSONObject)} methods.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testSaveLoadJson()
-	throws Exception
 	{
-		final String here = CLASS_NAME + ".testSaveLoadJson()";
-		System.out.println( here );
-
 		final BasicProgramFeatures programFeatures1 = new BasicProgramFeatures();
 
 		final BasicProgramFeatures.Feature feature1 = programFeatures1.lookupOrCreate( "feature1" );
@@ -319,29 +267,19 @@ public class TestBasicProgramFeatures
 		feature4.setAvailabilityLevel( ALWAYS );
 		feature4.setWritabilityLevel( NEVER );
 
-		final JSONObject saved1 = programFeatures1.save();
-
+		programFeatures1.save();
 	}
 
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Collection<String> expectedKeys = new ArrayList<String>();
-		expectedKeys.add( "programFeatures" );
-		expectedKeys.add( "defaultUserLevel" );
-		expectedKeys.add( "extendedUserLevel" );
-		expectedKeys.add( "resources" );
-
-		expectedKeys.addAll( EnumTester.getEnumConstantList( ProgramFeatures.class ) );
-
-		ResourceBundleTester.testBundles( ProgramFeatures.class, true, LOCALES, false, expectedKeys, false );
+		final Class<?> clazz = ProgramFeatures.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addDeclaredEnums( clazz );
+		tester.addExpectedKey( "programFeatures" );
+		tester.addExpectedKey( "defaultUserLevel" );
+		tester.addExpectedKey( "extendedUserLevel" );
+		tester.addExpectedKey( "resources" );
+		tester.run();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
  */
 package com.numdata.oss.ui.explorer;
 
-import java.util.*;
-
 import com.numdata.oss.junit.*;
 import org.junit.*;
 
@@ -38,27 +36,24 @@ import org.junit.*;
  */
 public class TestFileDialog
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestFileDialog.class.getName();
-
-	/**
-	 * Locales to use for tests.
-	 */
-	private static final Locale[] LOCALES = { new Locale( "nl", "NL" ), Locale.US, Locale.GERMANY };
-
-	/**
-	 * Test resource bundles for class.
-	 *
-	 * @throws Exception if the test fails.
-	 */
 	@Test
 	public void testResources()
-	throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		ResourceBundleTester.testBundles( FileDialog.class, true, LOCALES, false, null, true, true, false );
+		final Class<FileDialog> clazz = FileDialog.class;
+		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
+		tester.addExpectedKeys( "openTitle", "openFrom", "openErrorTitle" );
+		tester.addExpectedKeys( "saveTitle", "saveIn", "saveErrorTitle" );
+		tester.addExpectedKeys( "folder", "homeFolder" );
+		tester.addExpectedKey( "name" );
+		tester.addExpectedKeys( "type", "cabinet", "room", "unknownType" );
+		tester.addExpectedKey( "readOnly" );
+		tester.addExpectedKey( "filename" );
+		tester.addExpectedKeys( "open", "save", "cancel" );
+		tester.addExpectedKey( "errorNotFound" );
+		tester.addExpectedKey( "errorLocked" );
+		tester.addExpectedKey( "errorEmptyFilename" );
+		tester.addExpectedKey( "errorBadFilename" );
+		tester.addExpectedKeys( "confirmOverwriteTitle", "confirmOverwriteMessage" );
+		tester.run();
 	}
 }
