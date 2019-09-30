@@ -228,12 +228,18 @@ public class ResourceBundleTester
 		assertTrue( "Unnecessary expected key '" + expectedKey + '\'', _expectedKeys.add( expectedKey ) );
 	}
 
-	public void addExpectedKeyWithSuffix( @NotNull final String expectedKey, @NotNull final String... suffices )
+	public void addExpectedKeyUnchecked( @NotNull final String expectedKey )
 	{
 		_expectedKeys.add( expectedKey );
-		for ( final String suffix : suffices )
+	}
+
+	public void addExpectedKeyWithSuffix( @NotNull final String expectedKey, @NotNull final String suffix, @NotNull final String... additionalSuffices )
+	{
+		_expectedKeys.add( expectedKey );
+		addExpectedKey( expectedKey + suffix );
+		for ( final String additionalSuffix : additionalSuffices )
 		{
-			addExpectedKey( expectedKey + suffix );
+			addExpectedKey( expectedKey + additionalSuffix );
 		}
 	}
 
@@ -245,23 +251,11 @@ public class ResourceBundleTester
 		}
 	}
 
-	public void addExpectedKeys( @NotNull final Collection<String> expectedKeys )
+	public void addExpectedKeys( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys )
 	{
-		addExpectedKeys( expectedKeys, false );
-	}
-
-	public void addExpectedKeys( @NotNull final Collection<String> expectedKeys, final boolean ignoreDuplicates )
-	{
-		if ( ignoreDuplicates )
+		for ( final String expectedKey : expectedKeys )
 		{
-			_expectedKeys.addAll( expectedKeys );
-		}
-		else
-		{
-			for ( final String expectedKey : expectedKeys )
-			{
-				addExpectedKey( expectedKey );
-			}
+			addExpectedKey( expectedKey );
 		}
 	}
 
@@ -273,11 +267,11 @@ public class ResourceBundleTester
 		}
 	}
 
-	public void addExpectedKeysWithSuffix( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys, @NotNull final String... suffices )
+	public void addExpectedKeysWithSuffix( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys, @NotNull final String suffix, @NotNull final String... additionalSuffices )
 	{
 		for ( final String expectedKey : expectedKeys )
 		{
-			addExpectedKeyWithSuffix( expectedKey, suffices );
+			addExpectedKeyWithSuffix( expectedKey, suffix, additionalSuffices );
 		}
 	}
 
@@ -379,9 +373,9 @@ public class ResourceBundleTester
 	/**
 	 * Tests the resource bundles.
 	 *
-	 * @return List with unknown keys that were found in the resource bundles.
+	 * @return Map with bundles that were tested mapped by requested locale.
 	 */
-	public List<String> run()
+	public Map<Locale, ResourceBundle> run()
 	{
 		final Set<String> expectedKeys = getExpectedKeys();
 		final String baseName = _baseName;
@@ -466,7 +460,7 @@ public class ResourceBundleTester
 		final Collection<ResourceBundle> bundles = bundlesByLocale.values();
 
 		final Collection<Locale> seenLocales = new ArrayList<Locale>( bundles.size() );
-		final List<String> unknownKeys = new ArrayList<String>();
+		final Collection<String> unknownKeys = new ArrayList<String>();
 
 		for ( final Map.Entry<Locale, ResourceBundle> bundleEntry : bundlesByLocale.entrySet() )
 		{
@@ -555,7 +549,7 @@ public class ResourceBundleTester
 			throw new Error( "error in test: no expected keys and no unknown keys allowed!?" );
 		}
 
-		return unknownKeys;
+		return bundlesByLocale;
 	}
 
 	/**
