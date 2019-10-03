@@ -41,7 +41,8 @@ import org.jetbrains.annotations.*;
  * @author Sjoerd Bouwman
  * @author Peter S. Heijnen
  */
-public class TextTools
+@SuppressWarnings( { "unused", "WeakerAccess", "DuplicatedCode", "OverloadedMethodsWithSameNumberOfParameters" } )
+public final class TextTools
 {
 	/**
 	 * State used for whitespace by {@link #plainTextToHTML} method.
@@ -104,6 +105,26 @@ public class TextTools
 	};
 
 	/**
+	 * Single newline pattern.
+	 */
+	public static final Pattern NEWLINE_PATTERN = Pattern.compile( "\\r\\n?|\\n" );
+
+	/**
+	 * One or more newlines pattern.
+	 */
+	public static final Pattern NEWLINES_PATTERN = Pattern.compile( "[\\r\\n]+" );
+
+	/**
+	 * One or more whitespace characters patterns.
+	 */
+	public static final Pattern WHITESPACE_PATTERN = Pattern.compile( "\\s+" );
+
+	/**
+	 * {@code &lt;html&gt;} element pattern.
+	 */
+	private static final Pattern HTML_TAG_PATTERN = Pattern.compile( "(?i)<html>" );
+
+	/**
 	 * Binary prefixes according to IEC 60027-2 A.2 and ISO/IEC 80000 standards
 	 * (index = base 1024 exponent).
 	 */
@@ -132,7 +153,6 @@ public class TextTools
 	/**
 	 * Platform-specific line separator.
 	 */
-	@SuppressWarnings( "StaticNonFinalField" )
 	private static String lineSeparator = null;
 
 	/**
@@ -451,7 +471,7 @@ public class TextTools
 	{
 		final String result;
 
-		if ( ( string != null ) && !string.isEmpty() && !string.matches( "<html>" ) )
+		if ( ( string != null ) && !string.isEmpty() && !HTML_TAG_PATTERN.matcher( string ).matches() )
 		{
 			final int len = string.length();
 			final StringBuilder resultBuffer = new StringBuilder( len + 14 );
@@ -460,7 +480,7 @@ public class TextTools
 			resultBuffer.append( "<html>" );
 
 			int state = ASCII_HTML_SPACE;
-			boolean inPreformattedSection = false;
+			boolean inPreFormattedSection = false;
 
 			for ( int pos = 0; pos < len; pos++ )
 			{
@@ -473,7 +493,7 @@ public class TextTools
 					case ASCII_HTML_TEXT:
 						if ( ch == '<' )
 						{
-							appendHtmlText( resultBuffer, tokenBuffer, inPreformattedSection );
+							appendHtmlText( resultBuffer, tokenBuffer, inPreFormattedSection );
 
 							tokenBuffer.setLength( 0 );
 							tokenBuffer.append( '<' );
@@ -486,7 +506,7 @@ public class TextTools
 						}
 						else if ( state == ASCII_HTML_TEXT )
 						{
-							if ( inPreformattedSection )
+							if ( inPreFormattedSection )
 							{
 								tokenBuffer.append( ch );
 							}
@@ -503,11 +523,11 @@ public class TextTools
 						{
 							tokenBuffer.append( '>' );
 
-							if ( inPreformattedSection )
+							if ( inPreFormattedSection )
 							{
 								if ( equals( "</pre>", tokenBuffer ) )
 								{
-									inPreformattedSection = false;
+									inPreFormattedSection = false;
 									resultBuffer.append( tokenBuffer );
 									tokenBuffer.setLength( 0 );
 									state = ASCII_HTML_TEXT;
@@ -523,7 +543,7 @@ public class TextTools
 
 								if ( equals( "<pre>", tokenBuffer ) )
 								{
-									inPreformattedSection = true;
+									inPreFormattedSection = true;
 								}
 								else if ( tokenBuffer.charAt( tokenLength - 2 ) == '/' )
 								{
@@ -543,7 +563,7 @@ public class TextTools
 				}
 			}
 
-			appendHtmlText( resultBuffer, tokenBuffer, inPreformattedSection );
+			appendHtmlText( resultBuffer, tokenBuffer, inPreFormattedSection );
 
 //			if ( inPreFormattedSection )
 //				resultBuffer.append( "</pre>" );
@@ -560,10 +580,9 @@ public class TextTools
 		return result;
 	}
 
-	@SuppressWarnings( "JavaDoc" )
-	private static void appendHtmlText( final StringBuilder result, final StringBuilder tokenBuffer, final boolean inPreformattedSection )
+	private static void appendHtmlText( final StringBuilder result, final StringBuilder tokenBuffer, final boolean inPreFormattedSection )
 	{
-		if ( !inPreformattedSection )
+		if ( !inPreFormattedSection )
 		{
 			while ( ( tokenBuffer.length() > 0 ) && Character.isWhitespace( tokenBuffer.charAt( tokenBuffer.length() - 1 ) ) )
 			{
@@ -1171,6 +1190,7 @@ public class TextTools
 		if ( result == null )
 		{
 			final StringWriter sw = new StringWriter();
+			//noinspection IOResourceOpenedButNotSafelyClosed
 			final PrintWriter pw = new PrintWriter( sw );
 			pw.println();
 			result = sw.toString();
@@ -1747,7 +1767,7 @@ public class TextTools
 	{
 		final String result;
 
-		if ( ( source == null ) || ( replace == null ) || ( source.indexOf( (int)find ) < 0 ) )
+		if ( ( source == null ) || ( replace == null ) || ( source.indexOf( find ) < 0 ) )
 		{
 			result = source;
 		}
@@ -1901,7 +1921,7 @@ public class TextTools
 			 * Count tokens
 			 */
 			int numberOfSeparators = 0;
-			for ( int pos = -1; ( ( pos = source.indexOf( (int)separator, pos + 1 ) ) >= 0 ); )
+			for ( int pos = -1; ( ( pos = source.indexOf( separator, pos + 1 ) ) >= 0 ); )
 			{
 				numberOfSeparators++;
 			}
@@ -1917,7 +1937,7 @@ public class TextTools
 			int start = 0;
 			for ( int index = 0; index < numberOfSeparators; index++ )
 			{
-				final int end = source.indexOf( (int)separator, start );
+				final int end = source.indexOf( separator, start );
 				result[ index ] = source.substring( start, end );
 				start = end + 1;
 			}
@@ -1969,7 +1989,7 @@ public class TextTools
 					}
 				}
 
-				separatorPos = source.indexOf( (int)separator, start );
+				separatorPos = source.indexOf( separator, start );
 
 				int end = ( separatorPos >= 0 ) ? separatorPos : length;
 				if ( trim )
@@ -2169,7 +2189,7 @@ public class TextTools
 					destination.append( c );
 					break;
 				}
-				else if ( terminators.indexOf( (int)c ) >= 0 )
+				else if ( terminators.indexOf( c ) >= 0 )
 				{
 					break;
 				}
@@ -2262,7 +2282,6 @@ public class TextTools
 		return ( cs == null ) ? null : ( cs.length() == 0 ) ? "" : setFirstChar( cs, Character.toUpperCase( cs.charAt( 0 ) ) );
 	}
 
-	@SuppressWarnings( "JavaDoc" )
 	private static String setFirstChar( final CharSequence cs, final char ch )
 	{
 		final String result;
@@ -2480,7 +2499,7 @@ public class TextTools
 
 		for ( int rowIndex = -1; rowIndex < rowCount; rowIndex++ )
 		{
-			if ( ( rowIndex >= 0 ) && ( rowIndex < rowCount ) )
+			if ( rowIndex >= 0 )
 			{
 				out.append( indent );
 				for ( int columnIndex = 0; columnIndex < columnCount; columnIndex++ )
