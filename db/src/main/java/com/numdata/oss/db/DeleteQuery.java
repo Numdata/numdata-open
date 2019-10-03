@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,17 +75,19 @@ extends AbstractQuery<T>
 		final CharSequence join = getJoin();
 		final boolean hasJoin = !TextTools.isEmpty( join );
 
+		final String tableAlias = getTableAlias();
+		final boolean hasAlias = !TextTools.isEmpty( tableAlias );
+
 		sb.append( "DELETE " );
 		if ( hasJoin )
 		{
-			sb.append( tableName );
+			sb.append( hasAlias ? tableAlias : tableName );
 		}
 		sb.append( getSeparator() );
 		sb.append( "FROM " );
 		sb.append( tableName );
 
-		final String tableAlias = getTableAlias();
-		if ( !TextTools.isEmpty( tableAlias ) )
+		if ( hasAlias )
 		{
 			sb.append( " AS " );
 			sb.append( tableAlias );
