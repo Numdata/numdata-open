@@ -10,8 +10,8 @@
 		<version>1.12-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>numdata-commons</artifactId>
-	<description>Miscellaneous basic Java tools.</description>
+	<artifactId>numdata-commons-java8</artifactId>
+	<description>Various utility classes for Java 8.</description>
 
 	<dependencies>
 		<dependency>
@@ -21,24 +21,30 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<optional>true</optional>
-			<!-- Needed to use com.numdata.oss.log.CommonsLoggingAdapter -->
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<optional>true</optional>
-			<!-- Needed to use com.numdata.oss.log.ClassLogger with Log4j -->
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-toolchains-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>toolchain</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<toolchains>
+						<jdk>
+							<version>1.8</version>
+						</jdk>
+					</toolchains>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -52,4 +58,9 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 </project>
