@@ -122,7 +122,7 @@ public final class NioTools
 			public FileVisitResult visitFile( final Path file, final BasicFileAttributes attrs )
 			throws IOException
 			{
-				Files.copy( file, toDirectory.resolve( fromDirectory.relativize( file ) ) );
+				Files.copy( file, toDirectory.resolve( fromDirectory.relativize( file ) ), StandardCopyOption.REPLACE_EXISTING );
 				return FileVisitResult.CONTINUE;
 			}
 		} );
