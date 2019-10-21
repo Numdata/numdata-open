@@ -49,7 +49,7 @@ public final class FunctionTools
 	/**
 	 * {@link Function} that throws a checked exception.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 */
 	@FunctionalInterface
@@ -73,7 +73,7 @@ public final class FunctionTools
 	 * checked exception thrown by the {@link CheckedFunction} will be wrapped
 	 * by a {@link RuntimeException}.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedFunction {@link CheckedFunction} to wrap.
@@ -107,7 +107,7 @@ public final class FunctionTools
 	 * still declare the checked exception that might abort the stream and be
 	 * thrown.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedFunction {@link CheckedFunction} to wrap.
@@ -136,7 +136,7 @@ public final class FunctionTools
 	 * #liftException(CheckedFunction)} method instead to declare the checked
 	 * exception.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedFunction {@link CheckedFunction} to wrap.
@@ -165,7 +165,7 @@ public final class FunctionTools
 	/**
 	 * {@link Consumer} that throws a checked exception.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 */
 	@FunctionalInterface
@@ -187,7 +187,7 @@ public final class FunctionTools
 	 * checked exception thrown by the {@link CheckedConsumer} will be wrapped
 	 * by a {@link RuntimeException}.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedConsumer {@link CheckedConsumer} to wrap.
@@ -220,7 +220,7 @@ public final class FunctionTools
 	 * still declare the checked exception that might abort the stream and be
 	 * thrown.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedConsumer {@link CheckedConsumer} to wrap.
@@ -248,7 +248,7 @@ public final class FunctionTools
 	 * #liftException(CheckedConsumer)} method instead to declare the checked
 	 * exception.
 	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-commons-java8/'>Repackaging
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
 	 *
 	 * @param checkedConsumer {@link CheckedConsumer} to wrap.
