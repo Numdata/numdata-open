@@ -35,16 +35,9 @@ import org.junit.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "SpellCheckingInspection" )
 public class TestTextTools
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestTextTools.class.getName();
-
-	/**
-	 * Test {@link TextTools#escape} method.
-	 */
 	@Test
 	public void testEscape()
 	{
@@ -65,16 +58,13 @@ public class TestTextTools
 			final String expected = test[ 1 ];
 
 			final StringBuffer sb = new StringBuffer();
-			TextTools.escape( sb, input );
+			escape( sb, input );
 			final String result = sb.toString();
 
 			assertEquals( "test[" + testIndex + "] escape( '" + input + " ' ) failed", expected, result );
 		}
 	}
 
-	/**
-	 * Test {@link TextTools#unescape} method.
-	 */
 	@Test
 	public void testUnescape()
 	{
@@ -102,7 +92,7 @@ public class TestTextTools
 			{
 				final String expected = test[ 2 ];
 
-				final String result = TextTools.unescape( input );
+				final String result = unescape( input );
 				assertEquals( "test[" + testIndex + "] unescape( '" + input + " ' ) failed", expected, result );
 			}
 
@@ -111,7 +101,7 @@ public class TestTextTools
 				final int expectedPos = ( test.length == 4 ) ? expectedString.length() + 1 : -1;
 
 				final StringBuffer sb = new StringBuffer();
-				final int actualPos = TextTools.unescape( input, 0, sb, separators );
+				final int actualPos = unescape( input, 0, sb, separators );
 				final String actualString = sb.toString();
 
 				assertEquals( "test[" + testIndex + "] unescape( '" + input + " ' , <separators> ) returned invalid index", expectedPos, actualPos );
@@ -120,57 +110,48 @@ public class TestTextTools
 		}
 	}
 
-	/**
-	 * Test {@link TextTools#toHexString} method.
-	 */
 	@Test
 	public void testToHexString()
 	{
-		assertEquals( "Unexpected result.", "1234abcd", TextTools.toHexString( 0x1234abcd, 8, false ) );
-		assertEquals( "Unexpected result.", "1234ABCD", TextTools.toHexString( 0x1234abcd, 8, true ) );
-		assertEquals( "Unexpected result.", "fedcba98", TextTools.toHexString( 0xfedcba98, 8, false ) );
-		assertEquals( "Unexpected result.", "FEDCBA98", TextTools.toHexString( 0xfedcba98, 8, true ) );
-		assertEquals( "Unexpected result.", "34abcd", TextTools.toHexString( 0x1234abcd, 6, false ) );
-		assertEquals( "Unexpected result.", "34ABCD", TextTools.toHexString( 0x1234abcd, 6, true ) );
-		assertEquals( "Unexpected result.", "dcba98", TextTools.toHexString( 0xfedcba98, 6, false ) );
-		assertEquals( "Unexpected result.", "DCBA98", TextTools.toHexString( 0xfedcba98, 6, true ) );
+		assertEquals( "Unexpected result.", "1234abcd", toHexString( 0x1234abcd, 8, false ) );
+		assertEquals( "Unexpected result.", "1234ABCD", toHexString( 0x1234abcd, 8, true ) );
+		assertEquals( "Unexpected result.", "fedcba98", toHexString( 0xfedcba98, 8, false ) );
+		assertEquals( "Unexpected result.", "FEDCBA98", toHexString( 0xfedcba98, 8, true ) );
+		assertEquals( "Unexpected result.", "34abcd", toHexString( 0x1234abcd, 6, false ) );
+		assertEquals( "Unexpected result.", "34ABCD", toHexString( 0x1234abcd, 6, true ) );
+		assertEquals( "Unexpected result.", "dcba98", toHexString( 0xfedcba98, 6, false ) );
+		assertEquals( "Unexpected result.", "DCBA98", toHexString( 0xfedcba98, 6, true ) );
 
-		assertEquals( "Unexpected result.", "000012ab", TextTools.toHexString( 0x12ab, 8, false ) );
-		assertEquals( "Unexpected result.", "ffffed55", TextTools.toHexString( -0x12ab, 8, false ) );
-		assertEquals( "Unexpected result.", "0000fe98", TextTools.toHexString( 0xfe98, 8, false ) );
-		assertEquals( "Unexpected result.", "ffff0168", TextTools.toHexString( -0xfe98, 8, false ) );
-		assertEquals( "Unexpected result.", "0012ab", TextTools.toHexString( 0x12ab, 6, false ) );
-		assertEquals( "Unexpected result.", "ffed55", TextTools.toHexString( -0x12ab, 6, false ) );
-		assertEquals( "Unexpected result.", "00fe98", TextTools.toHexString( 0xfe98, 6, false ) );
-		assertEquals( "Unexpected result.", "ff0168", TextTools.toHexString( -0xfe98, 6, false ) );
-		assertEquals( "Unexpected result.", "12ab", TextTools.toHexString( 0x12ab, 4, false ) );
-		assertEquals( "Unexpected result.", "ed55", TextTools.toHexString( -0x12ab, 4, false ) );
-		assertEquals( "Unexpected result.", "fe98", TextTools.toHexString( 0xfe98, 4, false ) );
-		assertEquals( "Unexpected result.", "0168", TextTools.toHexString( -0xfe98, 4, false ) );
-		assertEquals( "Unexpected result.", "ab", TextTools.toHexString( 0x12ab, 2, false ) );
-		assertEquals( "Unexpected result.", "55", TextTools.toHexString( -0x12ab, 2, false ) );
-		assertEquals( "Unexpected result.", "98", TextTools.toHexString( 0xfe98, 2, false ) );
-		assertEquals( "Unexpected result.", "68", TextTools.toHexString( -0xfe98, 2, false ) );
+		assertEquals( "Unexpected result.", "000012ab", toHexString( 0x12ab, 8, false ) );
+		assertEquals( "Unexpected result.", "ffffed55", toHexString( -0x12ab, 8, false ) );
+		assertEquals( "Unexpected result.", "0000fe98", toHexString( 0xfe98, 8, false ) );
+		assertEquals( "Unexpected result.", "ffff0168", toHexString( -0xfe98, 8, false ) );
+		assertEquals( "Unexpected result.", "0012ab", toHexString( 0x12ab, 6, false ) );
+		assertEquals( "Unexpected result.", "ffed55", toHexString( -0x12ab, 6, false ) );
+		assertEquals( "Unexpected result.", "00fe98", toHexString( 0xfe98, 6, false ) );
+		assertEquals( "Unexpected result.", "ff0168", toHexString( -0xfe98, 6, false ) );
+		assertEquals( "Unexpected result.", "12ab", toHexString( 0x12ab, 4, false ) );
+		assertEquals( "Unexpected result.", "ed55", toHexString( -0x12ab, 4, false ) );
+		assertEquals( "Unexpected result.", "fe98", toHexString( 0xfe98, 4, false ) );
+		assertEquals( "Unexpected result.", "0168", toHexString( -0xfe98, 4, false ) );
+		assertEquals( "Unexpected result.", "ab", toHexString( 0x12ab, 2, false ) );
+		assertEquals( "Unexpected result.", "55", toHexString( -0x12ab, 2, false ) );
+		assertEquals( "Unexpected result.", "98", toHexString( 0xfe98, 2, false ) );
+		assertEquals( "Unexpected result.", "68", toHexString( -0xfe98, 2, false ) );
 
-		assertEquals( "Unexpected result.", "00", TextTools.toHexString( 0, 2, false ) );
-		assertEquals( "Unexpected result.", "ffffffff", TextTools.toHexString( -1, 8, false ) );
-		assertEquals( "Unexpected result.", "ffffff", TextTools.toHexString( -1, 6, false ) );
-		assertEquals( "Unexpected result.", "ffff", TextTools.toHexString( -1, 4, false ) );
-		assertEquals( "Unexpected result.", "ff", TextTools.toHexString( -1, 2, false ) );
+		assertEquals( "Unexpected result.", "00", toHexString( 0, 2, false ) );
+		assertEquals( "Unexpected result.", "ffffffff", toHexString( -1, 8, false ) );
+		assertEquals( "Unexpected result.", "ffffff", toHexString( -1, 6, false ) );
+		assertEquals( "Unexpected result.", "ffff", toHexString( -1, 4, false ) );
+		assertEquals( "Unexpected result.", "ff", toHexString( -1, 2, false ) );
 	}
 
-	/**
-	 * Test {@link TextTools#getTrimmedSubstring} method.
-	 */
 	@Test
 	public void testGetTrimmedSubstring()
 	{
-		assertEquals( "Unexpected result.", "abc", TextTools.getTrimmedSubsequence( "  abc  ", 0, 5 ) );
+		assertEquals( "Unexpected result.", "abc", getTrimmedSubsequence( "  abc  ", 0, 5 ) );
 	}
 
-	/**
-	 * Tests the {@link TextTools#wildcardPatternToRegex(String)} method.
-	 */
 	@Test
 	public void testWildcardPatternToRegex()
 	{
@@ -187,14 +168,9 @@ public class TestTextTools
 		assertEquals( "Unexpected pattern.", "\\Qa\\E\\\\E\\Q\\c\\E", wildcardPatternToRegex( "a\\E\\c" ) );
 	}
 
-	/**
-	 * Tests the {@link TextTools#camelToUpperCase(CharSequence)} method.
-	 */
 	@Test
 	public void testCamelToUpperCase()
 	{
-		System.out.println( CLASS_NAME + ".testCamelToUpperCase" );
-
 		assertEquals( "Unexpected result.", "HELLO_WORLD", camelToUpperCase( "helloWorld" ) );
 		assertEquals( "Unexpected result.", "HELLO_WORLD", camelToUpperCase( "HelloWorld" ) );
 		assertEquals( "Unexpected result.", "HELLO_WORLD", camelToUpperCase( "HELLO_WORLD" ) );
@@ -219,5 +195,56 @@ public class TestTextTools
 		assertEquals( "Unexpected result.", "ABC_EFG", camelToUpperCase( "abc_EFG" ) );
 		assertEquals( "Unexpected result.", "ABC_E_FG", camelToUpperCase( "abc_eFG" ) );
 		assertEquals( "Unexpected result.", "0123ABC", camelToUpperCase( "0123abc" ) );
+	}
+
+	@Test
+	public void testDecapitalize()
+	{
+		assertEquals( "Unexpected result for decapitalize( 'a' )", "a", decapitalize( "a" ) );
+		assertEquals( "Unexpected result for decapitalize( 'A' )", "a", decapitalize( "A" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ab' )", "ab", decapitalize( "ab" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Ab' )", "ab", decapitalize( "Ab" ) );
+		assertEquals( "Unexpected result for decapitalize( 'aB' )", "aB", decapitalize( "aB" ) );
+		assertEquals( "Unexpected result for decapitalize( 'AB' )", "ab", decapitalize( "AB" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abc' )", "abc", decapitalize( "abc" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Abc' )", "abc", decapitalize( "Abc" ) );
+		assertEquals( "Unexpected result for decapitalize( 'aBc' )", "aBc", decapitalize( "aBc" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABc' )", "aBc", decapitalize( "ABc" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abC' )", "abC", decapitalize( "abC" ) );
+		assertEquals( "Unexpected result for decapitalize( 'AbC' )", "abC", decapitalize( "AbC" ) );
+		assertEquals( "Unexpected result for decapitalize( 'aBC' )", "aBC", decapitalize( "aBC" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABC' )", "abc", decapitalize( "ABC" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abcdef' )", "abcdef", decapitalize( "abcdef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abcDef' )", "abcDef", decapitalize( "abcDef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abcDEf' )", "abcDEf", decapitalize( "abcDEf" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abcDEF' )", "abcDEF", decapitalize( "abcDEF" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Abcdef' )", "abcdef", decapitalize( "Abcdef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'AbcDef' )", "abcDef", decapitalize( "AbcDef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'AbcDEf' )", "abcDEf", decapitalize( "AbcDEf" ) );
+		assertEquals( "Unexpected result for decapitalize( 'AbcDEF' )", "abcDEF", decapitalize( "AbcDEF" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABcdef' )", "aBcdef", decapitalize( "ABcdef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABcDef' )", "aBcDef", decapitalize( "ABcDef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABCdef' )", "abCdef", decapitalize( "ABCdef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABCDef' )", "abcDef", decapitalize( "ABCDef" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABCDEf' )", "abcdEf", decapitalize( "ABCDEf" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABCDEF' )", "abcdef", decapitalize( "ABCDEF" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abc1def )'", "abc1def", decapitalize( "abc1def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abc1Def )'", "abc1Def", decapitalize( "abc1Def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'abc1DEF )'", "abc1DEF", decapitalize( "abc1DEF" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Abc1def )'", "abc1def", decapitalize( "Abc1def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Abc1Def )'", "abc1Def", decapitalize( "Abc1Def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'Abc1DEF )'", "abc1DEF", decapitalize( "Abc1DEF" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABC1def )'", "abc1def", decapitalize( "ABC1def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABC1Def )'", "abc1Def", decapitalize( "ABC1Def" ) );
+		assertEquals( "Unexpected result for decapitalize( 'ABC1DEF )'", "abc1DEF", decapitalize( "ABC1DEF" ) );
+		assertEquals( "Unexpected result for decapitalize( '1abcdef )'", "1abcdef", decapitalize( "1abcdef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1abcDef )'", "1abcDef", decapitalize( "1abcDef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1abcDEF )'", "1abcDEF", decapitalize( "1abcDEF" ) );
+		assertEquals( "Unexpected result for decapitalize( '1Abcdef )'", "1Abcdef", decapitalize( "1Abcdef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1AbcDef )'", "1AbcDef", decapitalize( "1AbcDef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1AbcDEF )'", "1AbcDEF", decapitalize( "1AbcDEF" ) );
+		assertEquals( "Unexpected result for decapitalize( '1ABCdef )'", "1ABCdef", decapitalize( "1ABCdef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1ABCDef )'", "1ABCDef", decapitalize( "1ABCDef" ) );
+		assertEquals( "Unexpected result for decapitalize( '1ABCDEF )'", "1ABCDEF", decapitalize( "1ABCDEF" ) );
 	}
 }

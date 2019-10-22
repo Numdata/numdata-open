@@ -2314,7 +2314,9 @@ public final class TextTools
 
 	/**
 	 * This method returns the input character sequence as a string with the
-	 * first character in lower case.
+	 * upper case prefix sequence converted to lower case. This supports 'camel
+	 * humps', so that the last upper-case character is preserved (i.e.
+	 * 'CAMELHump' becomes 'CamelHump').
 	 *
 	 * @param cs Character sequence.
 	 *
@@ -2326,7 +2328,74 @@ public final class TextTools
 	@Contract( value = "null -> null; !null -> !null", pure = true )
 	public static String decapitalize( @Nullable final CharSequence cs )
 	{
-		return ( cs == null ) ? null : ( cs.length() == 0 ) ? "" : setFirstChar( cs, Character.toLowerCase( cs.charAt( 0 ) ) );
+		final String result;
+
+		if ( cs == null )
+		{
+			result = null;
+		}
+		else
+		{
+			final int len = cs.length();
+			if ( len == 0 )
+			{
+				result = "";
+			}
+			else
+			{
+				char ch = cs.charAt( 0 );
+				char lower = Character.toLowerCase( ch );
+
+				if ( ch == lower )
+				{
+					// do nothing if not even starting with upper case
+					result = cs.toString();
+				}
+				else if ( len == 1 )
+				{
+					// border-case: single character
+					result = String.valueOf( lower );
+				}
+				else
+				{
+					// implementation note: could support 'StringBuilder' here for efficiency (no new character array + String allocation)
+					final char[] chars = new char[ len ];
+					chars[ 0 ] = lower;
+					int upCount = 1;
+
+					for ( int i = 1; i < len; i++ )
+					{
+						ch = cs.charAt( i );
+						if ( upCount > 0 )
+						{
+							lower = Character.toLowerCase( ch );
+							if ( lower != ch )
+							{
+								upCount++;
+							}
+							else
+							{
+								// camel hump
+								if ( ( upCount > 1 ) && ( Character.toUpperCase( ch ) != ch ) )
+								{
+									chars[ i - 1 ] = cs.charAt( i - 1 );
+								}
+								upCount = 0;
+							}
+							chars[ i ] = lower;
+						}
+						else
+						{
+							chars[ i ] = ch;
+						}
+					}
+
+					result = new String( chars );
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
