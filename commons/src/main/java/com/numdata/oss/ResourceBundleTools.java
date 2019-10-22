@@ -976,6 +976,49 @@ public class ResourceBundleTools
 		return format( locale, bundle, key, arguments );
 	}
 
+
+	/**
+	 * Get {@link LocalizableString} that provides a translation of a class'
+	 * name. The translation is retrieved from the class resource bundle
+	 * hierarchy, and may be the class name or the name of its ancestor
+	 * classes.
+	 *
+	 * @param clazz Class to translate.
+	 *
+	 * @return {@link LocalizableString}.
+	 */
+	@NotNull
+	public static LocalizableString getClassNameTranslation( @NotNull final Class<?> clazz )
+	{
+		return new AbstractLocalizableString()
+		{
+			@NotNull
+			@Override
+			public String get( @Nullable final Locale locale )
+			{
+				final ResourceBundle bundle = getBundleHierarchy( clazz, locale );
+
+				String result = null;
+				for ( Class<?> ancestor = clazz; ( result == null ) && ( ancestor != null ); ancestor = ancestor.getSuperclass() )
+				{
+					final String className = ancestor.getSimpleName();
+					result = getString( bundle, className, null );
+					if ( result == null )
+					{
+						result = getString( bundle, TextTools.decapitalize( className ), null );
+					}
+				}
+
+				if ( result == null )
+				{
+					result = clazz.getSimpleName();
+				}
+
+				return result;
+			}
+		};
+	}
+
 	/**
 	 * {@link ControlWithoutFallback} used by {@link #getBundle(Class,
 	 * Locale)}.
