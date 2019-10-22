@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
  * @author D. van 't Oever
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( { "unused", "WeakerAccess" } )
+@SuppressWarnings( { "unused", "WeakerAccess", "UseOfSystemOutOrSystemErr" } )
 public class ResourceBundleTester
 {
 	/**
@@ -152,7 +152,7 @@ public class ResourceBundleTester
 	 */
 	public static ResourceBundleTester forBean( @NotNull final Class<?> forClass )
 	{
-		final ResourceBundleTester tester = ResourceBundleTester.forClass( forClass );
+		final ResourceBundleTester tester = forClass( forClass );
 		tester.addExpectedKeys( BeanTools.getPropertyNames( forClass, false ) );
 		return tester;
 	}
@@ -168,7 +168,7 @@ public class ResourceBundleTester
 	@NotNull
 	public static ResourceBundleTester forEnum( @NotNull final Class<? extends Enum> enumClass )
 	{
-		final ResourceBundleTester tester = ResourceBundleTester.forClass( enumClass );
+		final ResourceBundleTester tester = forClass( enumClass );
 		tester.addEnumNames( enumClass );
 		return tester;
 	}
@@ -251,12 +251,9 @@ public class ResourceBundleTester
 		}
 	}
 
-	public void addExpectedKeys( @SuppressWarnings( "TypeMayBeWeakened" ) @NotNull final Collection<String> expectedKeys )
+	public void addExpectedKeys( @NotNull final Collection<String> expectedKeys )
 	{
-		for ( final String expectedKey : expectedKeys )
-		{
-			addExpectedKey( expectedKey );
-		}
+		_expectedKeys.addAll( expectedKeys );
 	}
 
 	public void addExpectedKeysWithSuffix( @NotNull final String suffix )
@@ -294,6 +291,12 @@ public class ResourceBundleTester
 		{
 			removeExpectedKey( expectedKey );
 		}
+	}
+
+	public void replaceExpectedKey( @NotNull final String oldExpectedKey, @NotNull final String newExpectedKey )
+	{
+		removeExpectedKey( oldExpectedKey );
+		addExpectedKeyUnchecked( newExpectedKey );
 	}
 
 	public boolean isIncludeHierarchy()
@@ -627,7 +630,7 @@ public class ResourceBundleTester
 	 * String...)} instead. (Note that the boolean parameter is reversed!)
 	 */
 	@Deprecated
-	public static Set<String> getBeanPropertyNames( final Class<?> beanClass, final boolean setterRequired, final String... excludeProperties )
+	public static Set<String> getBeanPropertyNames( @NotNull final Class<?> beanClass, final boolean setterRequired, @NotNull final String... excludeProperties )
 	{
 		final Set<String> result = new HashSet<String>();
 
