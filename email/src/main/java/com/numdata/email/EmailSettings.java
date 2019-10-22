@@ -34,10 +34,15 @@ import org.jetbrains.annotations.*;
 /**
  * Settings for sending email.
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
 public class EmailSettings
 {
+	/**
+	 * Name to identity this type of settings.
+	 */
+	public static final String SETTINGS_NAME = "emailSettings";
+
 	/**
 	 * Setting name.
 	 */

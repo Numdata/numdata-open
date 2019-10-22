@@ -43,7 +43,7 @@ public class TestEmailSettings
 		final Class<?> clazz = EmailSettings.class;
 		final ResourceBundleTester tester = new ResourceBundleTester( clazz );
 		tester.addExpectedKeys( BeanTools.getPropertyNames( clazz ) );
-		tester.addExpectedKey( "ID" );
+		tester.addExpectedKeys( FieldTester.getConstants( clazz, false, true, String.class ) );
 		tester.run();
 	}
 }

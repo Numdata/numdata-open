@@ -43,7 +43,7 @@ public class TestLengthMeasurePreferences
 		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
 		tester.addDeclaredEnums( clazz );
 		tester.addExpectedKeysWithSuffix( BeanTools.getPropertyNames( clazz, false ), "Tip" );
-		tester.addExpectedKey( "id" );
+		tester.addExpectedKey( TextTools.decapitalize( clazz.getSimpleName() ) );
 		tester.run();
 	}
 }

@@ -46,6 +46,8 @@ public class TestPrinterSettings
 		final Class<?> clazz = PrinterSettings.class;
 		final ResourceBundleTester tester = ResourceBundleTester.forClass( clazz );
 		tester.addExpectedKeysWithSuffix( FieldTester.getConstants( clazz, false, true, String.class ), "Tip", "Type" );
+		tester.removeExpectedKey( PrinterSettings.PRINTER_SETTINGS + "Tip" );
+		tester.removeExpectedKey( PrinterSettings.PRINTER_SETTINGS + "Type" );
 		tester.addExpectedKeyWithSuffix( PrinterSettings.HOSTNAME, "Condition" );
 		tester.addExpectedKeyWithSuffix( PrinterSettings.METHOD, "Values", "Default" );
 		tester.addEnumNames( PrinterSettings.METHOD + '.', PrinterSettings.Method.class );
@@ -53,7 +55,6 @@ public class TestPrinterSettings
 		tester.addExpectedKeyWithSuffix( PrinterSettings.PAGE_ORIENTATION, "Values", "Default" );
 		tester.addEnumNames( PrinterSettings.PAGE_ORIENTATION + '.', PrinterSettings.PageOrientation.class );
 		tester.addExpectedKeyWithSuffix( PrinterSettings.QUEUE_NAME, "Condition" );
-		tester.addExpectedKey( "title" );
 		tester.addExpectedKey( "settings" );
 		tester.run();
 	}

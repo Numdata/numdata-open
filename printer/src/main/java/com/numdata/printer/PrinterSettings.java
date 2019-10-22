@@ -44,6 +44,11 @@ import org.jetbrains.annotations.*;
 public class PrinterSettings
 {
 	/**
+	 * Name of this entity and name to identify this type of settings.
+	 */
+	public static final String PRINTER_SETTINGS = "printerSettings";
+
+	/**
 	 * Log used for messages related to this class.
 	 */
 	private static final ClassLogger LOG = ClassLogger.getFor( PrinterSettings.class );
