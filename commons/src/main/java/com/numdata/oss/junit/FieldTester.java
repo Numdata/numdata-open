@@ -56,6 +56,7 @@ public class FieldTester
 	 * @param publicOnly       Return only public fields.
 	 * @param typeFilter       Return constants of this type.
 	 * @param ignoredFields    Names of fields to ignore.
+	 * @param <T>              Constant type.
 	 *
 	 * @return List of constant values.
 	 */
@@ -73,6 +74,7 @@ public class FieldTester
 	 * @param publicOnly       Return only public fields.
 	 * @param typeFilter       Return constants of this type.
 	 * @param ignoredFields    Names of fields to ignore.
+	 * @param <T>              Constant type.
 	 *
 	 * @return List of constant values.
 	 */
@@ -139,41 +141,34 @@ public class FieldTester
 	@NotNull
 	public static List<Field> getConstantFieldsByValue( @NotNull final Class<?> forClass, @NotNull final Collection<?> values )
 	{
-		final List<Field> result = getFields( forClass, true, true, false, false, null );
-		for ( final Iterator<Field> it = result.iterator(); it.hasNext(); )
+		final List<Field> fields = getFields( forClass, true, true, false, false, null );
+		final List<Field> result = new ArrayList<Field>( values.size() );
+		for ( final Object value : values )
 		{
-			final Field field = it.next();
-			try
+			boolean found = false;
+			for ( final Field field : fields )
 			{
-				field.setAccessible( true );
-				final Object value = field.get( null );
-
-				boolean found = false;
-				for ( final Object o : values )
+				try
 				{
-					if ( o.equals( value ) )
+					field.setAccessible( true );
+					if ( value.equals( field.get( null ) ) )
 					{
+						result.add( field );
 						found = true;
-						break;
 					}
 				}
-
-				if ( !found )
+				catch ( final IllegalAccessException e )
 				{
-					it.remove();
+					throw new AssertionError( e );
 				}
 			}
-			catch ( final IllegalAccessException e )
+
+			if ( !found )
 			{
-				throw new AssertionError( e );
+				throw new IllegalArgumentException( "Value not found: " + value );
 			}
 		}
 
-		if ( result.size() != values.size() )
-		{
-			throw new IllegalArgumentException( "Not all values were found" );
-
-		}
 
 		return result;
 	}
