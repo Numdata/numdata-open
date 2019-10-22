@@ -74,13 +74,14 @@ implements HttpServletRequest
 	private final String _remoteAddr = "127.0.0.1";
 
 	/**
-	 * Fully qualified name of the client or the last proxy that sent the request.
+	 * Fully qualified name of the client or the last proxy that sent the
+	 * request.
 	 */
 	private final String _remoteHost = "localhost";
 
 	/**
-	 * Name of the HTTP method with which this request was made, for example, GET,
-	 * POST, or PUT.
+	 * Name of the HTTP method with which this request was made, for example,
+	 * GET, POST, or PUT.
 	 */
 	private final String _method = "GET";
 
@@ -97,37 +98,37 @@ implements HttpServletRequest
 	private final boolean _isSecure = false;
 
 	/**
-	 * Name of the scheme used to make this request, for example, http, https, or
-	 * ftp. Different schemes have different rules for constructing URLs, as noted
-	 * in RFC 1738.
+	 * Name of the scheme used to make this request, for example, http, https,
+	 * or ftp. Different schemes have different rules for constructing URLs, as
+	 * noted in RFC 1738.
 	 */
 	private final String _scheme;
 
 	/**
 	 * Host name of the server to which the request was sent. It is the value of
-	 * the part before ":" in the Host header value, if any, or the resolved server
-	 * name, or the server IP address.
+	 * the part before ":" in the Host header value, if any, or the resolved
+	 * server name, or the server IP address.
 	 */
 	private final String _serverName;
 
 	/**
-	 * Port number to which the request was sent. It is the value of the part after
-	 * ":" in the Host header value, if any, or the server port where the client
-	 * connection was accepted on.
+	 * Port number to which the request was sent. It is the value of the part
+	 * after ":" in the Host header value, if any, or the server port where the
+	 * client connection was accepted on.
 	 */
 	private final int _serverPort;
 
 	/**
-	 * Part of this request's URL from the protocol name up to the query string in
-	 * the first line of the HTTP request. The web container does not decode this
-	 * String.
+	 * Part of this request's URL from the protocol name up to the query string
+	 * in the first line of the HTTP request. The web container does not decode
+	 * this String.
 	 */
 	private final String _requestURI;
 
 	/**
-	 * The reconstructed URL the client used to make the request. The returned URL
-	 * contains a protocol, server name, port number, and server path, but it does
-	 * not include query string parameters.
+	 * The reconstructed URL the client used to make the request. The returned
+	 * URL contains a protocol, server name, port number, and server path, but
+	 * it does not include query string parameters.
 	 */
 	private final String _requestURL;
 
@@ -139,19 +140,19 @@ implements HttpServletRequest
 	private final String _queryString;
 
 	/**
-	 * Part of this request's URL that calls the servlet. This path starts with a
-	 * "/" character and includes either the servlet name or a path to the servlet,
-	 * but does not include any extra path information or a query string. This will
-	 * be the empty string ("") if the servlet used to process this request was
-	 * matched using the "/*" pattern.
+	 * Part of this request's URL that calls the servlet. This path starts with
+	 * a "/" character and includes either the servlet name or a path to the
+	 * servlet, but does not include any extra path information or a query
+	 * string. This will be the empty string ("") if the servlet used to process
+	 * this request was matched using the "/*" pattern.
 	 */
 	private final String _servletPath;
 
 	/**
-	 * Extra path information associated with the URL the client sent when it made
-	 * this request. The extra path information follows the servlet path but
-	 * precedes the query string and will start with a "/" character. This is  null
-	 * if there was no extra path information.
+	 * Extra path information associated with the URL the client sent when it
+	 * made this request. The extra path information follows the servlet path
+	 * but precedes the query string and will start with a "/" character. This
+	 * is  null if there was no extra path information.
 	 */
 	private final String _pathInfo;
 
@@ -206,8 +207,9 @@ implements HttpServletRequest
 	private final Set<String> _roles = new HashSet<String>();
 
 	/**
-	 * A {@link Principal} object containing the name of the current authenticated
-	 * user. If the user has not been authenticated, this is {@code null}.
+	 * A {@link Principal} object containing the name of the current
+	 * authenticated user. If the user has not been authenticated, this is
+	 * {@code null}.
 	 */
 	private Principal _userPrincipal = null;
 
@@ -446,8 +448,8 @@ implements HttpServletRequest
 
 	/**
 	 * Set remote user. This is a convenience method that calls the {@link
-	 * #setUserPrincipal} method with a {@link Principal} implementation or {@code
-	 * null}.
+	 * #setUserPrincipal} method with a {@link Principal} implementation or
+	 * {@code null}.
 	 *
 	 * @param name Remote user name ({@code null} to unauthenticate).
 	 */
@@ -644,6 +646,7 @@ implements HttpServletRequest
 		_session = session;
 	}
 
+	@Contract( "true -> !null" )
 	@Nullable
 	public HttpSession getSession( final boolean create )
 	{
@@ -707,20 +710,20 @@ implements HttpServletRequest
 	}
 
 	/**
-	 * Sets the input stream from which the request's data may be read. This also
-	 * sets the request's reader.
+	 * Sets the input stream from which the request's data may be read. This
+	 * also sets the request's reader.
 	 *
 	 * @param inputStream Input stream to be set.
 	 */
-	@SuppressWarnings ( "IOResourceOpenedButNotSafelyClosed" )
+	@SuppressWarnings( "IOResourceOpenedButNotSafelyClosed" )
 	public void setInputStream( final InputStream inputStream )
 	{
 		_inputStream = ( inputStream instanceof ServletInputStream ) ? (ServletInputStream)inputStream : new ServletInputStreamImpl( inputStream );
 	}
 
 	/**
-	 * Sets the reader from which the request's data may be read. This also resets
-	 * the request's input stream to {@code null}.
+	 * Sets the reader from which the request's data may be read. This also
+	 * resets the request's input stream to {@code null}.
 	 *
 	 * @param reader Reader to be set.
 	 */
@@ -847,8 +850,8 @@ implements HttpServletRequest
 	}
 
 	/**
-	 * Concrete implementation of a servlet input stream that wraps an underlying
-	 * input stream, providing access to its data.
+	 * Concrete implementation of a servlet input stream that wraps an
+	 * underlying input stream, providing access to its data.
 	 */
 	private static class ServletInputStreamImpl
 	extends ServletInputStream
