@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -704,7 +704,8 @@ public class BasicProgramFeatures
 			{
 				for ( final String resourceKey : jsonResources.keySet() )
 				{
-					setResource( name, resourceKey, jsonResources.get( resourceKey ) );
+					final Object jsonValue = jsonResources.get( resourceKey );
+					setResource( name, resourceKey, jsonValue == JSONObject.NULL ? null : jsonValue );
 				}
 			}
 		}
