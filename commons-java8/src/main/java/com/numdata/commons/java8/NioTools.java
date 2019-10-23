@@ -140,6 +140,6 @@ public final class NioTools
 	{
 		Files.walk( path )
 		     .sorted( Comparator.reverseOrder() )
-		     .forEach( liftException( Files::delete ) );
+		     .forEach( liftConsumerException( Files::delete ) );
 	}
 }
