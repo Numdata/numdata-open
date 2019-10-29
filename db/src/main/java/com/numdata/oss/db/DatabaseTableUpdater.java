@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -159,6 +159,15 @@ public class DatabaseTableUpdater
 
 					final List<String> javaCreateLines = getCreateLines( javaCreateStatement );
 					final List<String> dbCreateLines = getCreateLines( dbCreateStatement );
+
+					// convert some MySQL/MariaDb defaults back to older syntax
+					for ( int i = 0; i < dbCreateLines.size(); i++ )
+					{
+						dbCreateLines.set( i, dbCreateLines.get( i )
+						                                   .replaceFirst( "DEFAULT (-?[\\d.]+)$", "DEFAULT '$1'" )
+						                                   .replaceFirst( "(TEXT|BLOB) DEFAULT NULL", "$1" )
+						                                   .replaceFirst( "CURRENT_TIMESTAMP\\(\\)", "CURRENT_TIMESTAMP" ) );
+					}
 
 					if ( !javaCreateLines.equals( dbCreateLines ) )
 					{

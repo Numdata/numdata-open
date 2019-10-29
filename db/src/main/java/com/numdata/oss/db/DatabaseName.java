@@ -172,7 +172,7 @@ public class DatabaseName
 			}
 			if ( _password != null )
 			{
-				TextTools.appendFixed( sb.append( ";pass=" ), "", _password.length(), false, '*' );
+				sb.append( ";pass=*****" );
 			}
 
 			if ( _tunnel != null )

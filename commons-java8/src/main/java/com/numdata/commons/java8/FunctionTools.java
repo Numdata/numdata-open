@@ -36,7 +36,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( { "unused", "WeakerAccess", "FinalClass" } )
+@SuppressWarnings( { "unused", "FinalClass" } )
 public final class FunctionTools
 {
 	/**
@@ -84,7 +84,7 @@ public final class FunctionTools
 	 */
 	@NotNull
 	@Contract( pure = true )
-	public static <T, R> Function<T, R> uncheckException( @NotNull final CheckedFunction<T, R, ?> checkedFunction )
+	public static <T, R> Function<T, R> wrapFunctionException( @NotNull final CheckedFunction<T, R, ?> checkedFunction )
 	{
 		return element -> {
 			try
@@ -122,10 +122,10 @@ public final class FunctionTools
 	@SuppressWarnings( "RedundantThrows" )
 	@NotNull
 	@Contract( pure = true )
-	public static <T, R, EX extends Exception> Function<T, R> liftException( @NotNull final CheckedFunction<T, R, EX> checkedFunction )
+	public static <T, R, EX extends Exception> Function<T, R> liftFunctionException( @NotNull final CheckedFunction<T, R, EX> checkedFunction )
 	throws EX
 	{
-		return hideException( checkedFunction );
+		return hideFunctionException( checkedFunction );
 	}
 
 	/**
@@ -133,8 +133,8 @@ public final class FunctionTools
 	 *
 	 * IMPORTANT: Never use this method directly, because it will cause checked
 	 * exceptions to appear where they are not declared. Please use the {@link
-	 * #liftException(CheckedFunction)} method instead to declare the checked
-	 * exception.
+	 * #liftFunctionException(CheckedFunction)} method instead to declare the
+	 * checked exception.
 	 *
 	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
@@ -148,7 +148,7 @@ public final class FunctionTools
 	 */
 	@NotNull
 	@Contract( pure = true )
-	private static <T, R, EX extends Exception> Function<T, R> hideException( @NotNull final CheckedFunction<T, R, EX> checkedFunction )
+	private static <T, R, EX extends Exception> Function<T, R> hideFunctionException( @NotNull final CheckedFunction<T, R, EX> checkedFunction )
 	{
 		return element -> {
 			try
@@ -197,7 +197,7 @@ public final class FunctionTools
 	 */
 	@NotNull
 	@Contract( pure = true )
-	public static <T> Consumer<T> uncheckException( @NotNull final CheckedConsumer<T, ?> checkedConsumer )
+	public static <T> Consumer<T> wrapConsumerException( @NotNull final CheckedConsumer<T, ?> checkedConsumer )
 	{
 		return element -> {
 			try
@@ -234,10 +234,10 @@ public final class FunctionTools
 	@SuppressWarnings( "RedundantThrows" )
 	@NotNull
 	@Contract( pure = true )
-	public static <T, EX extends Exception> Consumer<T> liftException( @NotNull final CheckedConsumer<T, EX> checkedConsumer )
+	public static <T, EX extends Exception> Consumer<T> liftConsumerException( @NotNull final CheckedConsumer<T, EX> checkedConsumer )
 	throws EX
 	{
-		return hideException( checkedConsumer );
+		return hideConsumerException( checkedConsumer );
 	}
 
 	/**
@@ -245,8 +245,8 @@ public final class FunctionTools
 	 *
 	 * IMPORTANT: Never use this method directly, because it will cause checked
 	 * exceptions to appear where they are not declared. Please use the {@link
-	 * #liftException(CheckedConsumer)} method instead to declare the checked
-	 * exception.
+	 * #liftConsumerException(CheckedConsumer)} method instead to declare the
+	 * checked exception.
 	 *
 	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
 	 * Exceptions In Streams</a>.
@@ -259,7 +259,7 @@ public final class FunctionTools
 	 */
 	@NotNull
 	@Contract( pure = true )
-	private static <T, EX extends Exception> Consumer<T> hideException( @NotNull final CheckedConsumer<T, EX> checkedConsumer )
+	private static <T, EX extends Exception> Consumer<T> hideConsumerException( @NotNull final CheckedConsumer<T, EX> checkedConsumer )
 	{
 		return element -> {
 			try
@@ -284,7 +284,6 @@ public final class FunctionTools
 	 *
 	 * @throws E The throwable, but no longer checked.
 	 */
-	@SuppressWarnings( "unchecked" )
 	private static <E extends Throwable, T> T sneakyThrow( @NotNull final Throwable throwable )
 	throws E
 	{
