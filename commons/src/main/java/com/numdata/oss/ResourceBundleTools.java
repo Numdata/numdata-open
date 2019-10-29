@@ -775,7 +775,7 @@ public class ResourceBundleTools
 			{
 				final Class<?> enumClass = enumerate.getClass();
 				String enumName = enumClass.getSimpleName();
-				enumName = enumName.substring( enumName.lastIndexOf( (int)'$' ) + 1 );
+				enumName = enumName.substring( enumName.lastIndexOf( '$' ) + 1 );
 
 				result = bundle.getString( enumName + '.' + name );
 			}
@@ -980,12 +980,14 @@ public class ResourceBundleTools
 	/**
 	 * Get {@link LocalizableString} that provides a translation of a class'
 	 * name. The translation is retrieved from the class resource bundle
-	 * hierarchy, and may be the class name or the name of its ancestor
+	 * hierarchy, and may be the class name or the name of one of its ancestor
 	 * classes.
 	 *
-	 * @param clazz Class to translate.
+	 * @param clazz Class whose name to translate.
 	 *
-	 * @return {@link LocalizableString}.
+	 * @return {@link LocalizableString} that provides a class name translation
+	 * (returns {@link Class#getSimpleName() simple class name} if no
+	 * translation is found).
 	 */
 	@NotNull
 	public static LocalizableString getClassNameTranslation( @NotNull final Class<?> clazz )
@@ -996,27 +998,44 @@ public class ResourceBundleTools
 			@Override
 			public String get( @Nullable final Locale locale )
 			{
-				final ResourceBundle bundle = getBundleHierarchy( clazz, locale );
-
-				String result = null;
-				for ( Class<?> ancestor = clazz; ( result == null ) && ( ancestor != null ); ancestor = ancestor.getSuperclass() )
-				{
-					final String className = ancestor.getSimpleName();
-					result = getString( bundle, className, null );
-					if ( result == null )
-					{
-						result = getString( bundle, TextTools.decapitalize( className ), null );
-					}
-				}
-
-				if ( result == null )
-				{
-					result = clazz.getSimpleName();
-				}
-
-				return result;
+				return getClassNameTranslation( locale, clazz );
 			}
 		};
+	}
+
+	/**
+	 * Get translation of a class' name. The translation is retrieved from the
+	 * class resource bundle hierarchy, and may be the class name or the name of
+	 * one of its ancestor classes.
+	 *
+	 * @param locale Locale to get class name for.
+	 * @param clazz  Class whose name to translate.
+	 *
+	 * @return Translated class name; returns {@link Class#getSimpleName()
+	 * simple class name} if no translation was found.
+	 */
+	@NotNull
+	public static String getClassNameTranslation( @Nullable final Locale locale, @NotNull final Class<?> clazz )
+	{
+		final ResourceBundle bundle = getBundleHierarchy( clazz, locale );
+
+		String result = null;
+		for ( Class<?> ancestor = clazz; ( result == null ) && ( ancestor != null ); ancestor = ancestor.getSuperclass() )
+		{
+			final String className = ancestor.getSimpleName();
+			result = getString( bundle, className, null );
+			if ( result == null )
+			{
+				result = getString( bundle, TextTools.decapitalize( className ), null );
+			}
+		}
+
+		if ( result == null )
+		{
+			result = clazz.getSimpleName();
+		}
+
+		return result;
 	}
 
 	/**
