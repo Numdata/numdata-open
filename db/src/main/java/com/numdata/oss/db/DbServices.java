@@ -64,6 +64,7 @@ public class DbServices
 		double slowQueryThreshold = 60.0;
 		try
 		{
+			//noinspection AccessOfSystemProperties
 			final String value = System.getProperty( "slow.query.threshold" );
 			if ( value != null )
 			{
@@ -137,6 +138,7 @@ public class DbServices
 	/**
 	 * Connection for the current transaction.
 	 */
+	@SuppressWarnings( "ThreadLocalNotStaticFinal" )
 	@NotNull
 	private final ThreadLocal<Connection> _transactionConnection = new ThreadLocal<Connection>();
 
@@ -335,6 +337,7 @@ public class DbServices
 	 * @return String containing SQL function/variable to get the current date
 	 * and time.
 	 */
+	@SuppressWarnings( "WeakerAccess" )
 	@NotNull
 	public String getCurrentDateTimeFunction()
 	{
@@ -492,7 +495,23 @@ public class DbServices
 		final String tableName = getTableName( updateQuery );
 		final String queryString = updateQuery.getQueryString( tableName );
 		final Object[] queryParameters = updateQuery.getQueryParameters();
+		return executeUpdate( queryString, queryParameters );
+	}
 
+	/**
+	 * Execute update query.
+	 *
+	 * @param queryString     Query to be executed.
+	 * @param queryParameters Query parameters used in the query.
+	 *
+	 * @return Number of rows that were updated (may be {@code 0}).
+	 *
+	 * @throws SQLException the query could not be executed (due to a database
+	 * error or invalid query).
+	 */
+	public int executeUpdate( @NotNull final String queryString, @NotNull final Object... queryParameters )
+	throws SQLException
+	{
 		final Connection connection = acquireConnection( false );
 		try
 		{
@@ -564,6 +583,7 @@ public class DbServices
 	 * Execute a {@link SelectQuery} and return the results as a {@link List}.
 	 *
 	 * @param selectQuery SELECT query to execute.
+	 * @param <DbObject>  Database object type.
 	 *
 	 * @return List with result set.
 	 *
@@ -581,9 +601,10 @@ public class DbServices
 	 * provided, they are passed to a prepared statement that is then used to
 	 * perform the query.
 	 *
-	 * @param dbClass   Result set record object.
-	 * @param query     SQL query to execute.
-	 * @param arguments Arguments used in the query.
+	 * @param dbClass    Result set record object.
+	 * @param query      SQL query to execute.
+	 * @param arguments  Arguments used in the query.
+	 * @param <DbObject> Database object type.
 	 *
 	 * @return List with result set.
 	 *
@@ -601,7 +622,7 @@ public class DbServices
 			LOG.trace( "retrieveList() query='" + query + "', arguments: " + Arrays.toString( arguments ) );
 		}
 
-		final ObjectListConverter<DbObject> processor = new ObjectListConverter<DbObject>( dbClass );
+		final ResultProcessor<List<DbObject>> processor = new ObjectListConverter<DbObject>( dbClass );
 
 		final Connection connection = acquireConnection( true );
 		try
@@ -645,6 +666,7 @@ public class DbServices
 	 * @param queryResult Query result, if any.
 	 * @param query       Executed SQL query.
 	 * @param arguments   Arguments used in the query.
+	 * @param <DbObject>  Database object type.
 	 */
 	private static <DbObject> void logSlowQuery( final long start, final String source, @Nullable final Class<DbObject> dbClass, @Nullable final Object queryResult, @Nullable final CharSequence query, @NotNull final Object[] arguments )
 	{
@@ -669,6 +691,7 @@ public class DbServices
 	 *
 	 * @param dbClass     Database record class, if known/applicable.
 	 * @param queryResult Query result, if any.
+	 * @param <DbObject>  Database object type.
 	 *
 	 * @return Description of the query result.
 	 */
@@ -705,6 +728,7 @@ public class DbServices
 	 *
 	 * @param processor Result set processor.
 	 * @param query     Query to be executed.
+	 * @param <R>       Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -723,6 +747,7 @@ public class DbServices
 	 * @param processor Result set processor.
 	 * @param query     Query to be executed.
 	 * @param arguments Arguments used in the query.
+	 * @param <R>       Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -770,6 +795,7 @@ public class DbServices
 	 * @param processor Result set processor.
 	 * @param query     Query to be executed.
 	 * @param arguments Arguments used in the query.
+	 * @param <R>       Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -816,6 +842,7 @@ public class DbServices
 	 * all.
 	 *
 	 * @param selectQuery SELECT query to execute.
+	 * @param <DbObject>  Database object type.
 	 *
 	 * @return Result object; {@code null} if the result is empty.
 	 *
@@ -830,7 +857,7 @@ public class DbServices
 		final CharSequence query = selectQuery.getQueryString( getTableName( selectQuery ) );
 		final Object[] arguments = selectQuery.getQueryParameters();
 
-		final SingleObjectConverter<DbObject> processor = new SingleObjectConverter<DbObject>( dbClass );
+		final ResultProcessor<SingleObjectConverter<DbObject>> processor = new SingleObjectConverter<DbObject>( dbClass );
 
 		if ( LOG.isTraceEnabled() )
 		{
@@ -876,7 +903,8 @@ public class DbServices
 	 * Refresh the state of the instance from the database, overwriting changes
 	 * made to the entity, if any.
 	 *
-	 * @param object Object to refresh.
+	 * @param object     Object to refresh.
+	 * @param <DbObject> Database object type.
 	 *
 	 * @throws SQLException if an error occurs while accessing the database.
 	 */
@@ -901,13 +929,12 @@ public class DbServices
 			final Connection connection = acquireConnection( true );
 			try
 			{
-				final Statement statement = connection.prepareStatement( query );
+				final PreparedStatement statement = connection.prepareStatement( query );
 
 				try
 				{
-					final PreparedStatement preparedStatement = (PreparedStatement)statement;
-					JdbcTools.prepareStatement( preparedStatement, arguments );
-					final ResultSet resultSet = preparedStatement.executeQuery();
+					JdbcTools.prepareStatement( statement, arguments );
+					final ResultSet resultSet = statement.executeQuery();
 
 					try
 					{
@@ -1718,6 +1745,7 @@ public class DbServices
 	 *
 	 * @return {@code true} if a transaction is active. v
 	 */
+	@SuppressWarnings( "WeakerAccess" )
 	public boolean isTransactionActive()
 	{
 		boolean result = false;
@@ -1800,35 +1828,50 @@ public class DbServices
 	throws SQLException
 	{
 		final int maximumAttempts = 100;
-		for ( int attempt = 1; attempt < maximumAttempts; attempt++ )
+		for ( int attempt = 1; attempt <= maximumAttempts; attempt++ )
 		{
+			Exception rollbackException = null;
 			try
 			{
 				transaction( body );
 				return;
 			}
-			catch ( final SQLTransactionRollbackException e )
+			catch ( final RuntimeException e )
 			{
-				LOG.trace( "Will retry transaction " + body + " after " + e );
-				try
+				for ( Throwable cause = e.getCause(); cause != null; cause = cause.getCause() )
 				{
-					//noinspection UnsecureRandomNumberGeneration
-					Thread.sleep( (long)( Math.random() * 90.0 ) + 10L );
+					if ( cause instanceof SQLTransactionRollbackException )
+					{
+						rollbackException = e;
+						break;
+					}
 				}
-				catch ( final InterruptedException ignored )
+
+				if ( rollbackException == null )
 				{
-					throw new SQLException( "Interrupted before transaction could be retried.", e );
+					throw e;
 				}
 			}
-		}
+			catch ( final SQLTransactionRollbackException e )
+			{
+				rollbackException = e;
+			}
 
-		try
-		{
-			transaction( body );
-		}
-		catch ( final SQLTransactionRollbackException e )
-		{
-			throw new SQLException( "Transaction failed after trying " + maximumAttempts + " times", e );
+			if ( attempt == maximumAttempts )
+			{
+				throw new SQLException( "Transaction failed after trying " + maximumAttempts + " times", rollbackException );
+			}
+
+			LOG.trace( "Will retry transaction " + body + " after " + rollbackException );
+			try
+			{
+				//noinspection UnsecureRandomNumberGeneration,BusyWait
+				Thread.sleep( (long)( Math.random() * 90.0 ) + 10L );
+			}
+			catch ( final InterruptedException ignored )
+			{
+				throw new SQLException( "Interrupted before transaction could be retried.", rollbackException );
+			}
 		}
 	}
 
@@ -1856,8 +1899,8 @@ public class DbServices
 		private String _columnPrefix = null;
 
 		/**
-		 * Whether the table name should be checked for each column to see if
-		 * it belongs to this database record class.
+		 * Whether the table name should be checked for each column to see if it
+		 * belongs to this database record class.
 		 *
 		 * The advantage over {@link #setColumnPrefix} is that this method works
 		 * with wildcards, e.g. '{@code SELECT t1.*, t2.* FROM Table1 AS t1,
