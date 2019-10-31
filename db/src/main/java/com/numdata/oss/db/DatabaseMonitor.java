@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,6 @@ package com.numdata.oss.db;
 
 import java.sql.*;
 import java.util.*;
-
 import javax.sql.*;
 
 import com.numdata.oss.*;
@@ -38,35 +37,15 @@ import org.jetbrains.annotations.*;
 /**
  * A {@link PollingMonitor} implementation for a database.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public abstract class DatabaseMonitor
-	extends PollingMonitor
+extends PollingMonitor
 {
 	/**
 	 * Log used for messages related to this class.
 	 */
 	private static final ClassLogger LOG = ClassLogger.getFor( DatabaseMonitor.class );
-
-	/**
-	 * JDBC driver.
-	 */
-	protected String _jdbcDriver;
-
-	/**
-	 * JDBC database URL.
-	 */
-	protected String _databaseURL;
-
-	/**
-	 * JDBC database user.
-	 */
-	protected String _user;
-
-	/**
-	 * JDBC database password.
-	 */
-	protected String _password;
 
 	/**
 	 * Data source for the feedback database.
@@ -81,32 +60,17 @@ public abstract class DatabaseMonitor
 	/**
 	 * Constructs a database monitor.
 	 *
-	 * @param   jdbcDriver      JDBC driver.
-	 * @param   databaseURL     Database URL.
-	 * @param   user            Database user.
-	 * @param   password        Database password.
-	 * @param   polltime        Time to wait after polling the entity.
+	 * @param pollTime Time to wait after polling the entity.
 	 */
-	protected DatabaseMonitor( final String jdbcDriver, final String databaseURL, final String user, final String password, final int polltime )
+	protected DatabaseMonitor( final int pollTime )
 	{
-		super( polltime );
-		_jdbcDriver = jdbcDriver;
-		_databaseURL = databaseURL;
-		_user = user;
-		_password = password;
+		super( pollTime );
 		_listeners = new ArrayList<DatabaseMonitorListener>();
-	}
-
-	@NotNull
-	@Override
-	public String getName()
-	{
-		return _databaseURL;
 	}
 
 	@Override
 	protected void initialize()
-		throws SQLException
+	throws SQLException
 	{
 		if ( _dataSource == null )
 		{
@@ -136,7 +100,7 @@ public abstract class DatabaseMonitor
 			connection.close();
 			result = true;
 		}
-		catch ( SQLException e )
+		catch ( final SQLException e )
 		{
 			result = false;
 		}
@@ -153,7 +117,7 @@ public abstract class DatabaseMonitor
 	/**
 	 * Adds a file system monitor listener.
 	 *
-	 * @param   listener    Listener to be added.
+	 * @param listener Listener to be added.
 	 */
 	public void addListener( final DatabaseMonitorListener listener )
 	{
@@ -163,7 +127,7 @@ public abstract class DatabaseMonitor
 	/**
 	 * Removes a file system monitor listener.
 	 *
-	 * @param   listener    Listener to be removed.
+	 * @param listener Listener to be removed.
 	 */
 	public void removeListener( final DatabaseMonitorListener listener )
 	{
@@ -173,9 +137,9 @@ public abstract class DatabaseMonitor
 	/**
 	 * Notifies listeners that the specified row was added to the database.
 	 *
-	 * @param   rowObject   Object representing a row that was added.
+	 * @param rowObject Object representing a row that was added.
 	 */
-	protected void fireRowAddedEvent( final Object rowObject )
+	protected void fireRowAddedEvent( @NotNull final Object rowObject )
 	{
 		for ( final DatabaseMonitorListener listener : _listeners )
 		{
@@ -183,7 +147,7 @@ public abstract class DatabaseMonitor
 			{
 				listener.rowAdded( this, rowObject );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				LOG.error( "Unhandled exception in 'rowAdded' method of " + listener, e );
 			}
