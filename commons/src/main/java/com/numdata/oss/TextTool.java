@@ -36,7 +36,7 @@ import org.jetbrains.annotations.*;
 /**
  * Tool class that can be used in template engines like Apache Velocity.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 @SuppressWarnings( { "JavaDoc", "ConstantConditions" } )
 public final class TextTool
@@ -103,7 +103,22 @@ public final class TextTool
 		return TextTools.getLineSeparator();
 	}
 
+	public String getList( final char separator, @NotNull final Object... objects )
+	{
+		return TextTools.getList( separator, objects );
+	}
+
 	public String getList( @Nullable final Iterable<?> list, final char separator )
+	{
+		return TextTools.getList( list, separator );
+	}
+
+	public String getList( final CharSequence separator, @NotNull final Object... objects )
+	{
+		return TextTools.getList( separator, objects );
+	}
+
+	public String getList( @Nullable final Iterable<?> list, @NotNull final CharSequence separator )
 	{
 		return TextTools.getList( list, separator );
 	}
@@ -113,9 +128,9 @@ public final class TextTool
 		return TextTools.getNumberFormat( locale );
 	}
 
-	public NumberFormat getNumberFormat( final Locale locale, final int minimumfractionDigits, final int maximumfractionDigits, final boolean groupingUsed )
+	public NumberFormat getNumberFormat( final Locale locale, final int minimumFractionDigits, final int maximumFractionDigits, final boolean groupingUsed )
 	{
-		return TextTools.getNumberFormat( locale, minimumfractionDigits, maximumfractionDigits, groupingUsed );
+		return TextTools.getNumberFormat( locale, minimumFractionDigits, maximumFractionDigits, groupingUsed );
 	}
 
 	public NumberFormat getPercentFormat( final Locale locale )

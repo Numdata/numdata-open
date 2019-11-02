@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2003-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1201,6 +1201,21 @@ public final class TextTools
 	}
 
 	/**
+	 * Get string with list of objects separated by the specified separator.
+	 * {@code null}-elements are removed from the result.
+	 *
+	 * @param separator Separator character between objects.
+	 * @param objects   Objects.
+	 *
+	 * @return String with list of objects (may be empty, never {@code null}).
+	 */
+	@NotNull
+	public static String getList( @NotNull final char separator, @NotNull final Object... objects )
+	{
+		return getList( Arrays.asList( objects ), separator );
+	}
+
+	/**
 	 * Get string with list of objects separated by the specified separator
 	 * character. {@code null}-elements are removed from the result.
 	 *
@@ -1247,6 +1262,21 @@ public final class TextTools
 		}
 
 		return ( sb != null ) ? sb.toString() : ( first != null ) ? first : "";
+	}
+
+	/**
+	 * Get string with list of objects separated by the specified separator.
+	 * {@code null}-elements are removed from the result.
+	 *
+	 * @param separator Separator character between objects.
+	 * @param objects   Objects.
+	 *
+	 * @return String with list of objects (may be empty, never {@code null}).
+	 */
+	@NotNull
+	public static String getList( @NotNull final CharSequence separator, @NotNull final Object... objects )
+	{
+		return getList( Arrays.asList( objects ), separator );
 	}
 
 	/**
