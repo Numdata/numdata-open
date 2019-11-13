@@ -27,6 +27,7 @@
 package com.numdata.commons.java8;
 
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.*;
 
 import org.jetbrains.annotations.*;
@@ -59,5 +60,30 @@ public final class StreamTools
 	public static <T> Stream<T> stream( @NotNull final Iterator<T> iterator )
 	{
 		return StreamSupport.stream( Spliterators.spliteratorUnknownSize( iterator, 0 ), false );
+	}
+
+	/**
+	 * {@link Collectors#toMap(Function, Function, BinaryOperator, Supplier)}
+	 * with throwing merge function.
+	 *
+	 * @param <T>         the type of the input elements
+	 * @param <K>         the output type of the key mapping function
+	 * @param <U>         the output type of the value mapping function
+	 * @param <M>         the type of the resulting {@code Map}
+	 * @param keyMapper   a mapping function to produce keys
+	 * @param valueMapper a mapping function to produce values
+	 * @param mapSupplier a function which returns a new, empty {@code Map} into
+	 *                    which the results will be inserted
+	 *
+	 * @return {@code Collector}.
+	 *
+	 * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+	 */
+	@NotNull
+	public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap( final Function<? super T, ? extends K> keyMapper, @NotNull final Function<? super T, ? extends U> valueMapper, @NotNull final Supplier<M> mapSupplier )
+	{
+		return Collectors.toMap( keyMapper, valueMapper, ( u, v ) -> {
+			throw new IllegalStateException( String.format( "Duplicate key %s", u ) );
+		}, mapSupplier );
 	}
 }
