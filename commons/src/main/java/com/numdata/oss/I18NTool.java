@@ -26,6 +26,7 @@
  */
 package com.numdata.oss;
 
+import java.text.*;
 import java.util.*;
 
 import org.jetbrains.annotations.*;
@@ -44,11 +45,19 @@ public class I18NTool
 	@NotNull
 	private Locale _locale;
 
+	/**
+	 * Construct tool with default locale.
+	 */
 	public I18NTool()
 	{
 		this( Locale.getDefault() );
 	}
 
+	/**
+	 * Construct tool with given locale.
+	 *
+	 * @param locale Locale to use.
+	 */
 	public I18NTool( @NotNull final Locale locale )
 	{
 		_locale = locale;
@@ -171,4 +180,75 @@ public class I18NTool
 		return TextTools.getNumberFormat( getLocale(), minimumFractionDigits, maximumFractionDigits, false ).format( number );
 	}
 
+	/**
+	 * Format date object in short date format.
+	 *
+	 * @param date Date object to format (may be a {@link Date} or {@link Calendar}).
+	 *
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
+	 */
+	@Contract( "null -> null; !null -> !null" )
+	@Nullable
+	public String formatDate( @Nullable final Object date )
+	{
+		return ( date != null ) ? formatDate( DateFormat.getDateInstance( DateFormat.SHORT, getLocale() ), date ) : null;
+	}
+
+	/**
+	 * Format date object in short date/time format.
+	 *
+	 * @param date Date object to format (may be a {@link Date} or {@link Calendar}).
+	 *
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
+	 */
+	@Contract( "null -> null; !null -> !null" )
+	@Nullable
+	public String formatDateTime( @Nullable final Object date )
+	{
+		return ( date != null ) ? formatDate( DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT, getLocale() ), date ) : null;
+	}
+
+	/**
+	 * Format date object in short time format.
+	 *
+	 * @param date Date object to format (may be a {@link Date} or {@link Calendar}).
+	 *
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
+	 */
+	@Contract( "null -> null; !null -> !null" )
+	@Nullable
+	public String formatTime( @Nullable final Object date )
+	{
+		return ( date != null ) ? formatDate( DateFormat.getTimeInstance( DateFormat.SHORT, getLocale() ), date ) : null;
+	}
+
+	/**
+	 * Format date object using the given {@link SimpleDateFormat date format pattern}.
+	 *
+	 * @param pattern {@link SimpleDateFormat date format pattern}.
+	 * @param date    Date object to format (may be a {@link Date} or {@link Calendar}).
+	 *
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
+	 */
+	@Contract( "_,null -> null; _,!null -> !null" )
+	@Nullable
+	public String formatDate( @NotNull final String pattern, @Nullable final Object date )
+	{
+		return ( date != null ) ? formatDate( new SimpleDateFormat( pattern, getLocale() ), date ) : null;
+	}
+
+	/**
+	 * Format date object using the given {@link DateFormat}.
+	 *
+	 * @param format {@link DateFormat} to use.
+	 * @param date   Date object to format (may be a {@link Date} or {@link Calendar}).
+	 *
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
+	 */
+	@Contract( "_,null -> null; _,!null -> !null" )
+	@Nullable
+	protected String formatDate( @NotNull final DateFormat format, @Nullable final Object date )
+	{
+		return ( date != null ) ? format.format( ( date instanceof Calendar ) ? ( (Calendar)date ).getTime() : date ) : null;
+	}
 }
