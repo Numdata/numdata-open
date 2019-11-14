@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -426,8 +426,9 @@ extends FormContainer
 		}
 		else
 		{
-			result = submit( request );
-			if ( ( editButton != null ) && ( request.getParameter( "edit" ) == null ) )
+			final SubmitStatus submitStatus = submitData( request );
+			result = ( submitStatus == SubmitStatus.SUBMITTED );
+			if ( ( submitStatus != SubmitStatus.SUBMITTED_WITH_ERRORS ) && ( editButton != null ) && ( request.getParameter( "edit" ) == null ) )
 			{
 				setEditable( false );
 				addButton( editButton );
