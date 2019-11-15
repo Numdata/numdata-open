@@ -317,13 +317,16 @@ extends FormContainer
 			actualFormAttributes.put( "accept-charset", _acceptCharset );
 		}
 
-		final String title = getTitle();
-		final List<FormButton> buttons = getButtons();
-
 		final IndentingJspWriter iw = IndentingJspWriter.create( out, 2, 1 );
-		formFactory.writeFormPre( contextPath, iw, actualFormAttributes, title, table, buttons );
-		generate( contextPath, this, table, iw, formFactory );
-		formFactory.writeFormPost( contextPath, iw, table, buttons );
+		if ( isVisible() )
+		{
+			final String title = getTitle();
+			final List<FormButton> buttons = getButtons();
+
+			formFactory.writeFormPre( contextPath, iw, actualFormAttributes, title, table, buttons );
+			generate( contextPath, this, table, iw, formFactory );
+			formFactory.writeFormPost( contextPath, iw, table, buttons );
+		}
 		return iw;
 	}
 

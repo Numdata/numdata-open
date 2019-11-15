@@ -55,11 +55,6 @@ extends FormComponent
 	private final boolean _qualifiedNameUsed;
 
 	/**
-	 * Whether this container should be hidden if the form is not editable.
-	 */
-	private boolean _hideIfReadOnly = false;
-
-	/**
 	 * Add a component to this container. The component's parent is updated
 	 * accordingly.
 	 *
@@ -122,16 +117,6 @@ extends FormComponent
 	public boolean isQualifiedNameUsed()
 	{
 		return _qualifiedNameUsed;
-	}
-
-	public boolean isHideIfReadOnly()
-	{
-		return _hideIfReadOnly;
-	}
-
-	public void setHideIfReadOnly( final boolean hideIfReadOnly )
-	{
-		_hideIfReadOnly = hideIfReadOnly;
 	}
 
 	/**
@@ -857,32 +842,29 @@ extends FormComponent
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
-		if ( !_hideIfReadOnly || isEditable() )
+		for ( int i = 0; i < getComponentCount(); i++ )
 		{
-			for ( int i = 0; i < getComponentCount(); i++ )
+			final FormComponent component = getComponent( i );
+			if ( component.isVisible() )
 			{
-				final FormComponent component = getComponent( i );
-				if ( component.isVisible() )
+				component.generate( contextPath, form, table, iw, formFactory );
+
+				if ( component.isEditable() && ( component instanceof FormField ) )
 				{
-					component.generate( contextPath, form, table, iw, formFactory );
-
-					if ( component.isEditable() && ( component instanceof FormField ) )
+					final FormField field = (FormField)component;
+					final String note = field.getDescription();
+					if ( !TextTools.isEmpty( note ) )
 					{
-						final FormField field = (FormField)component;
-						final String note = field.getDescription();
-						if ( !TextTools.isEmpty( note ) )
+						if ( table != null )
 						{
-							if ( table != null )
-							{
-								table.newRow( iw );
-								table.newColumn( iw );
-								table.newColumn( iw );
-							}
-
-							iw.append( "<div class=\"fieldNote\">" );
-							iw.append( note );
-							iw.append( "</div>" );
+							table.newRow( iw );
+							table.newColumn( iw );
+							table.newColumn( iw );
 						}
+
+						iw.append( "<div class=\"fieldNote\">" );
+						iw.append( note );
+						iw.append( "</div>" );
 					}
 				}
 			}

@@ -121,6 +121,11 @@ public abstract class FormComponent
 	private boolean _visible = true;
 
 	/**
+	 * Whether this component should be hidden if the form is not editable.
+	 */
+	private boolean _hideIfReadOnly = false;
+
+	/**
 	 * HTML/java name of field.
 	 */
 	@Nullable
@@ -165,11 +170,21 @@ public abstract class FormComponent
 		_editable = editable;
 	}
 
+	public boolean isHideIfReadOnly()
+	{
+		return _hideIfReadOnly;
+	}
+
+	public void setHideIfReadOnly( final boolean hideIfReadOnly )
+	{
+		_hideIfReadOnly = hideIfReadOnly;
+	}
+
 	public boolean isVisible()
 	{
 		final boolean result;
 
-		if ( !_visible )
+		if ( !_visible || ( isHideIfReadOnly() && !isEditable() ) )
 		{
 			result = false;
 		}
