@@ -47,7 +47,7 @@ extends FormComponent
 	/**
 	 * Components contained within this container.
 	 */
-	private final List<FormComponent> _components = new ArrayList<FormComponent>();
+	private final List<FormComponent> _components = new ArrayList<>();
 
 	/**
 	 * Whether qualified names are used by the components in the container.
@@ -177,10 +177,7 @@ extends FormComponent
 	@NotNull
 	public FormCheckbox addCheckbox( final String label, @NotNull final FieldTarget target )
 	{
-		final FormCheckbox checkbox = new FormCheckbox( target );
-		addComponent( new FormLabel( label, checkbox ) );
-		addComponent( checkbox );
-		return checkbox;
+		return addField( label, new FormCheckbox( target ) );
 	}
 
 	/**
@@ -219,7 +216,7 @@ extends FormComponent
 	public FormChoice addChoice( @NotNull final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target )
 	{
 		final List<String> optionValues = Arrays.asList( ResourceBundleTools.getStringList( bundle, resourceKey + "Values" ) );
-		final Collection<String> optionLabels = new ArrayList<String>( optionValues.size() );
+		final Collection<String> optionLabels = new ArrayList<>( optionValues.size() );
 
 		for ( final String value : optionValues )
 		{
@@ -274,10 +271,7 @@ extends FormComponent
 	@NotNull
 	public <T extends Enum<T>> FormChoice addChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
-		final FormChoice choice = createChoice( bundle, target, locale, enumType );
-		addComponent( new FormLabel( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), choice ) );
-		addComponent( choice );
-		return choice;
+		return addField( ResourceBundleTools.getString( bundle, resourceKey, resourceKey ), createChoice( bundle, target, locale, enumType ) );
 	}
 
 	/**
@@ -321,8 +315,8 @@ extends FormComponent
 	{
 		final T[] constants = enumType.getEnumConstants();
 
-		final List<String> optionValues = new ArrayList<String>( constants.length );
-		final List<String> optionLabels = new ArrayList<String>( constants.length );
+		final List<String> optionValues = new ArrayList<>( constants.length );
+		final List<String> optionLabels = new ArrayList<>( constants.length );
 
 		for ( final T constant : constants )
 		{
@@ -392,10 +386,7 @@ extends FormComponent
 	@NotNull
 	public FormChoice addChoice( @NotNull final String label, @NotNull final FieldTarget target, @NotNull final Map<String, String> optionMap )
 	{
-		final FormChoice choice = new FormChoice( target, optionMap );
-		addComponent( new FormLabel( label, choice ) );
-		addComponent( choice );
-		return choice;
+		return addField( label, new FormChoice( target, optionMap ) );
 	}
 
 	/**
@@ -454,10 +445,7 @@ extends FormComponent
 	@NotNull
 	public FormChoice addChoice( @NotNull final String label, @NotNull final FieldTarget target, @NotNull final Collection<String> optionValues, @NotNull final Collection<String> optionLabels )
 	{
-		final FormChoice choice = new FormChoice( target, optionValues, optionLabels );
-		addComponent( new FormLabel( label, choice ) );
-		addComponent( choice );
-		return choice;
+		return addField( label, new FormChoice( target, optionValues, optionLabels ) );
 	}
 
 	/**
@@ -549,10 +537,7 @@ extends FormComponent
 	@NotNull
 	public FormTextField addTextField( @NotNull final String label, @NotNull final FieldTarget target, final int size, final int maxLength )
 	{
-		final FormTextField field = new FormTextField( target, size, maxLength );
-		addComponent( new FormLabel( label, field ) );
-		addComponent( field );
-		return field;
+		return addField( label, new FormTextField( target, size, maxLength ) );
 	}
 
 	/**
@@ -640,10 +625,7 @@ extends FormComponent
 	@NotNull
 	public FormTextArea addTextArea( @NotNull final String label, @NotNull final FieldTarget target, final int rows, final int columns )
 	{
-		final FormTextArea area = new FormTextArea( target, rows, columns );
-		addComponent( new FormLabel( label, area ) );
-		addComponent( area );
-		return area;
+		return addField( label, new FormTextArea( target, rows, columns ) );
 	}
 
 	/**
@@ -696,7 +678,21 @@ extends FormComponent
 	@NotNull
 	public FormNumberField addNumberField( @NotNull final String label, @NotNull final FieldTarget target, final boolean allowNegative, final int maximumFractionDigits )
 	{
-		final FormNumberField field = new FormNumberField( target, maximumFractionDigits, allowNegative ? null : BigDecimal.ZERO, null );
+		return addField( label, new FormNumberField( target, maximumFractionDigits, allowNegative ? null : BigDecimal.ZERO, null ) );
+	}
+
+	/**
+	 * Convenience method to quickly add a labeled field to this container.
+	 *
+	 * @param label Label for field.
+	 * @param field Field to add.
+	 * @param <T>   Field type.
+	 *
+	 * @return Field that was created.
+	 */
+	@NotNull
+	public <T extends FormField> T addField( @NotNull final String label, @NotNull final T field )
+	{
 		addComponent( new FormLabel( label, field ) );
 		addComponent( field );
 		return field;
