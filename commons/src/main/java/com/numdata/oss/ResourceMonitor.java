@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,14 +45,16 @@ extends Runnable
 	String getName();
 
 	/**
-	 * Returns whether the entity being monitored is available.
+	 * Returns status of monitored resource.
 	 *
-	 * @return {@code true} if the monitored entity is available.
+	 * @return {@link ResourceStatus}.
 	 */
-	boolean isAvailable();
+	@NotNull
+	ResourceStatus getStatus();
 
 	/**
 	 * Stop the monitor.
 	 */
 	void stop();
+
 }

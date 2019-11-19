@@ -39,6 +39,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "WeakerAccess", "unused" } )
 public abstract class DatabaseMonitor
 extends PollingMonitor
 {
@@ -50,12 +51,31 @@ extends PollingMonitor
 	/**
 	 * Data source for the feedback database.
 	 */
-	protected DataSource _dataSource = null;
+	@Nullable
+	private DataSource _dataSource = null;
+
+	/**
+	 * Initial delay in milliseconds before attempting to reconnect to the
+	 * database.
+	 */
+	private int _initialReconnectDelay = 60000;
+
+	/**
+	 * Maximum delay in milliseconds before attempting to reconnect to the
+	 * database.
+	 */
+	private int _maximumReconnectMaxDelay = 600000;
+
+	/**
+	 * Fail count.
+	 */
+	private int _failCount = 0;
 
 	/**
 	 * Listeners registered with the monitor.
 	 */
-	private final List<DatabaseMonitorListener> _listeners;
+	@NotNull
+	private final Collection<DatabaseMonitorListener> _listeners = new ArrayList<DatabaseMonitorListener>();
 
 	/**
 	 * Constructs a database monitor.
@@ -65,7 +85,31 @@ extends PollingMonitor
 	protected DatabaseMonitor( final int pollTime )
 	{
 		super( pollTime );
-		_listeners = new ArrayList<DatabaseMonitorListener>();
+	}
+
+	public int getInitialReconnectDelay()
+	{
+		return _initialReconnectDelay;
+	}
+
+	public void setInitialReconnectDelay( final int initialReconnectDelay )
+	{
+		_initialReconnectDelay = initialReconnectDelay;
+	}
+
+	public int getMaximumReconnectMaxDelay()
+	{
+		return _maximumReconnectMaxDelay;
+	}
+
+	public void setMaximumReconnectMaxDelay( final int maximumReconnectMaxDelay )
+	{
+		_maximumReconnectMaxDelay = maximumReconnectMaxDelay;
+	}
+
+	public int getFailCount()
+	{
+		return _failCount;
 	}
 
 	@Override
@@ -87,26 +131,6 @@ extends PollingMonitor
 	 */
 	protected abstract DataSource createDataSource()
 	throws SQLException;
-
-	@Override
-	public boolean isAvailable()
-	{
-		boolean result;
-
-		try
-		{
-			initialize();
-			final Connection connection = _dataSource.getConnection();
-			connection.close();
-			result = true;
-		}
-		catch ( final SQLException e )
-		{
-			result = false;
-		}
-
-		return result;
-	}
 
 	@Override
 	public void stop()
@@ -133,6 +157,56 @@ extends PollingMonitor
 	{
 		_listeners.remove( listener );
 	}
+
+	@Override
+	protected void poll()
+	throws Exception
+	{
+		final DataSource dataSource = _dataSource;
+		if ( dataSource == null )
+		{
+			throw new AssertionError( "Data source must be initialized" );
+		}
+
+		try
+		{
+			poll( dataSource );
+			_failCount = 0;
+		}
+		catch ( final Exception e )
+		{
+			final int initialDelay = Math.max( 1000, getInitialReconnectDelay() );
+			final int maximumDelay = Math.min( Math.max( 60000, getMaximumReconnectMaxDelay() ), 3600000 );
+			final int failCount = ++_failCount;
+			final long delay = Math.min( initialDelay * failCount, maximumDelay );
+
+			if ( LOG.isDebugEnabled() )
+			{
+				LOG.debug( "poll: " + e + " => Delay " + delay + "ms (failCount=" + failCount + ", initialDelay=" + initialDelay + "ms, maximumDelay=" + maximumDelay + "ms)" );
+			}
+			try
+			{
+				Thread.sleep( delay );
+			}
+			catch ( final InterruptedException ignored )
+			{
+			}
+			throw e;
+		}
+	}
+
+	/**
+	 * Polls the given database.
+	 *
+	 * If an exception is thrown, an extra re-connect delay is inserted before
+	 * continuing to prevent overloading the system.
+	 *
+	 * @param dataSource {@link DataSource} for database to poll.
+	 *
+	 * @throws Exception if any exception occurs while polling the database.
+	 */
+	protected abstract void poll( @NotNull final DataSource dataSource )
+	throws Exception;
 
 	/**
 	 * Notifies listeners that the specified row was added to the database.

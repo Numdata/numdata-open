@@ -74,24 +74,6 @@ extends FileSystemMonitor
 	}
 
 	@Override
-	public boolean isAvailable()
-	{
-		boolean result;
-
-		try
-		{
-			result = _file.exists();
-		}
-		catch ( final SecurityException e )
-		{
-			LOG.trace( "isAvailable caused: " + e, e );
-			result = false;
-		}
-
-		return result;
-	}
-
-	@Override
 	protected List<Object> listFiles()
 	throws IOException
 	{

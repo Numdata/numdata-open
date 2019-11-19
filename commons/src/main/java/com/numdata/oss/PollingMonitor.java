@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package com.numdata.oss;
 import java.io.*;
 
 import com.numdata.oss.log.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Skeleton implementation of a monitor that polls an entity to monitor it, as
@@ -36,6 +37,7 @@ import com.numdata.oss.log.*;
  *
  * @author G. Meinders
  */
+@SuppressWarnings( "WeakerAccess" )
 public abstract class PollingMonitor
 implements ResourceMonitor
 {
@@ -47,17 +49,95 @@ implements ResourceMonitor
 	/**
 	 * Approximate time between two calls to {@link #poll()}, in milliseconds.
 	 */
-	private final int _polltime;
+	private int _pollTime;
+
+	/**
+	 * Whether the monitor is running.
+	 */
+	private boolean _running = false;
+
+	/**
+	 * Last exception that occurred.
+	 */
+	@Nullable
+	private Exception _lastException = null;
+
+	/**
+	 * Last time that the connection was established.
+	 */
+	private long _lastPolled = -1;
 
 	/**
 	 * Constructs a new monitor that polls an entity at regular intervals.
 	 *
-	 * @param polltime Time to wait after polling the entity.
+	 * @param pollTime Time to wait after polling the entity.
 	 */
-	protected PollingMonitor( final int polltime )
+	protected PollingMonitor( final int pollTime )
 	{
-		_polltime = polltime;
+		_pollTime = pollTime;
 	}
+
+	public int getPollTime()
+	{
+		return _pollTime;
+	}
+
+	public void setPollTime( final int pollTime )
+	{
+		_pollTime = pollTime;
+	}
+
+	public boolean isRunning()
+	{
+		return _running;
+	}
+
+	@Nullable
+	public Exception getLastException()
+	{
+		return _lastException;
+	}
+
+	public void setLastException( @Nullable final Exception lastException )
+	{
+		_lastException = lastException;
+	}
+
+	public long getLastPolled()
+	{
+		return _lastPolled;
+	}
+
+	@NotNull
+	@Override
+	public ResourceStatus getStatus()
+	{
+		final ResourceStatus result = new ResourceStatus();
+		result.setLastOnline( getLastPolled() );
+
+		if ( !isRunning() )
+		{
+			result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+			result.setDetails( "Not running" );
+		}
+		else
+		{
+			final Exception lastException = getLastException();
+			if ( lastException != null )
+			{
+				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+				result.setDetails( "Error occurred" );
+				result.setException( lastException );
+			}
+			else
+			{
+				result.setDetails( "Running" );
+				result.setStatus( ResourceStatus.Status.AVAILABLE );
+			}
+		}
+		return result;
+	}
+
 
 	/**
 	 * Performs any initialization needed for the monitor. If an exception is
@@ -82,6 +162,8 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
+		_running = true;
+		_lastException = null;
 
 		try
 		{
@@ -89,15 +171,18 @@ implements ResourceMonitor
 			initialize();
 
 			String lastException = null;
-			final int polltime = _polltime;
+			final int pollTime = getPollTime();
 			while ( !Thread.interrupted() )
 			{
 				try
 				{
 					poll();
+					_lastPolled = System.currentTimeMillis();
+					_lastException = null;
 				}
 				catch ( final Exception e )
 				{
+					_lastException = e;
 					final StringWriter w = new StringWriter();
 					e.printStackTrace( new PrintWriter( w, true ) );
 					final String exceptionMessage = w.toString();
@@ -114,7 +199,7 @@ implements ResourceMonitor
 
 				try
 				{
-					Thread.sleep( (long)polltime );
+					Thread.sleep( pollTime );
 				}
 				catch ( final InterruptedException ignored )
 				{
@@ -125,9 +210,11 @@ implements ResourceMonitor
 		catch ( final Exception e )
 		{
 			LOG.error( "Failed to initialize monitor.", e );
+			_lastException = e;
 		}
 		finally
 		{
+			_running = false;
 			try
 			{
 				LOG.info( "Shutting down monitor." );

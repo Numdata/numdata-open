@@ -30,7 +30,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import com.numdata.oss.log.*;
 import jcifs.smb.*;
 import org.jetbrains.annotations.*;
 
@@ -44,11 +43,6 @@ import org.jetbrains.annotations.*;
 public class SMBFileSystemMonitor
 extends FileSystemMonitor
 {
-	/**
-	 * Log used for messages related to this class.
-	 */
-	private static final ClassLogger LOG = ClassLogger.getFor( SMBFileSystemMonitor.class );
-
 	/**
 	 * Folder to be monitored.
 	 */
@@ -79,24 +73,6 @@ extends FileSystemMonitor
 	}
 
 	@Override
-	public boolean isAvailable()
-	{
-		boolean result;
-
-		try
-		{
-			result = _smbFile.exists();
-		}
-		catch ( final SmbException e )
-		{
-			LOG.trace( "isAvailable caused: " + e, e );
-			result = false;
-		}
-
-		return result;
-	}
-
-	@Override
 	protected List<Object> listFiles()
 	throws IOException
 	{
@@ -109,7 +85,7 @@ extends FileSystemMonitor
 		}
 		else
 		{
-			result = Collections.<Object>singletonList( _smbFile );
+			result = _smbFile.exists() ? Collections.<Object>singletonList( _smbFile ) : Collections.emptyList();
 		}
 
 		return result;

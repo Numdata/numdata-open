@@ -124,6 +124,17 @@ implements ResourceMonitor
 	private Map<Object, Date> _modificationTimeByFile = Collections.emptyMap();
 
 	/**
+	 * Last exception that occurred.
+	 */
+	@Nullable
+	private Exception _lastException = null;
+
+	/**
+	 * Last time that the connection was established.
+	 */
+	private long _lastUpdated = -1;
+
+	/**
 	 * Constructs a new file system monitor. While running, the monitor actively
 	 * queries the underlying file system for changes. The delay between there
 	 * updates is specified by {@code delay}.
@@ -258,12 +269,58 @@ implements ResourceMonitor
 		_alwaysModified = alwaysModified;
 	}
 
+	@Nullable
+	public Exception getLastException()
+	{
+		return _lastException;
+	}
+
+	public long getLastUpdated()
+	{
+		return _lastUpdated;
+	}
+
+	@NotNull
+	@Override
+	public ResourceStatus getStatus()
+	{
+		final ResourceStatus result = new ResourceStatus();
+		result.setLastOnline( getLastUpdated() );
+		try
+		{
+			listFiles();
+
+			final Exception exception = getLastException();
+			if ( exception == null )
+			{
+				result.setStatus( ResourceStatus.Status.AVAILABLE );
+				result.setDetails( "Running (initialFileHandling=" + getInitialFileHandling() + ", delay=" + getDelay() + ", pathFilter=" + TextTools.quote( getPathFilter() ) + ", singleFile=" + isSingleFile() + ", alwaysModified=" + isAlwaysModified() );
+			}
+			else
+			{
+				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+				result.setDetails( "File system is available, but update failed" );
+				result.setException( exception );
+			}
+		}
+		catch ( final Exception e )
+		{
+			_lastException = e;
+			result.setStatus( ResourceStatus.Status.UNREACHABLE );
+			result.setDetails( "Failed to access file system" );
+			result.setException( e );
+		}
+
+		return result;
+	}
+
 	@Override
 	public void run()
 	{
 		LOG.debug( "run()" );
 
-		String lastException = null;
+		_lastException = null;
+		String lastExceptionMessage = null;
 		NewFileHandling newFileHandling = getInitialFileHandling();
 
 		while ( !Thread.interrupted() )
@@ -272,9 +329,12 @@ implements ResourceMonitor
 			{
 				checkForUpdates( newFileHandling );
 				newFileHandling = NewFileHandling.KEEP_ALL;
+				_lastException = null;
+				_lastUpdated = System.currentTimeMillis();
 			}
 			catch ( final Exception e )
 			{
+				_lastException = e;
 				final StringWriter w = new StringWriter();
 				e.printStackTrace( new PrintWriter( w, true ) );
 
@@ -286,14 +346,14 @@ implements ResourceMonitor
 					logMessage = "No route to host (wrong hostname/IP or host offline?)";
 				}
 
-				if ( TextTools.equals( logMessage, lastException ) )
+				if ( TextTools.equals( logMessage, lastExceptionMessage ) )
 				{
 					LOG.error( "Again: " + logMessage );
 				}
 				else
 				{
 					LOG.error( exceptionMessage );
-					lastException = logMessage;
+					lastExceptionMessage = logMessage;
 				}
 			}
 
@@ -744,5 +804,18 @@ implements ResourceMonitor
 				LOG.error( "Unhandled exception in 'fileRemoved' method of " + listener, e );
 			}
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + '@' + Integer.toHexString( System.identityHashCode( this ) ) +
+		       "{name=" + getName() +
+		       ", initialFileHandling=" + getInitialFileHandling() +
+		       ", delay=" + getDelay() +
+		       ", pathFilter=" + TextTools.quote( getPathFilter() ) +
+		       ", singleFile=" + isSingleFile() +
+		       ", alwaysModified=" + isAlwaysModified() +
+		       '}';
 	}
 }

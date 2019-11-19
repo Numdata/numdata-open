@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2012-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.*;
  * @author G. Meinders
  */
 public abstract class SocketMonitor
-	implements ResourceMonitor
+implements ResourceMonitor
 {
 	/**
 	 * Log used for messages related to this class.
@@ -60,29 +60,41 @@ public abstract class SocketMonitor
 	/**
 	 * Stop.
 	 */
-	private boolean _stopped;
+	private boolean _stopped = false;
 
 	/**
 	 * Currently connected socket.
 	 */
-	private Socket _socket;
+	@Nullable
+	private Socket _socket = null;
 
 	/**
 	 * Connect timeout for the socket, in milliseconds.
 	 */
-	private int _connectTimeout;
+	private int _connectTimeout = 10000;
 
 	/**
 	 * Delay in milliseconds before attempting to reconnect, after losing the
 	 * connection.
 	 */
-	private long _reconnectDelay;
+	private long _reconnectDelay = 10000L;
+
+	/**
+	 * Last exception that occurred.
+	 */
+	@Nullable
+	private Exception _lastException = null;
+
+	/**
+	 * Last time that the connection was established.
+	 */
+	private long _lastConnected = -1;
 
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param   host    Host name or IP address.
-	 * @param   port    Remote port.
+	 * @param host Host name or IP address.
+	 * @param port Remote port.
 	 */
 	protected SocketMonitor( final String host, final int port )
 	{
@@ -90,52 +102,47 @@ public abstract class SocketMonitor
 
 		_host = host;
 		_port = port;
-		_socket = null;
-		_stopped = false;
-		_connectTimeout = 10000;
-		_reconnectDelay = 10000L;
 	}
 
-	/**
-	 * Returns the connect timeout for the socket.
-	 *
-	 * @return Connect timeout, in milliseconds.
-	 */
+	public String getHost()
+	{
+		return _host;
+	}
+
+	public int getPort()
+	{
+		return _port;
+	}
+
 	public int getConnectTimeout()
 	{
 		return _connectTimeout;
 	}
 
-	/**
-	 * Sets the connect timeout for the socket.
-	 *
-	 * @param connectTimeout Connect timeout, in milliseconds.
-	 */
 	public void setConnectTimeout( final int connectTimeout )
 	{
 		_connectTimeout = connectTimeout;
 	}
 
-	/**
-	 * Returns the delay in milliseconds before attempting to reconnect, after
-	 * losing the connection.
-	 *
-	 * @return  Delay until reconnection, in milliseconds.
-	 */
 	public long getReconnectDelay()
 	{
 		return _reconnectDelay;
 	}
 
-	/**
-	 * Sets the delay in milliseconds before attempting to reconnect, after
-	 * losing the connection.
-	 *
-	 * @param   reconnectDelay  Delay until reconnection, in milliseconds.
-	 */
 	public void setReconnectDelay( final long reconnectDelay )
 	{
 		_reconnectDelay = reconnectDelay;
+	}
+
+	@Nullable
+	public Exception getLastException()
+	{
+		return _lastException;
+	}
+
+	public long getLastConnected()
+	{
+		return _lastConnected;
 	}
 
 	@Override
@@ -145,18 +152,49 @@ public abstract class SocketMonitor
 		return _host + ':' + _port;
 	}
 
+	@NotNull
 	@Override
-	public boolean isAvailable()
+	public ResourceStatus getStatus()
 	{
-		return ( _socket != null ) && _socket.isConnected();
+		final ResourceStatus result = new ResourceStatus();
+		result.setException( getLastException() );
+		result.setLastOnline( getLastConnected() );
+
+		if ( isStopped() )
+		{
+			result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+			result.setDetails( "Stopped" );
+		}
+		else
+		{
+			final Socket socket = _socket;
+			if ( socket == null )
+			{
+				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+				result.setDetails( "Not connected" );
+			}
+			else if ( socket.isConnected() )
+			{
+				result.setStatus( ResourceStatus.Status.AVAILABLE );
+				result.setDetails( "Connected (" + socket + ')' );
+			}
+			else
+			{
+				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+				result.setDetails( "Disconnected" );
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public void run()
 	{
-		LOG.debug( "Starting socket monitor to '" + _host + ':' + _port + '\'' );
+		_socket = null;
+		_lastException = null;
 
-		while ( !Thread.interrupted() && !_stopped )
+		LOG.debug( "Starting socket monitor to '" + _host + ':' + _port + '\'' );
+		while ( !Thread.interrupted() && !isStopped() )
 		{
 			try
 			{
@@ -170,6 +208,8 @@ public abstract class SocketMonitor
 				{
 					socket.connect( new InetSocketAddress( _host, _port ), _connectTimeout );
 					_socket = socket;
+					_lastException = null;
+					_lastConnected = System.currentTimeMillis();
 
 					if ( LOG.isTraceEnabled() )
 					{
@@ -197,8 +237,9 @@ public abstract class SocketMonitor
 				/*
 				 * Wait a while, then try again.
 				 */
-				if ( !_stopped )
+				if ( !isStopped() )
 				{
+					_lastException = e;
 					//noinspection InstanceofCatchParameter
 					if ( ( e instanceof ConnectException ) || ( e instanceof SocketTimeoutException ) )
 					{
@@ -209,11 +250,11 @@ public abstract class SocketMonitor
 						LOG.warn( getName() + ": " + e.getMessage(), e );
 					}
 
-					if ( _reconnectDelay > 0 )
+					if ( getReconnectDelay() > 0 )
 					{
 						try
 						{
-							Thread.sleep( _reconnectDelay );
+							Thread.sleep( getReconnectDelay() );
 						}
 						catch ( final InterruptedException ignored )
 						{
@@ -224,7 +265,7 @@ public abstract class SocketMonitor
 			}
 		}
 
-		if ( _stopped )
+		if ( isStopped() )
 		{
 			LOG.info( "Socket monitor to '" + _host + ':' + _port + "' was stopped" );
 		}
@@ -255,16 +296,21 @@ public abstract class SocketMonitor
 		}
 	}
 
+	public boolean isStopped()
+	{
+		return _stopped;
+	}
+
 	/**
 	 * Called when a socket connection is established to handle communication
 	 * with the remote host. The given streams are automatically closed when
 	 * this method returns.
 	 *
-	 * @param   in      Input stream.
-	 * @param   out     Output stream.
+	 * @param in  Input stream.
+	 * @param out Output stream.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	protected abstract void handleConnection( final InputStream in, final OutputStream out )
-		throws IOException;
+	throws IOException;
 }
