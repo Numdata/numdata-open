@@ -47,28 +47,6 @@ public final class FunctionTools
 	}
 
 	/**
-	 * {@link Function} that throws a checked exception.
-	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
-	 * Exceptions In Streams</a>.
-	 */
-	@FunctionalInterface
-	public interface CheckedFunction<T, R, EX extends Exception>
-	{
-		/**
-		 * Applies this function to the given argument.
-		 *
-		 * @param t the function argument
-		 *
-		 * @return the function result
-		 *
-		 * @throws EX checked exception.
-		 */
-		R apply( T t )
-		throws EX;
-	}
-
-	/**
 	 * Wrap a {@link CheckedFunction} with an unchecked {@link Function}. Any
 	 * checked exception thrown by the {@link CheckedFunction} will be wrapped
 	 * by a {@link RuntimeException}.
@@ -160,26 +138,6 @@ public final class FunctionTools
 				return sneakyThrow( ex );
 			}
 		};
-	}
-
-	/**
-	 * {@link Consumer} that throws a checked exception.
-	 *
-	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
-	 * Exceptions In Streams</a>.
-	 */
-	@FunctionalInterface
-	public interface CheckedConsumer<T, EX extends Exception>
-	{
-		/**
-		 * Performs this operation on the given argument.
-		 *
-		 * @param t the input argument
-		 *
-		 * @throws EX checked exception.
-		 */
-		void apply( T t )
-		throws EX;
 	}
 
 	/**
