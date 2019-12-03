@@ -1073,22 +1073,47 @@ public class CollectionTools
 	 *
 	 * @return {@link Iterable}.
 	 */
-	public <T> Iterable<T> iterable( @NotNull final Iterator<T> iterator )
+	public static <T> Iterable<T> iterable( @NotNull final Iterator<T> iterator )
 	{
 		return new Iterable<T>()
 		{
-			boolean retrieved = false;
+			/**
+			 * Whether the iterator was already retrieved.
+			 */
+			boolean _retrieved = false;
 
 			@NotNull
 			@Override
 			public Iterator<T> iterator()
 			{
-				if ( retrieved )
+				if ( _retrieved )
 				{
 					throw new IllegalStateException( "Can only retrieve iterator once from 'CollectionTools.iterable(" + iterator + " )'" );
 				}
-				retrieved = true;
+				_retrieved = true;
 				return iterator;
+			}
+		};
+	}
+
+	/**
+	 * Returns a reverse iterable based on the given list.
+	 *
+	 * @param list List to iterate in reverse.
+	 * @param <T>  Element type.
+	 *
+	 * @return Reverse iterable for the given list.
+	 */
+	@NotNull
+	public static <T> Iterable<T> reverseIterable( @NotNull final List<T> list )
+	{
+		return new Iterable<T>()
+		{
+			@NotNull
+			@Override
+			public Iterator<T> iterator()
+			{
+				return new ReverseListIterator<T>( list );
 			}
 		};
 	}
