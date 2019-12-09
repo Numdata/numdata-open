@@ -49,6 +49,20 @@ public final class StreamTools
 	}
 
 	/**
+	 * Creates a {@code Stream} for an {@code Iterable}.
+	 *
+	 * @param <T>      Element type.
+	 * @param iterable {@link Iterable}.
+	 *
+	 * @return {@link Stream}.
+	 */
+	@NotNull
+	public static <T> Stream<T> stream( @NotNull final Iterable<T> iterable )
+	{
+		return stream( iterable.iterator() );
+	}
+
+	/**
 	 * Creates a {@code Stream} for an {@code Iterator}.
 	 *
 	 * @param <T>      Element type.
