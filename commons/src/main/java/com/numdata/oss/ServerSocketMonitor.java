@@ -39,7 +39,7 @@ import org.jetbrains.annotations.*;
  * @author Peter S. Heijnen.
  */
 @SuppressWarnings( "WeakerAccess" )
-public abstract class ServerSocketMonitor
+public class ServerSocketMonitor
 implements ResourceMonitor
 {
 	/**
@@ -50,7 +50,7 @@ implements ResourceMonitor
 	/**
 	 * TCP port to listen on for incoming connections.
 	 */
-	private final int _port;
+	private int _port;
 
 	/**
 	 * Server socket.
@@ -75,11 +75,17 @@ implements ResourceMonitor
 	private long _lastConnected = -1;
 
 	/**
+	 * Connection handler.
+	 */
+	@Nullable
+	private ConnectionHandler _handler = null;
+
+	/**
 	 * Constructs a new barcode monitor for the specified CNC machine.
 	 *
 	 * @param port TCP port to listen for incoming connections.
 	 */
-	protected ServerSocketMonitor( final int port )
+	public ServerSocketMonitor( final int port )
 	{
 		_port = port;
 	}
@@ -87,6 +93,22 @@ implements ResourceMonitor
 	public int getPort()
 	{
 		return _port;
+	}
+
+	public void setPort( final int port )
+	{
+		_port = port;
+	}
+
+	@Nullable
+	public ConnectionHandler getHandler()
+	{
+		return _handler;
+	}
+
+	public void setHandler( @Nullable final ConnectionHandler handler )
+	{
+		_handler = handler;
 	}
 
 	@Nullable
@@ -295,6 +317,31 @@ implements ResourceMonitor
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	protected abstract void handleConnection( @NotNull Socket socket )
-	throws IOException;
+	protected void handleConnection( @NotNull final Socket socket )
+	throws IOException
+	{
+		final ConnectionHandler handler = getHandler();
+		if ( handler == null )
+		{
+			throw new IllegalStateException( "No handler installed" );
+		}
+
+		handler.handleConnection( socket );
+	}
+
+	/**
+	 * Handler for an incoming connection.
+	 */
+	public interface ConnectionHandler
+	{
+		/**
+		 * Handles an incoming connection.
+		 *
+		 * @param socket Connected client socket.
+		 *
+		 * @throws IOException if an I/O error occurs.
+		 */
+		void handleConnection( @NotNull Socket socket )
+		throws IOException;
+	}
 }

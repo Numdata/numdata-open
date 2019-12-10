@@ -39,7 +39,8 @@ import org.jetbrains.annotations.*;
  *
  * @author G. Meinders
  */
-public abstract class SocketMonitor
+@SuppressWarnings( { "unused", "WeakerAccess" } )
+public class SocketMonitor
 implements ResourceMonitor
 {
 	/**
@@ -50,6 +51,7 @@ implements ResourceMonitor
 	/**
 	 * Host name or IP address.
 	 */
+	@NotNull
 	private final String _host;
 
 	/**
@@ -69,6 +71,12 @@ implements ResourceMonitor
 	private Socket _socket = null;
 
 	/**
+	 * Connection handler.
+	 */
+	@Nullable
+	private ConnectionHandler _handler = null;
+
+	/**
 	 * Connect timeout for the socket, in milliseconds.
 	 */
 	private int _connectTimeout = 10000;
@@ -77,7 +85,7 @@ implements ResourceMonitor
 	 * Delay in milliseconds before attempting to reconnect, after losing the
 	 * connection.
 	 */
-	private long _reconnectDelay = 10000L;
+	private int _reconnectDelay = 10000;
 
 	/**
 	 * Last exception that occurred.
@@ -96,7 +104,7 @@ implements ResourceMonitor
 	 * @param host Host name or IP address.
 	 * @param port Remote port.
 	 */
-	protected SocketMonitor( final String host, final int port )
+	public SocketMonitor( @NotNull final String host, final int port )
 	{
 		LOG.debug( "SocketMonitor( host=" + TextTools.quote( host ) + ", port=" + port + " )" );
 
@@ -104,6 +112,7 @@ implements ResourceMonitor
 		_port = port;
 	}
 
+	@NotNull
 	public String getHost()
 	{
 		return _host;
@@ -124,14 +133,25 @@ implements ResourceMonitor
 		_connectTimeout = connectTimeout;
 	}
 
-	public long getReconnectDelay()
+	public int getReconnectDelay()
 	{
 		return _reconnectDelay;
 	}
 
-	public void setReconnectDelay( final long reconnectDelay )
+	public void setReconnectDelay( final int reconnectDelay )
 	{
 		_reconnectDelay = reconnectDelay;
+	}
+
+	@Nullable
+	public ConnectionHandler getHandler()
+	{
+		return _handler;
+	}
+
+	public void setHandler( @Nullable final ConnectionHandler handler )
+	{
+		_handler = handler;
 	}
 
 	@Nullable
@@ -224,7 +244,7 @@ implements ResourceMonitor
 						LOG.trace( "Handle connection to " + socket.getInetAddress() );
 					}
 
-					handleConnection( in, out );
+					handleConnection( socket );
 				}
 				finally
 				{
@@ -250,11 +270,12 @@ implements ResourceMonitor
 						LOG.warn( getName() + ": " + e.getMessage(), e );
 					}
 
-					if ( getReconnectDelay() > 0 )
+					for ( int pollTime = getReconnectDelay(); ( pollTime > 0 ) && !_stopped; pollTime -= 1000 )
 					{
 						try
 						{
-							Thread.sleep( getReconnectDelay() );
+							//noinspection BusyWait
+							Thread.sleep( Math.min( 1000, pollTime ) );
 						}
 						catch ( final InterruptedException ignored )
 						{
@@ -302,15 +323,39 @@ implements ResourceMonitor
 	}
 
 	/**
-	 * Called when a socket connection is established to handle communication
-	 * with the remote host. The given streams are automatically closed when
-	 * this method returns.
+	 * Called when a socket connection is established. The socket is
+	 * automatically closed after this method is called.
 	 *
-	 * @param in  Input stream.
-	 * @param out Output stream.
+	 * @param socket Connected client socket.
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	protected abstract void handleConnection( final InputStream in, final OutputStream out )
-	throws IOException;
+	private void handleConnection( @NotNull final Socket socket )
+	throws IOException
+	{
+		final ConnectionHandler handler = getHandler();
+		if ( handler == null )
+		{
+			throw new IllegalStateException( "No handler installed" );
+		}
+
+		handler.handleConnection( socket );
+	}
+
+	/**
+	 * Handler for an incoming connection.
+	 */
+	public interface ConnectionHandler
+	{
+		/**
+		 * Called when a socket connection is established. The socket is
+		 * automatically closed after this method is called.
+		 *
+		 * @param socket Connected client socket.
+		 *
+		 * @throws IOException if an I/O error occurs.
+		 */
+		void handleConnection( @NotNull final Socket socket )
+		throws IOException;
+	}
 }

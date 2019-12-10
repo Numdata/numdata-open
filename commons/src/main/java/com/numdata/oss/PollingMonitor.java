@@ -37,8 +37,8 @@ import org.jetbrains.annotations.*;
  *
  * @author G. Meinders
  */
-@SuppressWarnings( "WeakerAccess" )
-public abstract class PollingMonitor
+@SuppressWarnings( { "WeakerAccess", "unused" } )
+public class PollingMonitor
 implements ResourceMonitor
 {
 	/**
@@ -52,9 +52,24 @@ implements ResourceMonitor
 	private int _pollTime;
 
 	/**
+	 * Initial time delay to use after an exception occurred.
+	 */
+	private int _initialExceptionDelay = 60000;
+
+	/**
+	 * Maximum delay after a repeated exception occurred.
+	 */
+	private int _maximumExceptionMaxDelay = 300000;
+
+	/**
 	 * Whether the monitor is running.
 	 */
 	private boolean _running = false;
+
+	/**
+	 * Whether monitor should stop.
+	 */
+	private boolean _stop = false;
 
 	/**
 	 * Last exception that occurred.
@@ -63,16 +78,45 @@ implements ResourceMonitor
 	private Exception _lastException = null;
 
 	/**
+	 * Fail count.
+	 */
+	private int _failCount = 0;
+
+	/**
 	 * Last time that the connection was established.
 	 */
 	private long _lastPolled = -1;
+
+	/**
+	 * Name of this monitor. A default name is generated if set to {@code null}.
+	 */
+	@Nullable
+	private String _name = null;
+
+	/**
+	 * Initializer called by {@link #initialize()} method.
+	 */
+	@Nullable
+	private CheckedRunnable<?> _initializer = null;
+
+	/**
+	 * Check called by {@link #poll()} method.
+	 */
+	@Nullable
+	private CheckedRunnable<?> _check = null;
+
+	/**
+	 * Finalizer called by {@link #stopped()} method.
+	 */
+	@Nullable
+	private Runnable _finalizer = null;
 
 	/**
 	 * Constructs a new monitor that polls an entity at regular intervals.
 	 *
 	 * @param pollTime Time to wait after polling the entity.
 	 */
-	protected PollingMonitor( final int pollTime )
+	public PollingMonitor( final int pollTime )
 	{
 		_pollTime = pollTime;
 	}
@@ -87,6 +131,71 @@ implements ResourceMonitor
 		_pollTime = pollTime;
 	}
 
+	public int getInitialExceptionDelay()
+	{
+		return _initialExceptionDelay;
+	}
+
+	public void setInitialExceptionDelay( final int initialExceptionDelay )
+	{
+		_initialExceptionDelay = initialExceptionDelay;
+	}
+
+	public int getMaximumExceptionMaxDelay()
+	{
+		return _maximumExceptionMaxDelay;
+	}
+
+	public void setMaximumExceptionMaxDelay( final int maximumExceptionMaxDelay )
+	{
+		_maximumExceptionMaxDelay = maximumExceptionMaxDelay;
+	}
+
+	@Nullable
+	public CheckedRunnable<?> getInitializer()
+	{
+		return _initializer;
+	}
+
+	public void setInitializer( @Nullable final CheckedRunnable<?> initializer )
+	{
+		_initializer = initializer;
+	}
+
+	@Nullable
+	public CheckedRunnable<?> getCheck()
+	{
+		return _check;
+	}
+
+	public void setCheck( @Nullable final CheckedRunnable<?> check )
+	{
+		_check = check;
+	}
+
+	@Nullable
+	public Runnable getFinalizer()
+	{
+		return _finalizer;
+	}
+
+	public void setFinalizer( @Nullable final Runnable finalizer )
+	{
+		_finalizer = finalizer;
+	}
+
+	@NotNull
+	@Override
+	public String getName()
+	{
+		return ( _name != null ) ? _name : "PollingMonitor (polling time: " + getPollTime() + "ms, " + ( ( getCheck() != null ) ? ", check: " + getCheck() : "" );
+	}
+
+	public void setName( @Nullable final String name )
+	{
+		_name = name;
+	}
+
 	public boolean isRunning()
 	{
 		return _running;
@@ -98,9 +207,9 @@ implements ResourceMonitor
 		return _lastException;
 	}
 
-	public void setLastException( @Nullable final Exception lastException )
+	public int getFailCount()
 	{
-		_lastException = lastException;
+		return _failCount;
 	}
 
 	public long getLastPolled()
@@ -138,7 +247,6 @@ implements ResourceMonitor
 		return result;
 	}
 
-
 	/**
 	 * Performs any initialization needed for the monitor. If an exception is
 	 * thrown, the monitor will shut down.
@@ -146,8 +254,15 @@ implements ResourceMonitor
 	 * @throws Exception if any exception occurs during initialization,
 	 * preventing the monitor from being run.
 	 */
-	protected abstract void initialize()
-	throws Exception;
+	protected void initialize()
+	throws Exception
+	{
+		final CheckedRunnable<?> initializer = getInitializer();
+		if ( initializer != null )
+		{
+			initializer.run();
+		}
+	}
 
 	/**
 	 * Polls the monitored entity. If an exception is thrown, the monitor keeps
@@ -156,12 +271,20 @@ implements ResourceMonitor
 	 *
 	 * @throws Exception if any exception occurs while polling.
 	 */
-	protected abstract void poll()
-	throws Exception;
+	protected void poll()
+	throws Exception
+	{
+		final CheckedRunnable<?> check = getCheck();
+		if ( check != null )
+		{
+			check.run();
+		}
+	}
 
 	@Override
 	public void run()
 	{
+		_stop = false;
 		_running = true;
 		_lastException = null;
 
@@ -171,18 +294,19 @@ implements ResourceMonitor
 			initialize();
 
 			String lastException = null;
-			final int pollTime = getPollTime();
-			while ( !Thread.interrupted() )
+			while ( !Thread.interrupted() && !_stop )
 			{
 				try
 				{
 					poll();
 					_lastPolled = System.currentTimeMillis();
 					_lastException = null;
+					_failCount = 0;
 				}
 				catch ( final Exception e )
 				{
 					_lastException = e;
+					_failCount++;
 					final StringWriter w = new StringWriter();
 					e.printStackTrace( new PrintWriter( w, true ) );
 					final String exceptionMessage = w.toString();
@@ -197,14 +321,22 @@ implements ResourceMonitor
 					}
 				}
 
-				try
+				final int failCount = getFailCount();
+				final int initialDelay;
+				final int maximumDelay;
+				final int delay;
+				if ( failCount > 0 )
 				{
-					Thread.sleep( pollTime );
+					initialDelay = Math.max( 1000, getInitialExceptionDelay() );
+					maximumDelay = Math.min( Math.max( 60000, getMaximumExceptionMaxDelay() ), 3600000 );
+					delay = Math.min( initialDelay * failCount, maximumDelay );
 				}
-				catch ( final InterruptedException ignored )
+				else
 				{
-					break;
+					delay = getPollTime();
 				}
+
+				sleep( delay );
 			}
 		}
 		catch ( final Exception e )
@@ -215,14 +347,70 @@ implements ResourceMonitor
 		finally
 		{
 			_running = false;
+			_stop = false;
 			try
 			{
 				LOG.info( "Shutting down monitor." );
-				stop();
+				stopped();
 			}
 			catch ( final Exception e )
 			{
 				LOG.error( "Failed to (cleanly) shutdown monitor.", e );
+			}
+		}
+	}
+
+	/**
+	 * Internal helper-method to suspend the current thread for the given
+	 * amount of time.
+	 *
+	 * @param time Time to sleep in milliseconds.
+	 *
+	 * @return {@code true} if process should continue normally;
+	 * {@code false} if the monitor was interrupted/should stop.
+	 *
+	 * @throws IllegalArgumentException if the value of {@code millis} is negative
+	 */
+	protected boolean sleep( final int time )
+	{
+		boolean result = true;
+		for ( int remaining = time; ( remaining > 0 ) && !_stop; remaining -= 1000 )
+		{
+			try
+			{
+				//noinspection BusyWait
+				Thread.sleep( Math.min( 1000, remaining ) );
+			}
+			catch ( final InterruptedException ignored )
+			{
+				result = false;
+				break;
+			}
+		}
+		return result && !_stop;
+	}
+
+	@Override
+	public void stop()
+	{
+		_stop = true;
+	}
+
+	/**
+	 * This method is called when the monitor has stopped.
+	 */
+	protected void stopped()
+	{
+		final Runnable finalizer = getFinalizer();
+		if ( finalizer != null )
+		{
+			try
+			{
+				finalizer.run();
+			}
+			catch ( final Exception e )
+			{
+				LOG.error( "stop() finalizer threw exception: " + e, e );
 			}
 		}
 	}
