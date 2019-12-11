@@ -38,6 +38,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( { "UnusedReturnValue", "DuplicatedCode" } )
 public class CollectionTools
 {
 	/**
@@ -137,10 +138,11 @@ public class CollectionTools
 	 * @param map   Map to be modified.
 	 * @param key   Key to change the value of.
 	 * @param value Amount to be added to the current value of the key.
+	 * @param <K>   Key type.
 	 *
 	 * @return The value that is stored in the map.
 	 */
-	public static <K> int addToValue( final Map<K, Integer> map, final K key, final int value )
+	public static <K> int addToValue( @NotNull final Map<K, Integer> map, final K key, final int value )
 	{
 		final Integer oldValue = map.get( key );
 		final int result = ( oldValue != null ) ? value + oldValue : value;
@@ -156,10 +158,11 @@ public class CollectionTools
 	 * @param map   Map to be modified.
 	 * @param key   Key to change the value of.
 	 * @param value Amount to be added to the current value of the key.
+	 * @param <K>   Key type.
 	 *
 	 * @return The value that is stored in the map.
 	 */
-	public static <K> float addToValue( final Map<K, Float> map, final K key, final float value )
+	public static <K> float addToValue( @NotNull final Map<K, Float> map, final K key, final float value )
 	{
 		final Float oldValue = map.get( key );
 		final float result = ( oldValue != null ) ? value + oldValue : value;
@@ -175,10 +178,11 @@ public class CollectionTools
 	 * @param map   Map to be modified.
 	 * @param key   Key to change the value of.
 	 * @param value Amount to be added to the current value of the key.
+	 * @param <K>   Key type.
 	 *
 	 * @return The value that is stored in the map.
 	 */
-	public static <K> BigDecimal addToValue( final Map<K, BigDecimal> map, final K key, final BigDecimal value )
+	public static <K> BigDecimal addToValue( @NotNull final Map<K, BigDecimal> map, final K key, final BigDecimal value )
 	{
 		final BigDecimal oldValue = map.get( key );
 		final BigDecimal result = ( oldValue != null ) ? oldValue.add( value ) : value;
@@ -194,10 +198,11 @@ public class CollectionTools
 	 * @param map   Map to be modified.
 	 * @param key   Key to change the value of.
 	 * @param value Amount to be added to the current value of the key.
+	 * @param <K>   Key type.
 	 *
 	 * @return The value that is stored in the map.
 	 */
-	public static <K> double addToValue( final Map<K, Double> map, final K key, final double value )
+	public static <K> double addToValue( @NotNull final Map<K, Double> map, final K key, final double value )
 	{
 		final Double oldValue = map.get( key );
 		final double result = ( oldValue != null ) ? value + oldValue : value;
@@ -211,6 +216,7 @@ public class CollectionTools
 	 * @param collection Collection of objects to get values from.
 	 * @param fieldName  Name of field whose values to get.
 	 * @param fieldType  Field type.
+	 * @param <T>        Element/field type.
 	 *
 	 * @return List of values from collection.
 	 *
@@ -230,6 +236,8 @@ public class CollectionTools
 	 * @param collection Collection of objects to get values from.
 	 * @param fieldName  Name of field whose values to get.
 	 * @param fieldType  Field type.
+	 * @param <T>        Field/element type.
+	 * @param <C>        Collection type.
 	 *
 	 * @return {@code result} argument value.
 	 *
@@ -282,6 +290,7 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <T>          Property/element type.
 	 *
 	 * @return New collection with property values.
 	 *
@@ -301,6 +310,8 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <T>          Property/element type.
+	 * @param <C>          Collection type.
 	 *
 	 * @return {@code result} argument value.
 	 *
@@ -422,6 +433,7 @@ public class CollectionTools
 	 * Get first element from {@link Iterable}.
 	 *
 	 * @param iterable Iterable to get first element from.
+	 * @param <T>      Element type.
 	 *
 	 * @return First element by iterator of {@code iterable}.
 	 *
@@ -429,8 +441,24 @@ public class CollectionTools
 	 */
 	public static <T> T getFirst( @NotNull final Iterable<? extends T> iterable )
 	{
-		final Iterator<? extends T> itereator = iterable.iterator();
-		return itereator.next();
+		return iterable.iterator().next();
+	}
+
+	/**
+	 * Get first element from {@link Iterable} or default if iterator provides
+	 * no elements at all.
+	 *
+	 * @param iterable     Iterable to get first element from.
+	 * @param defaultValue Value to return if iterable provides no elements.
+	 * @param <T>          Element type.
+	 *
+	 * @return First element by iterator of {@code iterable};
+	 * {@code defaultValue} if iterable provides no elements.
+	 */
+	public static <T> T getFirstOrDefault( @NotNull final Iterable<? extends T> iterable, final T defaultValue )
+	{
+		final Iterator<? extends T> iterator = iterable.iterator();
+		return iterator.hasNext() ? iterator.next() : defaultValue;
 	}
 
 	/**
@@ -440,6 +468,7 @@ public class CollectionTools
 	 *
 	 * @return {@link Class} for {@link List}
 	 */
+	@NotNull
 	public static <E> Class<List<E>> getListClass()
 	{
 		final Class<?> listClass = List.class;
@@ -454,6 +483,7 @@ public class CollectionTools
 	 *
 	 * @return {@link Class} for {@link Map}
 	 */
+	@NotNull
 	public static <K, V> Class<Map<K, V>> getMapClass()
 	{
 		final Class<?> mapClass = Map.class;
@@ -467,6 +497,7 @@ public class CollectionTools
 	 *
 	 * @return {@link Class} for {@link Set}
 	 */
+	@NotNull
 	public static <E> Class<Set<E>> getSetClass()
 	{
 		final Class<?> setClass = Set.class;
@@ -481,12 +512,15 @@ public class CollectionTools
 	 * @param collection Collection of objects to get values from.
 	 * @param fieldName  Name of field whose values to get.
 	 * @param fieldType  Field type.
+	 * @param <K>        Key/field type.
+	 * @param <V>        Value type.
 	 *
 	 * @return Map with elements mapped by field value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, V> getMappedByField( @NotNull final Collection<V> collection, @NotNull final String fieldName, @NotNull final Class<K> fieldType )
 	{
 		try
@@ -534,12 +568,15 @@ public class CollectionTools
 	 * @param collection Collection of objects to get values from.
 	 * @param fieldName  Name of field whose values to get.
 	 * @param fieldType  Field type.
+	 * @param <K>        Key/field type.
+	 * @param <V>        Value type.
 	 *
 	 * @return Map with elements mapped by field value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, List<V>> getGroupByField( @NotNull final Collection<V> collection, @NotNull final String fieldName, @NotNull final Class<K> fieldType )
 	{
 		return getGroupByField( new LinkedHashMap<K, List<V>>( collection.size() ), collection, fieldName, fieldType );
@@ -554,12 +591,15 @@ public class CollectionTools
 	 * @param collection Collection of objects to get values from.
 	 * @param fieldName  Name of field whose values to get.
 	 * @param fieldType  Field type.
+	 * @param <K>        Key/field type.
+	 * @param <V>        Value type.
 	 *
 	 * @return Map with elements mapped by field value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, List<V>> getGroupByField( @NotNull final Map<K, List<V>> result, @NotNull final Iterable<V> collection, @NotNull final String fieldName, @NotNull final Class<K> fieldType )
 	{
 		try
@@ -613,6 +653,7 @@ public class CollectionTools
 	 * @param collection   Collection of objects.
 	 * @param propertyName Name of property whose values to match.
 	 * @param value        Required property value.
+	 * @param <T>          Element type.
 	 *
 	 * @return Element with the given value; {@code null} if element was not
 	 * found.
@@ -649,7 +690,6 @@ public class CollectionTools
 				}
 			}
 
-			//noinspection ConstantConditions
 			return result;
 		}
 		catch ( final NoSuchMethodException e )
@@ -674,12 +714,15 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <K>          Key/property type.
+	 * @param <V>          Value type.
 	 *
 	 * @return Map with elements mapped by property value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, V> getMappedByProperty( @NotNull final Collection<V> collection, @NotNull final String propertyName, @NotNull final Class<K> propertyType )
 	{
 		return getMappedByProperty( new LinkedHashMap<K, V>( collection.size() ), collection, propertyName, propertyType );
@@ -694,13 +737,16 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <K>          Key/property type.
+	 * @param <V>          Value type.
 	 *
 	 * @return Map with elements mapped by property value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
-	public static <K, V> Map<K, V> getMappedByProperty( final Map<K, V> result, @NotNull final Iterable<V> collection, @NotNull final String propertyName, @NotNull final Class<K> propertyType )
+	@NotNull
+	public static <K, V> Map<K, V> getMappedByProperty( @NotNull final Map<K, V> result, @NotNull final Iterable<V> collection, @NotNull final String propertyName, @NotNull final Class<K> propertyType )
 	{
 		try
 		{
@@ -750,12 +796,15 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <K>          Key/property type.
+	 * @param <V>          Value type.
 	 *
 	 * @return Map with elements mapped by property value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, List<V>> getGroupByProperty( @NotNull final Collection<V> collection, @NotNull final String propertyName, @NotNull final Class<K> propertyType )
 	{
 		return getGroupByProperty( new LinkedHashMap<K, List<V>>( collection.size() ), collection, propertyName, propertyType );
@@ -770,12 +819,15 @@ public class CollectionTools
 	 * @param collection   Collection of objects to get values from.
 	 * @param propertyName Name of property whose values to get.
 	 * @param propertyType Property type.
+	 * @param <K>          Key/property type.
+	 * @param <V>          Value type.
 	 *
 	 * @return Map with elements mapped by property value.
 	 *
 	 * @throws IllegalArgumentException if an argument or element is {@code
 	 * null}.
 	 */
+	@NotNull
 	public static <K, V> Map<K, List<V>> getGroupByProperty( @NotNull final Map<K, List<V>> result, @NotNull final Iterable<? extends V> collection, @NotNull final String propertyName, @NotNull final Class<K> propertyType )
 	{
 		try
@@ -881,6 +933,8 @@ public class CollectionTools
 	 * @param sorted  List to be sorted.
 	 * @param related List of related values to be re-ordered in exactly the
 	 *                same way as {@code sorted}.
+	 * @param <E>     Element type of list to be sorted.
+	 * @param <R>     Element type of related list.
 	 */
 	public static <E extends Comparable<? super E>, R> void sortRelated( @NotNull final List<E> sorted, @NotNull final List<R> related )
 	{
@@ -909,6 +963,8 @@ public class CollectionTools
 	 * @param related    List of related values to be re-ordered in exactly the
 	 *                   same way as {@code sorted}.
 	 * @param comparator Specifies the ordering of elements to be sorted.
+	 * @param <E>        Element type of list to be sorted.
+	 * @param <R>        Element type of related list.
 	 */
 	public static <E, R> void sortRelated( @NotNull final List<E> sorted, @NotNull final List<R> related, @NotNull final Comparator<? super E> comparator )
 	{
@@ -934,6 +990,8 @@ public class CollectionTools
 	 * @param related         List of related values to be re-ordered in exactly
 	 *                        the same way as {@code sorted}.
 	 * @param entryComparator Specifies the ordering of pairs.
+	 * @param <E>             Element type of list to be sorted.
+	 * @param <R>             Element type of related list.
 	 */
 	private static <E, R> void sortRelatedImpl( @NotNull final List<E> sorted, @NotNull final List<R> related, @NotNull final Comparator<Duet<E, R>> entryComparator )
 	{
@@ -942,7 +1000,7 @@ public class CollectionTools
 			throw new IllegalArgumentException( "sorted.size() != related.size()" );
 		}
 
-		//noinspection unchecked,rawtypes
+		// noinspection unchecked
 		final Duet<E, R>[] entries = new Duet[ sorted.size() ];
 
 		{
@@ -982,6 +1040,7 @@ public class CollectionTools
 	 *
 	 * @param destination Collection to add elements to.
 	 * @param source      Collection get elements from.
+	 * @param <T>         Element type.
 	 *
 	 * @return Concatenation of the two collections.
 	 */
@@ -1008,6 +1067,7 @@ public class CollectionTools
 	 * Creates a map from the given array of key-value pairs.
 	 *
 	 * @param entries Contents of the map, as key-value pairs.
+	 * @param <T>     Key/value type.
 	 *
 	 * @return Map for the given entries.
 	 *
@@ -1036,6 +1096,7 @@ public class CollectionTools
 	 * Creates a map from the given list of key-value pairs.
 	 *
 	 * @param entries Contents of the map, as key-value pairs.
+	 * @param <T>     Key/value type.
 	 *
 	 * @return Map for the given entries.
 	 *
@@ -1073,6 +1134,7 @@ public class CollectionTools
 	 *
 	 * @return {@link Iterable}.
 	 */
+	@NotNull
 	public static <T> Iterable<T> iterable( @NotNull final Iterator<T> iterator )
 	{
 		return new Iterable<T>()
