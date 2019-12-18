@@ -29,6 +29,7 @@ package com.numdata.oss;
 import java.io.*;
 import java.math.*;
 import java.net.*;
+import java.nio.charset.*;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
@@ -1643,6 +1644,39 @@ public final class TextTools
 			try
 			{
 				result = loadText( is );
+			}
+			finally
+			{
+				is.close();
+			}
+		}
+		catch ( final IOException e )
+		{ /* ignore, will return null */ }
+
+		return result;
+	}
+
+	/**
+	 * Loads the contents of a text file. This method should be used to quickly
+	 * load a text file without to much ding dong.
+	 *
+	 * @param url URL to load text from.
+	 * @param charset Charset to use.
+	 *
+	 * @return Contents of the file; {@code null} if there was a problem reading
+	 * the file.
+	 */
+	@Nullable
+	public static String loadText( final URL url, final Charset charset )
+	{
+		String result = null;
+
+		try
+		{
+			final InputStream is = url.openStream();
+			try
+			{
+				result = loadText( new InputStreamReader( is, charset ) );
 			}
 			finally
 			{
