@@ -211,9 +211,105 @@ public class CalendarTools
 	 * @see #getDateInt
 	 * @see #gregorianDate
 	 */
+	@NotNull
 	public static Date getDateByInt( final int dateInt )
 	{
-		return gregorianDate( dateInt / 10000, ( ( dateInt / 100 ) % 100 ) - 1, dateInt % 100 );
+		return getDateCalendarByInt( dateInt ).getTime();
+	}
+
+	/**
+	 * Returns date that is represented by an integer value.
+	 *
+	 * @param dateInt Integer date (e.g. 20370708 = July 8th 2037).
+	 *
+	 * @return {@link Calendar}.
+	 *
+	 * @see #getDateInt
+	 * @see #gregorianDate
+	 */
+	@NotNull
+	public static Calendar getDateCalendarByInt( final int dateInt )
+	{
+		//noinspection MagicConstant
+		return new GregorianCalendar( dateInt / 10000, ( ( dateInt / 100 ) % 100 ) - 1, dateInt % 100 );
+	}
+
+	/**
+	 * Returns long integer representing date and time.
+	 *
+	 * The result is calculated as follows: year * 10000000000000 + month * 100000000000 + day * 1000000000 + hour * 10000000 + minute * 100000 + second * 1000 + millisecond.
+	 *
+	 * Example: august 10th of 2049 at 23:07:33.250 would be 20490810230733250.
+	 *
+	 * @param date Date to get date/time long integer for.
+	 *
+	 * @return Long integer date/time.
+	 */
+	public static long getDateTimeLong( @NotNull final Date date )
+	{
+		return getDateTimeLong( getInstance( date ) );
+	}
+
+	/**
+	 * Returns long integer representing date and time.
+	 *
+	 * The result is calculated as follows: year * 10000000000000 + month * 100000000000 + day * 1000000000 + hour * 10000000 + minute * 100000 + second * 1000 + millisecond.
+	 *
+	 * Example: august 10th of 2049 at 23:07:33.250 would be 20490810230733250.
+	 *
+	 * @param calendar Calendar to get date/time long integer for.
+	 *
+	 * @return Long integer date/time.
+	 */
+	public static long getDateTimeLong( @NotNull final Calendar calendar )
+	{
+		return 10000000000000L * calendar.get( Calendar.YEAR ) +
+		       100000000000L * ( calendar.get( Calendar.MONTH ) + 1 ) +
+		       1000000000L * calendar.get( Calendar.DAY_OF_MONTH ) +
+		       10000000L * calendar.get( Calendar.HOUR_OF_DAY ) +
+		       100000L * calendar.get( Calendar.MINUTE ) +
+		       1000L * calendar.get( Calendar.SECOND ) +
+		       calendar.get( Calendar.MILLISECOND );
+	}
+
+	/**
+	 * Returns date/time that is represented by a long integer value.
+	 *
+	 * @param dateTimeLong Long integer date/time (e.g. 20490810230733250 = august 10th of 2049 at 23:07:33.250).
+	 *
+	 * @return {@link Date}.
+	 *
+	 * @see #getDateTimeLong
+	 * @see #gregorianDate
+	 */
+	@NotNull
+	public static Date getDateTimeByLong( final long dateTimeLong )
+	{
+		return getDateTimeCalendarByLong( dateTimeLong ).getTime();
+	}
+
+	/**
+	 * Returns date/time that is represented by a long integer value.
+	 *
+	 * @param dateTimeLong Long integer date/time (e.g. 20490810230733250 = august 10th of 2049 at 23:07:33.250).
+	 *
+	 * @return {@link Calendar}.
+	 *
+	 * @see #getDateTimeLong
+	 * @see #gregorianDate
+	 */
+	@NotNull
+	public static Calendar getDateTimeCalendarByLong( final long dateTimeLong )
+	{
+		//noinspection MagicConstant
+		final GregorianCalendar result = new GregorianCalendar( (int)( dateTimeLong / 10000000000000L ),
+		                                                        ( (int)( dateTimeLong / 100000000000L ) % 100 ) - 1,
+		                                                        (int)( dateTimeLong / 1000000000L ) % 100,
+		                                                        (int)( dateTimeLong / 10000000L % 100 ),
+		                                                        (int)( dateTimeLong / 100000L % 100 ),
+		                                                        (int)( dateTimeLong / 1000L % 100 ) );
+		result.set( Calendar.MILLISECOND, (int)( dateTimeLong % 1000L ) );
+		return result;
 	}
 
 	/**
@@ -222,6 +318,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the current date, with time fields set to zero.
 	 */
+	@NotNull
 	public static Calendar getTimeInstance()
 	{
 		final Calendar calendar = Calendar.getInstance();
