@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -247,4 +247,19 @@ public class TestTextTools
 		assertEquals( "Unexpected result for decapitalize( '1ABCDef )'", "1ABCDef", decapitalize( "1ABCDef" ) );
 		assertEquals( "Unexpected result for decapitalize( '1ABCDEF )'", "1ABCDEF", decapitalize( "1ABCDEF" ) );
 	}
+
+	@Test
+	public void testReplace()
+	{
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', null, null )", "abcdefghabcdefgh", replace( "abcdefghabcdefgh", null, null ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', null, 'xxx' )", "abcdefghabcdefgh", replace( "abcdefghabcdefgh", null, "xxx" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'abc', 'ABC' )", "ABCdefghABCdefgh", replace( "abcdefghabcdefgh", "abc", "ABC" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'abc', '' )", "defghdefgh", replace( "abcdefghabcdefgh", "abc", "" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'abc', null )", "defghdefgh", replace( "abcdefghabcdefgh", "abc", null ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'abcdefghabcdefgh', 'abcdefghabcdefgh' )", "abcdefghabcdefgh", replace( "abcdefghabcdefgh", "abcdefghabcdefgh", "abcdefghabcdefgh" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'abcdefgh', 'abcdefgh' )", "abcdefghabcdefgh", replace( "abcdefghabcdefgh", "abcdefgh", "abcdefgh" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefghabcdefgh', 'fghi', 'jklm' )", "abcdefghabcdefgh", replace( "abcdefghabcdefgh", "fghi", "jklm" ) );
+		assertEquals( "Unexpected result for replace( 'abcdefgh', 'abcdefghabcdefgh', 'xxx' )", "abcdefgh", replace( "abcdefgh", "abcdefghabcdefgh", "xxx" ) );
+	}
+
 }

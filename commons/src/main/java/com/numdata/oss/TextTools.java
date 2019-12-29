@@ -1660,7 +1660,7 @@ public final class TextTools
 	 * Loads the contents of a text file. This method should be used to quickly
 	 * load a text file without to much ding dong.
 	 *
-	 * @param url URL to load text from.
+	 * @param url     URL to load text from.
 	 * @param charset Charset to use.
 	 *
 	 * @return Contents of the file; {@code null} if there was a problem reading
@@ -1854,6 +1854,80 @@ public final class TextTools
 			}
 
 			result = sb.toString();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Replaces all occurrences of 'find' in 'source' with 'replace'.
+	 *
+	 * @param source  Source text.
+	 * @param find    Search string.
+	 * @param replace Replacement string.
+	 *
+	 * @return Result text.
+	 */
+	@Nullable
+	@Contract( value = "null, _, _ -> null; !null, _, _ -> !null", pure = true )
+	public static String replace( @Nullable final String source, @Nullable final String find, @Nullable final String replace )
+	{
+		final String result;
+
+		if ( ( source == null ) || ( find == null ) )
+		{
+			result = source;
+		}
+		else
+		{
+			final int sourceLength = source.length();
+			final int findLength = find.length();
+			if ( ( findLength == 0 ) || ( findLength > sourceLength ) )
+			{
+				result = source;
+			}
+			else
+			{
+				final int replaceLength = ( replace != null ) ? replace.length() : 0;
+				if ( ( findLength == replaceLength ) && find.equals( replace ) )
+				{
+					result = source;
+				}
+				else
+				{
+					int pos = source.indexOf( find );
+					if ( pos < 0 )
+					{
+						result = source;
+					}
+					else
+					{
+						final boolean haveReplacement = ( replaceLength > 0 );
+						final StringBuilder sb = new StringBuilder( sourceLength + ( ( replaceLength > findLength ) ? 16 * ( replaceLength - findLength ) : 0 ) );
+
+						int start = 0;
+						do
+						{
+							sb.append( source, start, pos );
+							if ( haveReplacement )
+							{
+								sb.append( replace );
+							}
+
+							start = pos + findLength;
+							pos = source.indexOf( find, start );
+						}
+						while ( pos > 0 );
+
+						if ( start < sourceLength )
+						{
+							sb.append( source, start, sourceLength );
+						}
+
+						result = sb.toString();
+					}
+				}
+			}
 		}
 
 		return result;
