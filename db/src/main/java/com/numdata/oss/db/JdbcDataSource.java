@@ -52,18 +52,28 @@ implements DataSource
 	private static final ClassLogger LOG = ClassLogger.getFor( JdbcDataSource.class );
 
 	/**
+	 * Class name of JDBC driver ({@code null} may be provided if the required
+	 * JDBC driver is already registered in some earlier stage).
+	 */
+	@Nullable
+	private final String _jdbcDriver;
+
+	/**
 	 * URL of the database server.
 	 */
+	@NotNull
 	private final String _databaseURL;
 
 	/**
 	 * Database user on whose behalf the connection is being made.
 	 */
+	@Nullable
 	private final String _user;
 
 	/**
 	 * User's password.
 	 */
+	@Nullable
 	private final String _password;
 
 	/**
@@ -80,6 +90,7 @@ implements DataSource
 	/**
 	 * Destination for log messages.
 	 */
+	@SuppressWarnings( { "IOResourceOpenedButNotSafelyClosed", "UseOfSystemOutOrSystemErr" } )
 	private PrintWriter _log = new PrintWriter( System.err );
 
 	/**
@@ -103,11 +114,12 @@ implements DataSource
 	 *
 	 * @throws SQLException if the specified JDBC driver is not available.
 	 */
-	public JdbcDataSource( @Nullable final String jdbcDriver, final String databaseURL, @Nullable final String user, @Nullable final String password )
+	public JdbcDataSource( @Nullable final String jdbcDriver, @NotNull final String databaseURL, @Nullable final String user, @Nullable final String password )
 	throws SQLException
 	{
 		LOG.debug( "JdbcDataSource( " + TextTools.quote( jdbcDriver ) + ", " + TextTools.quote( databaseURL ) + ", " + TextTools.quote( user ) + " )" );
 
+		_jdbcDriver = jdbcDriver;
 		_databaseURL = databaseURL;
 		_user = user;
 		_password = password;
@@ -141,6 +153,31 @@ implements DataSource
 
 			DriverManager.registerDriver( driverInstance );
 		}
+	}
+
+	@Nullable
+	public String getJdbcDriver()
+	{
+		return _jdbcDriver;
+	}
+
+	@SuppressWarnings( "WeakerAccess" )
+	@NotNull
+	public String getDatabaseURL()
+	{
+		return _databaseURL;
+	}
+
+	@Nullable
+	public String getUser()
+	{
+		return _user;
+	}
+
+	@Nullable
+	public String getPassword()
+	{
+		return _password;
 	}
 
 	/**
@@ -198,11 +235,7 @@ implements DataSource
 		/*
 		 * Sanity check
 		 */
-		final String url = _databaseURL;
-		if ( url == null )
-		{
-			throw new SQLException( "no database URL is set" );
-		}
+		final String url = getDatabaseURL();
 
 		/*
 		 * Get existing connection from connection pool, or try to create
@@ -234,8 +267,8 @@ implements DataSource
 			// TODO: Better would be to use a 'DataSource' internally as well.
 			// That would require different values for 'jdbcDriver' though.
 			// And may prove to be more difficult for configuration via web forms.
-			DriverManager.setLoginTimeout( _loginTimeout );
-			result = DriverManager.getConnection( url, _user, _password );
+			DriverManager.setLoginTimeout( getLoginTimeout() );
+			result = DriverManager.getConnection( url, getUser(), getPassword() );
 		}
 		else
 		{
@@ -279,7 +312,8 @@ implements DataSource
 	public Connection getConnection( final String username, final String password )
 	throws SQLException
 	{
-		if ( !_user.equals( username ) || !_password.equals( password ) )
+		if ( ( ( username != null ) && !username.equals( getUser() ) ) ||
+		     ( ( password != null ) && !password.equals( getPassword() ) ) )
 		{
 			throw new SQLException( "DbPool user/password mismatch!" );
 		}
@@ -317,6 +351,7 @@ implements DataSource
 		throw new SQLFeatureNotSupportedException( "We don't use java.util.logging.Logger" );
 	}
 
+	@SuppressWarnings( "SpellCheckingInspection" )
 	@Override
 	public <T> T unwrap( final Class<T> iface )
 	throws SQLException
@@ -324,6 +359,7 @@ implements DataSource
 		throw new SQLException( "not a wrapper" );
 	}
 
+	@SuppressWarnings( "SpellCheckingInspection" )
 	@Override
 	public boolean isWrapperFor( final Class<?> iface )
 	{
@@ -751,6 +787,7 @@ implements DataSource
 			return _realConnection.getClientInfo();
 		}
 
+		@SuppressWarnings( "SpellCheckingInspection" )
 		@Override
 		public <T> T unwrap( final Class<T> iface )
 		throws SQLException
@@ -759,6 +796,7 @@ implements DataSource
 			return iface.isInstance( realConnection ) ? (T)realConnection : realConnection.unwrap( iface );
 		}
 
+		@SuppressWarnings( "SpellCheckingInspection" )
 		@Override
 		public boolean isWrapperFor( final Class<?> iface )
 		throws SQLException
