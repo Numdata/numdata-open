@@ -348,11 +348,11 @@ implements ResourceMonitor
 
 				if ( TextTools.equals( logMessage, lastExceptionMessage ) )
 				{
-					LOG.error( "Again: " + logMessage );
+					LOG.warn( "Again: " + e );
 				}
 				else
 				{
-					LOG.error( exceptionMessage );
+					LOG.warn( "Failed to check for updates: " + e, e );
 					lastExceptionMessage = logMessage;
 				}
 			}
