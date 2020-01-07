@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1959,5 +1959,48 @@ public class DataStreamTools
 		}
 
 		return result;
+	}
+
+	/**
+	 * Skips the specified number of bytes, unless the end of the stream is
+	 * reached first.
+	 *
+	 * @param is Input stream.
+	 * @param n  Number of bytes to skip.
+	 *
+	 * @return {@code true} if the specified number of bytes was skipped;
+	 *         {@code false} if the end of the stream was reached first.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 * @throws IllegalArgumentException if {@code n} is zero or negative.
+	 */
+	public static boolean skipFully( @NotNull final InputStream is, final long n )
+	throws IOException
+	{
+		if ( n <= 0 )
+		{
+			throw new IllegalArgumentException( "Can't skip " + n + " bytes" );
+		}
+
+		long remaining = n - 1;
+		while ( remaining > 0 )
+		{
+			final long skipped = is.skip( remaining );
+			if ( skipped > 0 )
+			{
+				remaining -= skipped;
+			}
+			else if ( is.read() != -1 )
+			{
+				remaining--;
+			}
+			else
+			{
+				break; // and return false, because EOF was reached while remaining > 0.
+			}
+		}
+
+		// Skip the last byte using read to verify that we are not skipping beyond EOF. (This can happen with e.g. 'FileInputStream.skip'.)
+		return ( remaining == 0 ) && is.read() != -1;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -182,20 +182,24 @@ extends FileProcessingListener
 		int lineCount = 0;
 		final List<String> lines;
 
-		final InputStream is = monitor.readFile( handle );
+		InputStream is = monitor.readFile( handle );
 		try
 		{
 			// try to continue reading from last position
 			final long readOffset;
 			if ( sameFile && newLinesOnly && ( lastLength > 0 ) )
 			{
-				final long skipped = is.skip( lastLength );
-				if ( trace )
+				if ( DataStreamTools.skipFully( is, lastLength ) )
 				{
-					LOG.trace( "Last length was " + lastLength + " => skipped over " + skipped + " byte(s)" );
+					readOffset = lastLength;
 				}
-
-				readOffset = ( skipped > 0 ) ? skipped : 0;
+				else
+				{
+					LOG.debug( "Failed to skip over " + lastLength + " bytes => start from the beginning" );
+					readOffset = 0;
+					is.close();
+					is = monitor.readFile( handle );
+				}
 			}
 			else
 			{
