@@ -27,7 +27,6 @@
 package com.numdata.oss.io;
 
 import java.io.*;
-import java.nio.charset.*;
 import java.util.*;
 
 import com.numdata.oss.*;
@@ -519,7 +518,7 @@ public class TestDataStreamTools
 		final OutputStream os = new FileOutputStream( file );
 		try
 		{
-			os.write( data.getBytes( StandardCharsets.US_ASCII ) );
+			os.write( data.getBytes( "US-ASCII" ) );
 		}
 		finally
 		{
