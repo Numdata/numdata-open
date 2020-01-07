@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,10 @@
 package com.numdata.oss.io;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.util.*;
 
+import com.numdata.oss.*;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -498,5 +500,48 @@ public class TestDataStreamTools
 
 		final byte[] actual = DataStreamTools.readByteArray( new PipedInputStream( out ) );
 		assertEquals( "Unexpected length.", 10000000, actual.length );
+	}
+
+	/**
+	 * Tests the {@link DataStreamTools#skipFully} method using a
+	 * {@link FileInputStream} (which may claim to skip bytes beyond the end of
+	 * the file).
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	@Test
+	public void skipFully()
+	throws IOException
+	{
+		final String data = "Hello world!";
+
+		final File file = File.createTempFile( "TestFileTools", ".txt" );
+		final OutputStream os = new FileOutputStream( file );
+		try
+		{
+			os.write( data.getBytes( StandardCharsets.US_ASCII ) );
+		}
+		finally
+		{
+			os.close();
+		}
+
+		for ( int skipped = 1; skipped < data.length() * 2; skipped++ )
+		{
+			final FileInputStream is = new FileInputStream( file );
+			try
+			{
+				final boolean success = DataStreamTools.skipFully( is, skipped );
+				assertEquals( "Unexpected return value when skipping " + skipped + " bytes.", skipped <= data.length(), success );
+				assertEquals( "Unexpected data read from stream after skipping " + skipped + " bytes.", success ? data.substring( skipped ) : "", TextTools.loadText( is ) );
+			}
+			finally
+			{
+				is.close();
+			}
+		}
+
+		//noinspection ResultOfMethodCallIgnored
+		file.delete();
 	}
 }
