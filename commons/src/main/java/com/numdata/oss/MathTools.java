@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2007-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,80 @@ public final class MathTools
 	{
 		final double tmp = dividend % divisor;
 		return ( ( tmp != 0.0 ) && ( ( divisor < 0.0 ) != ( tmp < 0.0 ) ) ) ? tmp + divisor : tmp;
+	}
+
+	/**
+	 * Test if the specified values are significantly different or 'almost'
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 *
+	 * @return {@code 0} if the values are within a +/- 0.001 tolerance of each
+	 * other; {@code -1} if {@code value1} is significantly less than {@code
+	 * value2}; {@code 1} if {@code value1} is significantly greater than
+	 * {@code value2};
+	 */
+	public static int significantCompare( final float value1, final float value2 )
+	{
+		final float delta = value1 - value2;
+		return ( delta < -0.001f ) ? -1 : ( delta > 0.001f ) ? 1 : 0;
+	}
+
+	/**
+	 * Test if the specified values are significantly different or 'almost'
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param value1  First value to compare.
+	 * @param value2  Second value to compare.
+	 * @param epsilon Tolerance (always a positive number).
+	 *
+	 * @return {@code 0} if the values are within the given tolerance of each
+	 * other; {@code -1} if {@code value1} is significantly less than {@code
+	 * value2}; {@code 1} if {@code value1} is significantly greater than
+	 * {@code value2};
+	 */
+	public static int significantCompare( final float value1, final float value2, final float epsilon )
+	{
+		final float delta = value1 - value2;
+		return ( delta < -epsilon ) ? -1 : ( delta > epsilon ) ? 1 : 0;
+	}
+
+	/**
+	 * Test if the specified values are significantly different or 'almost'
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param value1 First value to compare.
+	 * @param value2 Second value to compare.
+	 *
+	 * @return {@code 0} if the values are within a +/- 0.001 tolerance of each
+	 * other; {@code -1} if {@code value1} is significantly less than {@code
+	 * value2}; {@code 1} if {@code value1} is significantly greater than
+	 * {@code value2};
+	 */
+	public static int significantCompare( final double value1, final double value2 )
+	{
+		final double delta = value1 - value2;
+		return ( delta < -0.001 ) ? -1 : ( delta > 0.001 ) ? 1 : 0;
+	}
+
+	/**
+	 * Test if the specified values are significantly different or 'almost'
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param value1  First value to compare.
+	 * @param value2  Second value to compare.
+	 * @param epsilon Tolerance (always a positive number).
+	 *
+	 * @return {@code 0} if the values are within the given tolerance of each
+	 * other; {@code -1} if {@code value1} is significantly less than {@code
+	 * value2}; {@code 1} if {@code value1} is significantly greater than
+	 * {@code value2};
+	 */
+	public static int significantCompare( final double value1, final double value2, final double epsilon )
+	{
+		final double delta = value1 - value2;
+		return ( delta < -epsilon ) ? -1 : ( delta > epsilon ) ? 1 : 0;
 	}
 
 	/**
