@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -263,5 +263,31 @@ public class TestMathTools
 		{
 			/* Success */
 		}
+	}
+
+	@Test
+	public void significantCompare()
+	{
+		assertEquals( "Unexpected result from significantCompare( 1.0f, 2.0f )", -1, MathTools.significantCompare( 1.0f, 2.0f ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0f, 2.0f, 0.1f )", -1, MathTools.significantCompare( 1.0f, 2.0f, 0.1f ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 2.0 )", -1, MathTools.significantCompare( 1.0, 2.0 ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 2.0, 0.1 )", -1, MathTools.significantCompare( 1.0, 2.0, 0.1 ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 2.0, 0.1 )", -1, MathTools.significantCompare( 1.0, 2.0, 0.1 ) );
+
+		assertEquals( "Unexpected result from significantCompare( 1.0f, 1.0f )", 0, MathTools.significantCompare( 1.0f, 1.0f ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0f, 1.0f, 0.1f )", 0, MathTools.significantCompare( 1.0f, 1.0f, 0.1f ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0f, 2.0f, 1.0f )", 0, MathTools.significantCompare( 1.0f, 2.0f, 1.0f ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0f, 1.0f, 1.0f )", 0, MathTools.significantCompare( 1.0f, 2.0f, 1.0f ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 1.0 )", 0, MathTools.significantCompare( 1.0, 1.0 ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 1.0, 0.1 )", 0, MathTools.significantCompare( 1.0, 1.0, 0.1 ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 1.0, 0.1 )", 0, MathTools.significantCompare( 1.0, 1.0, 0.1 ) );
+		assertEquals( "Unexpected result from significantCompare( 1.0, 2.0, 1.0 )", 0, MathTools.significantCompare( 1.0, 2.0, 1.0 ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0, 1.0, 1.0 )", 0, MathTools.significantCompare( 1.0, 2.0, 1.0 ) );
+
+		assertEquals( "Unexpected result from significantCompare( 2.0f, 1.0f )", 1, MathTools.significantCompare( 2.0f, 1.0f ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0f, 1.0f, 0.1f )", 1, MathTools.significantCompare( 2.0f, 1.0f, 0.1f ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0, 1.0 )", 1, MathTools.significantCompare( 2.0, 1.0 ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0, 1.0, 0.1 )", 1, MathTools.significantCompare( 2.0, 1.0, 0.1 ) );
+		assertEquals( "Unexpected result from significantCompare( 2.0, 1.0, 0.1 )", 1, MathTools.significantCompare( 2.0, 1.0, 0.1 ) );
 	}
 }
