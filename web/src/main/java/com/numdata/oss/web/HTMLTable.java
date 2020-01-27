@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "UnusedReturnValue" )
 public class HTMLTable
 {
 	/**
@@ -90,7 +91,7 @@ public class HTMLTable
 	/**
 	 * Index of row currently being written (0 = first).
 	 */
-	protected int _row = -1;
+	private int _row = -1;
 
 	/**
 	 * Number of columns in table.
@@ -100,16 +101,19 @@ public class HTMLTable
 	/**
 	 * Column titles (singular array to set table title).
 	 */
+	@Nullable
 	private final String[] _columnNames;
 
 	/**
 	 * Default horizontal alignment of columns.
 	 */
+	@Nullable
 	private HorizontalAlignment[] _columnAlignment;
 
 	/**
 	 * Column classes.
 	 */
+	@Nullable
 	private String[] _columnClasses;
 
 	/**
@@ -160,9 +164,9 @@ public class HTMLTable
 	 * @param columnNames Column titles (singular array to set table title).
 	 * @param columnCount Number of columns in table.
 	 */
-	public HTMLTable( final String[] columnNames, final int columnCount )
+	public HTMLTable( @Nullable final String[] columnNames, final int columnCount )
 	{
-		_columnCount = ( columnCount < 1 ) ? 1 : columnCount;
+		_columnCount = Math.max( columnCount, 1 );
 		_columnNames = ( columnNames != null ) ? columnNames.clone() : null;
 		_columnAlignment = null;
 		_columnClasses = null;
@@ -346,6 +350,7 @@ public class HTMLTable
 	 *
 	 * @return Title of columnIndex ({@code null} for none).
 	 */
+	@Nullable
 	public String getColumnTitle( final int columnIndex )
 	{
 		final String[] names = _columnNames;
@@ -359,6 +364,7 @@ public class HTMLTable
 	 *
 	 * @return Horizontal alignment.
 	 */
+	@NotNull
 	public HorizontalAlignment getColumnAlignment( final int columnIndex )
 	{
 		final HorizontalAlignment[] align = _columnAlignment;
@@ -407,7 +413,7 @@ public class HTMLTable
 	 */
 	public void setColumnAlignment( @NotNull final List<HorizontalAlignment> alignment )
 	{
-		setColumnAlignment( alignment.toArray( new HorizontalAlignment[ alignment.size() ] ) );
+		setColumnAlignment( alignment.toArray( new HorizontalAlignment[ 0 ] ) );
 	}
 
 	/**
@@ -428,6 +434,7 @@ public class HTMLTable
 	 *
 	 * @return Column class; {@code null} if column has no class(es).
 	 */
+	@Nullable
 	public String getColumnClass( final int columnIndex )
 	{
 		final String[] columnClasses = _columnClasses;
@@ -440,7 +447,7 @@ public class HTMLTable
 	 * @param columnIndex Column number.
 	 * @param columnClass Column class(es).
 	 */
-	public void setColumnClass( final int columnIndex, final String columnClass )
+	public void setColumnClass( final int columnIndex, @Nullable final String columnClass )
 	{
 		final int columnCount = getColumnCount();
 		if ( ( columnIndex < 0 ) || ( columnIndex >= columnCount ) )
@@ -465,6 +472,7 @@ public class HTMLTable
 	 * @return Table table; {@code null} if the table has no title (or column
 	 * titles).
 	 */
+	@Nullable
 	public String getTableTitle()
 	{
 		final String[] names = _columnNames;
@@ -477,30 +485,9 @@ public class HTMLTable
 	 *
 	 * @return {@code true} if table has a title string for each of the columns.
 	 */
-	public boolean hasColumnTitles()
+	private boolean hasColumnTitles()
 	{
 		return ( ( _columnNames != null ) && ( _columnNames.length > 1 ) );
-	}
-
-	/**
-	 * Return {@code true} if the table has a title string for the whole table.
-	 *
-	 * @return {@code true} if table has a title string for the whole table.
-	 */
-	public boolean hasTableTitle()
-	{
-		return ( ( _columnNames != null ) && ( _columnNames.length == 1 ) );
-	}
-
-	/**
-	 * Return {@code true} if the table has a title row (either singular or per
-	 * column.
-	 *
-	 * @return {@code true} if table has a title row.
-	 */
-	public boolean hasTitleRow()
-	{
-		return ( ( _columnNames != null ) && ( _columnNames.length > 0 ) );
 	}
 
 	/**
@@ -550,7 +537,7 @@ public class HTMLTable
 		{
 			case BEFORE_TABLE: // nothing done, no <table> yet
 				_state = BEFORE_ROW;
-				writeTableBegin( iw, null );
+				writeTableBegin( iw, null, null, null );
 				_column = 0;
 				_state = BEFORE_COLUMN;
 				writeRowBegin( iw, null );
@@ -606,7 +593,7 @@ public class HTMLTable
 		 * Update column info, write column begin en set state to 'IN_COLUMN'.
 		 */
 		_columnIsHead = isHead;
-		_colspan = ( colspan < 1 ) ? 1 : colspan;
+		_colspan = Math.max( colspan, 1 );
 		_state = IN_COLUMN;
 		writeColumnBegin( iw, _column, _columnIsHead, actualAttributes );
 
@@ -886,7 +873,7 @@ public class HTMLTable
 		{
 			case BEFORE_TABLE: // nothing done, no <table> yet
 				_state = BEFORE_ROW;
-				writeTableBegin( iw, null );
+				writeTableBegin( iw, null, null, null );
 				_state = BEFORE_ROW;
 				break;
 
@@ -1145,22 +1132,6 @@ public class HTMLTable
 	 * derivative classes may enhance this to create more complex layouts.
 	 *
 	 * @param out             IndentingJspWriter to use for output.
-	 * @param tableAttributes Extra attributes for {@code TABLE} element.
-	 *
-	 * @throws IOException if an error occurred while writing content.
-	 */
-	protected void writeTableBegin( @NotNull final IndentingJspWriter out, @Nullable final Properties tableAttributes )
-	throws IOException
-	{
-		writeTableBegin( out, tableAttributes, null, null );
-	}
-
-	/**
-	 * This method is called to write the start of a new table. It basically
-	 * just writes the 'TABLE' tag and table/column titles (is defined), but
-	 * derivative classes may enhance this to create more complex layouts.
-	 *
-	 * @param out             IndentingJspWriter to use for output.
 	 * @param tableAttributes Extra attributes for {@code &lt;table&gt;}
 	 *                        element.
 	 * @param theadAttributes Extra attributes for {@code &lt;thead&gt;}
@@ -1179,13 +1150,14 @@ public class HTMLTable
 		out.indentIn();
 
 		final int columnCount = getColumnCount();
-		if ( hasTableTitle() )
+		final String tableTitle = getTableTitle();
+		if ( tableTitle != null )
 		{
 			out.print( "<thead" );
 			HTMLTools.writeAttributes( out, theadAttributes );
 			out.println( ">" );
 			out.indentIn();
-			writeTableTitle( out, getTableTitle() );
+			writeTableTitle( out, tableTitle );
 			out.indentOut();
 			out.println( "</thead>" );
 		}
@@ -1209,10 +1181,10 @@ public class HTMLTable
 
 			if ( twoRows )
 			{
-				final List<Integer> secondRowColumns = new ArrayList<Integer>( columnCount );
-				final List<HorizontalAlignment> secondRowAlignment = new ArrayList<HorizontalAlignment>( columnCount );
-				final List<String> secondRowTexts = new ArrayList<String>( columnCount );
-				final List<Properties> secondRowAttributes = new ArrayList<Properties>( columnCount );
+				final List<Integer> secondRowColumns = new ArrayList<>( columnCount );
+				final List<HorizontalAlignment> secondRowAlignment = new ArrayList<>( columnCount );
+				final List<String> secondRowTexts = new ArrayList<>( columnCount );
+				final List<Properties> secondRowAttributes = new ArrayList<>( columnCount );
 
 				startColumnTitlesRow( out );
 
@@ -1314,7 +1286,7 @@ public class HTMLTable
 	{
 		newRow( out );
 		newHead( out, getColumnCount(), HorizontalAlignment.CENTER, null );
-		out.print( getTableTitle() );
+		out.print( tableTitle );
 		endColumn( out );
 		endRow( out );
 	}
