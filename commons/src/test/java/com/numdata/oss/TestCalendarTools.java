@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
  */
 package com.numdata.oss;
 
+import java.text.*;
 import java.util.*;
 
 import static com.numdata.oss.CalendarTools.*;
@@ -107,5 +108,64 @@ public class TestCalendarTools
 		assertEquals( "Incorrect date.", gregorianDate( 2047, Calendar.APRIL, 14 ), CalendarTools.getEasterSunday( 2047 ) );
 		assertEquals( "Incorrect date.", gregorianDate( 2048, Calendar.APRIL, 5 ), CalendarTools.getEasterSunday( 2048 ) );
 		assertEquals( "Incorrect date.", gregorianDate( 2049, Calendar.APRIL, 18 ), CalendarTools.getEasterSunday( 2049 ) );
+	}
+
+	/**
+	 * Tests {@link CalendarTools#ISO8601_DATE_FORMAT} and the other ISO8601
+	 * constants in {@link CalendarTools}.
+	 */
+	@Test
+	public void testDateTimeFormats()
+	{
+		final Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
+		calendar.set( 2020, Calendar.JULY, 2, 13, 37, 0 );
+		calendar.set( Calendar.MILLISECOND, 0 );
+		final Date zeroSeconds = calendar.getTime();
+		calendar.set( Calendar.SECOND, 12 );
+		final Date nonZeroSeconds = calendar.getTime();
+		calendar.set( Calendar.MILLISECOND, 345 );
+		final Date nonZeroMilliseconds = calendar.getTime();
+
+		/*
+		 * The non-UTC formats use the default time zone. To make this test
+		 * system-independent, we clone these formats and set a predefined
+		 * time zone.
+		 */
+		final TimeZone testedTimeZone = TimeZone.getTimeZone( "Europe/Amsterdam" );
+		final SimpleDateFormat iso8601DateFormat = ( SimpleDateFormat)CalendarTools.ISO8601_DATE_FORMAT.clone();
+		iso8601DateFormat.setTimeZone( testedTimeZone );
+		final SimpleDateFormat iso8601DatetimeFormat = (SimpleDateFormat)CalendarTools.ISO8601_DATETIME_FORMAT.clone();
+		iso8601DatetimeFormat.setTimeZone( testedTimeZone );
+		final SimpleDateFormat iso8601DatetimeSecondsFormat = (SimpleDateFormat)CalendarTools.ISO8601_DATETIME_SECONDS_FORMAT.clone();
+		iso8601DatetimeSecondsFormat.setTimeZone( testedTimeZone );
+		final SimpleDateFormat iso8601DatetimeMillisecondsFormat = (SimpleDateFormat)CalendarTools.ISO8601_DATETIME_MILLISECONDS_FORMAT.clone();
+		iso8601DatetimeMillisecondsFormat.setTimeZone( testedTimeZone );
+
+		assertEquals( "Unexpected formatted date.", "2020-07-02", iso8601DateFormat.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02", CalendarTools.ISO8601_UTC_DATE_FORMAT.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37+0200", iso8601DatetimeFormat.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37Z", CalendarTools.ISO8601_UTC_DATETIME_FORMAT.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:00+0200", iso8601DatetimeSecondsFormat.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:00Z", CalendarTools.ISO8601_UTC_DATETIME_SECONDS_FORMAT.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:00.000+0200", iso8601DatetimeMillisecondsFormat.format( zeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:00.000Z", CalendarTools.ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT.format( zeroSeconds ) );
+
+		assertEquals( "Unexpected formatted date.", "2020-07-02", iso8601DateFormat.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02", CalendarTools.ISO8601_UTC_DATE_FORMAT.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37+0200", iso8601DatetimeFormat.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37Z", CalendarTools.ISO8601_UTC_DATETIME_FORMAT.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:12+0200", iso8601DatetimeSecondsFormat.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:12Z", CalendarTools.ISO8601_UTC_DATETIME_SECONDS_FORMAT.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:12.000+0200", iso8601DatetimeMillisecondsFormat.format( nonZeroSeconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:12.000Z", CalendarTools.ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT.format( nonZeroSeconds ) );
+
+		assertEquals( "Unexpected formatted date.", "2020-07-02", iso8601DateFormat.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02", CalendarTools.ISO8601_UTC_DATE_FORMAT.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37+0200", iso8601DatetimeFormat.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37Z", CalendarTools.ISO8601_UTC_DATETIME_FORMAT.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:12+0200", iso8601DatetimeSecondsFormat.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:12Z", CalendarTools.ISO8601_UTC_DATETIME_SECONDS_FORMAT.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T15:37:12.345+0200", iso8601DatetimeMillisecondsFormat.format( nonZeroMilliseconds ) );
+		assertEquals( "Unexpected formatted date.", "2020-07-02T13:37:12.345Z", CalendarTools.ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT.format( nonZeroMilliseconds ) );
 	}
 }
