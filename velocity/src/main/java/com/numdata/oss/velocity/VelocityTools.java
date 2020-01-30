@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import com.numdata.oss.log.*;
 import org.apache.velocity.context.*;
 import org.apache.velocity.exception.*;
 import org.apache.velocity.runtime.*;
+import org.apache.velocity.runtime.log.*;
 import org.apache.velocity.tools.*;
 import org.jetbrains.annotations.*;
 
@@ -53,8 +54,7 @@ public class VelocityTools
 	/**
 	 * Pattern to parse line and column numbers in velocity exception message.
 	 *
-	 * @see org.apache.velocity.runtime.log.Log#formatFileString(String, int,
-	 * int)
+	 * @see Log#formatFileString(String, int, int)
 	 */
 	public static final Pattern VELOCITY_LOG_FILE_POSITION_PATTERN = Pattern.compile( "\\[line (\\d+), column (\\d+)\\]" );
 
@@ -94,10 +94,6 @@ public class VelocityTools
 			try
 			{
 				engine.init();
-			}
-			catch ( final RuntimeException e )
-			{
-				LOG.error( "Failed to initialize velocity engine: " + e, e );
 			}
 			catch ( final Exception e )
 			{
@@ -142,6 +138,7 @@ public class VelocityTools
 	 *
 	 * @return Velocity {@link RuntimeInstance}.
 	 */
+	@NotNull
 	public static RuntimeInstance createRuntime()
 	{
 		final RuntimeInstance result = new RuntimeInstance();
@@ -158,6 +155,7 @@ public class VelocityTools
 	 *
 	 * @return Rendered output.
 	 */
+	@Nullable
 	public static String evaluate( @Nullable final String input, @Nullable final Context context, @NotNull final String logTag )
 	{
 		return evaluate( input, getSharedRuntime(), context, logTag );
@@ -173,7 +171,8 @@ public class VelocityTools
 	 *
 	 * @return Rendered output.
 	 */
-	public static String evaluate( @Nullable final String input, final RuntimeServices runtime, @Nullable final Context context, @NotNull final String logTag )
+	@Nullable
+	public static String evaluate( @Nullable final String input, @NotNull final RuntimeServices runtime, @Nullable final Context context, @NotNull final String logTag )
 	{
 		String result = input;
 
@@ -218,7 +217,6 @@ public class VelocityTools
 			result = writer.toString();
 		}
 
-		//noinspection ConstantConditions
 		return result;
 	}
 
@@ -249,7 +247,7 @@ public class VelocityTools
 	 *
 	 * @return Value of the boolean expression.
 	 */
-	public static boolean evaluateBoolean( @Nullable final CharSequence expression, final Context context, final String logTag )
+	public static boolean evaluateBoolean( @Nullable final CharSequence expression, @NotNull final Context context, @NotNull final String logTag )
 	{
 		return evaluateBoolean( expression, getSharedRuntime(), context, logTag );
 	}
@@ -282,7 +280,7 @@ public class VelocityTools
 	 *
 	 * @return Value of the boolean expression.
 	 */
-	public static boolean evaluateBoolean( @Nullable final CharSequence expression, final RuntimeServices runtime, final Context context, final String logTag )
+	public static boolean evaluateBoolean( @Nullable final CharSequence expression, @NotNull final RuntimeServices runtime, @NotNull final Context context, @NotNull final String logTag )
 	{
 		return !TextTools.isEmpty( expression ) && Boolean.parseBoolean( evaluate( "#if(" + expression + ")true#{else}false#end", runtime, context, logTag ) );
 	}
@@ -306,52 +304,139 @@ public class VelocityTools
 	 *
 	 * @return Regular expression that matches the output of the template.
 	 */
-	public static Pattern createPattern( final String template, final Map<String, String> variableReplacements, final Map<String, Integer> capturingGroups, final int flags )
+	@NotNull
+	public static Pattern createPattern( @NotNull final String template, @NotNull final Map<String, String> variableReplacements, @NotNull final Map<String, Integer> capturingGroups, final int flags )
 	{
-		final StringBuilder templatePattern = new StringBuilder();
+		final Context context = new VariableReplacementContext( variableReplacements, new CapturingGroupInfo( capturingGroups ), "" );
+		final String templatePattern = "\\Q" + evaluate( template, context, "createPattern" ) + "\\E";
+		return Pattern.compile( templatePattern, flags );
+	}
 
-		// Find template variables.
-		final Pattern variablePattern = Pattern.compile( "\\$\\{([^}]+)\\}" );
-		final Matcher variableMatcher = variablePattern.matcher( template );
+	/**
+	 * Magic Velocity context used to implement {@link #createPattern}. It can
+	 * resolve any nested property and applies the variable replacement map to
+	 * it. Unknown variables/properties are mapped to {@code ".*"}.
+	 */
+	private static class VariableReplacementContext
+	implements Context
+	{
+		/**
+		 * Maps variable names to regular expressions that match their values.
+		 */
+		@NotNull
+		private final Map<String, String> _variableReplacements;
 
-		int appendPosition = 0;
-		int groupIndex = 0;
-		capturingGroups.clear();
+		/**
+		 * Receives the capturing group index in the resulting pattern for each
+		 * variable.
+		 */
+		@NotNull
+		private final CapturingGroupInfo _capturingGroupInfo;
 
-		while ( variableMatcher.find() )
+		/**
+		 * Scope of the current context, i.e. the expression used to access it,
+		 * or the empty string for the root context.
+		 */
+		@NotNull
+		private final String _scope;
+
+		/**
+		 * Constructs a new instance.
+		 *
+		 * @param variableReplacements Maps variables to regular expressions.
+		 * @param capturingGroupInfo   Receives capturing group info.
+		 * @param scope                Scope name; empty for root context.
+		 */
+		private VariableReplacementContext( @NotNull final Map<String, String> variableReplacements, @NotNull final CapturingGroupInfo capturingGroupInfo, @NotNull final String scope )
 		{
-			// Append the next part of the template as a literal.
-			if ( appendPosition < variableMatcher.start() )
-			{
-				templatePattern.append( Pattern.quote( template.substring( appendPosition, variableMatcher.start() ) ) );
-			}
-			appendPosition = variableMatcher.end();
-
-			// Replace the variable.
-			final String variableName = variableMatcher.group( 1 );
-			templatePattern.append( '(' );
-			final String variableReplacement = variableReplacements.get( variableName );
-			if ( variableReplacement == null )
-			{
-				templatePattern.append( ".*" );
-			}
-			else
-			{
-				templatePattern.append( variableReplacement );
-			}
-			templatePattern.append( ')' );
-
-			// Record the capturing group index.
-			capturingGroups.put( variableName, Integer.valueOf( ++groupIndex ) );
+			_variableReplacements = variableReplacements;
+			_capturingGroupInfo = capturingGroupInfo;
+			_scope = scope;
 		}
 
-		// Append the final part of the template as a literal.
-		if ( appendPosition < template.length() )
+		@Override
+		public Object put( final String key, final Object value )
 		{
-			templatePattern.append( Pattern.quote( template.substring( appendPosition, template.length() ) ) );
+			throw new UnsupportedOperationException();
 		}
 
-		//noinspection MagicConstant
-		return Pattern.compile( templatePattern.toString(), flags );
+		@Nullable
+		@Override
+		public Object get( @Nullable final String key )
+		{
+			Object result = null;
+			if ( ( key != null ) && !key.startsWith( ".literal." ) )
+			{
+				// Magic! Allows the context to resolve any (nested) property.
+				result = new VariableReplacementContext( _variableReplacements, _capturingGroupInfo, _scope.isEmpty() ? key : _scope + '.' + key );
+			}
+			return result;
+		}
+
+		@Override
+		public boolean containsKey( final Object key )
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Object[] getKeys()
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Object remove( final Object key )
+		{
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String toString()
+		{
+			// Magic! This is called when Velocity renders the variable.
+			_capturingGroupInfo.add( _scope );
+			return "\\E(" + _variableReplacements.getOrDefault( _scope, ".*" ) + ")\\Q";
+		}
+	}
+
+	/**
+	 * Receives the capturing group index in the resulting pattern for each
+	 * variable.
+	 */
+	private static class CapturingGroupInfo
+	{
+		/**
+		 * Receives the capturing group index in the resulting pattern for each
+		 * variable.
+		 */
+		@NotNull
+		private final Map<String, Integer> _capturingGroups;
+
+		/**
+		 * Capturing group index.
+		 */
+		private int _groupIndex = 0;
+
+		/**
+		 * Constructs a new instance.
+		 *
+		 * @param capturingGroups Receives the capturing group index in the resulting pattern for each variable.
+		 */
+		public CapturingGroupInfo( @NotNull final Map<String, Integer> capturingGroups )
+		{
+			_capturingGroups = capturingGroups;
+		}
+
+		/**
+		 * Adds an entry for a capturing group that matches the specified
+		 * variable.
+		 *
+		 * @param variableName Variable name.
+		 */
+		public void add( @NotNull final String variableName )
+		{
+			_capturingGroups.put( variableName, ++_groupIndex );
+		}
 	}
 }
