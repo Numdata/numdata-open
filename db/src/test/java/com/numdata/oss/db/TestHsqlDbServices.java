@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -308,7 +308,7 @@ public class TestHsqlDbServices
 			final ResultSetMetaData meta = clone.getMetaData();
 			assertNotNull( what + "Clone result did not contain meta-data", meta );
 
-			assertEquals( what + "Clone has wrong column count", DbObject.class.getDeclaredFields().length - 2, meta.getColumnCount() );
+			assertEquals( what + "Clone has wrong column count", DbObject.class.getFields().length - 2, meta.getColumnCount() );
 			assertEquals( what + "Clone has wrong fetch size", nrRows, clone.getFetchSize() );
 			assertEquals( what + "Clone has wrong row count", nrRows, clone.getData().length );
 
