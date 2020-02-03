@@ -10,7 +10,7 @@
 		<version>1.14-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>coverage-report</artifactId>
+	<artifactId>numdata-open-coverage-report</artifactId>
 	<description>Generates aggregate code coverage report.</description>
 
 	<dependencies>
@@ -42,11 +42,6 @@
 		<dependency>
 			<groupId>com.numdata</groupId>
 			<artifactId>numdata-filesystem</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.numdata</groupId>
-			<artifactId>numdata-icons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
