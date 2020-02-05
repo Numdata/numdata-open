@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -480,6 +480,74 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Get channel to send {@link #FATAL} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getFatalChannel()
+	{
+		return getChannel( FATAL );
+	}
+
+	/**
+	 * Get channel to send {@link #WARN} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getWarnChannel()
+	{
+		return getChannel( WARN );
+	}
+
+	/**
+	 * Get channel to send {@link #INFO} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getInfoChannel()
+	{
+		return getChannel( INFO );
+	}
+
+	/**
+	 * Get channel to send {@link #DEBUG} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getDebugChannel()
+	{
+		return getChannel( DEBUG );
+	}
+
+	/**
+	 * Get channel to send {@link #TRACE} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getTraceChannel()
+	{
+		return getChannel( TRACE );
+	}
+
+	/**
+	 * Get channel to send log messages to at the given log level.
+	 *
+	 * @param level Log level.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getChannel( final int level )
+	{
+		return isLevelEnabled( level ) ? new LogChannel.RealChannel( getName(), level ) : LogChannel.NULL;
+	}
+
+	/**
 	 * Send log message with an associated throwable object to all registered
 	 * log targets.
 	 *
@@ -548,7 +616,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	private static void logImpl( final String name, final int level, final Throwable throwable, final String message )
+	static void logImpl( final String name, final int level, final Throwable throwable, final String message )
 	{
 		final Thread currentThread = Thread.currentThread();
 		final String threadName = currentThread.getName();
@@ -1246,7 +1314,7 @@ public final class ClassLogger
 	private static void appendClassName( final StringBuffer sb, final String fullClassName )
 	{
 		final int len = fullClassName.length();
-		int pos = fullClassName.lastIndexOf( (int)'.' ) + 1;
+		int pos = fullClassName.lastIndexOf( '.' ) + 1;
 		if ( pos <= 0 || pos == len )
 		{
 			sb.append( fullClassName );
