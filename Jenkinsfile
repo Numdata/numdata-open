@@ -1,8 +1,9 @@
 node () {
 
-// 	stage ('numdata-open - Checkout') {
+	stage ('numdata-open - Checkout') {
+		checkout scm
 // 		checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/Numdata/numdata-open.git']]])
-// 	}
+	}
 
 	stage ('numdata-open - Build') {
 		wrap([$class: 'Xvfb']) {
