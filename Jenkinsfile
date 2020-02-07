@@ -1,11 +1,14 @@
 node () {
 
-	stage ('numdata-open - Checkout') {
-		checkout scm
-// 		checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/Numdata/numdata-open.git']]])
+	triggers {
+		pollSCM('H/5 8-17 * * 1-5')
 	}
 
-	stage ('numdata-open - Build') {
+	stage ('Checkout') {
+		checkout scm
+	}
+
+	stage ('Build') {
 		wrap([$class: 'Xvfb']) {
 			nodejs(nodeJSInstallationName: 'NodeJS 10', configId: 'numdata-npm-config') {
 				sh 'cd js; npm install'
