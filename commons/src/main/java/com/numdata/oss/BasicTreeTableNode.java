@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import javax.swing.tree.*;
 /**
  * Basic implementation of a node of a tree table.
  *
- * @author  G. Meinders
+ * @author Gerrit Meinders
  */
 public class BasicTreeTableNode<V,C extends TreeNode>
 	extends BasicTreeNode<V,C>
@@ -52,7 +52,7 @@ public class BasicTreeTableNode<V,C extends TreeNode>
 	public BasicTreeTableNode( final TreeNode parent, final V value )
 	{
 		super( parent, value );
-		_attributes = new HashMap<String,Object>();
+		_attributes = new LinkedHashMap<String,Object>();
 	}
 
 	@Override

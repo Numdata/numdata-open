@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -182,7 +182,7 @@ public class TreeTableWriter
 	 */
 	public Collection<String> getAttributes( final TreeTableNode<?> root )
 	{
-		final Collection<String> result = new HashSet<String>();
+		final Collection<String> result = new LinkedHashSet<String>();
 
 		for ( final Iterator<TreeTableNode<?>> it = new TreeNodeIterator<TreeTableNode<?>>( root ); it.hasNext(); )
 		{
