@@ -1,5 +1,4 @@
 pipeline {
-
 	agent any
 
 	triggers {
@@ -17,16 +16,20 @@ pipeline {
 							withMaven(maven: 'Maven', mavenSettingsConfig: 'numdata-maven-settings') {
 								sh "mvn clean install -t $TOOLCHAINS"
 							}
-
-							publishCoverage adapters: [jacocoAdapter('coverage-report/target/site/jacoco/jacoco.xml')]
 						}
 					}
 				}
-
-				archiveArtifacts allowEmptyArchive: false, artifacts: '**/target/*.jar', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: true
-
-				junit '**/target/surefire-reports/TEST-*.xml'
 			}
+		}
+	}
+
+	post {
+		always {
+			junit '**/target/surefire-reports/TEST-*.xml'
+			publishCoverage adapters: [jacocoAdapter('coverage-report/target/site/jacoco/jacoco.xml')]
+		}
+		success {
+			archiveArtifacts allowEmptyArchive: false, artifacts: '**/target/*.jar', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: true
 		}
 	}
 }
