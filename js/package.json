@@ -9,6 +9,7 @@
     "name": "Gerrit Meinders",
     "email": "meinders@numdata.com"
   },
+  "license": "SEE LICENSE IN LICENSE.TXT",
   "module": "./module.js",
   "dependencies": {
     "@babel/runtime": "^7.1.5",
