@@ -28,8 +28,5 @@ pipeline {
 			junit '**/target/surefire-reports/TEST-*.xml'
 			publishCoverage adapters: [jacocoAdapter('coverage-report/target/site/jacoco/jacoco.xml')]
 		}
-		success {
-			archiveArtifacts allowEmptyArchive: false, artifacts: '**/target/*.jar', caseSensitive: true, defaultExcludes: true, fingerprint: false, onlyIfSuccessful: true
-		}
 	}
 }
