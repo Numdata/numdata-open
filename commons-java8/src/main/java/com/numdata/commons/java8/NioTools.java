@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -108,13 +108,21 @@ public final class NioTools
 	public static void copyFilesRecursively( @NotNull final Path fromDirectory, @NotNull final Path toDirectory )
 	throws IOException
 	{
+		if ( !Files.exists( toDirectory ) )
+		{
+			Files.createDirectories( toDirectory );
+		}
+
 		Files.walkFileTree( fromDirectory, new SimpleFileVisitor<Path>()
 		{
 			@Override
 			public FileVisitResult preVisitDirectory( final Path dir, final BasicFileAttributes attrs )
 			throws IOException
 			{
-				Files.createDirectories( toDirectory.resolve( fromDirectory.relativize( dir ) ) );
+				if ( !dir.equals( fromDirectory ) )
+				{
+					Files.createDirectories( toDirectory.resolve( fromDirectory.relativize( dir ) ) );
+				}
 				return FileVisitResult.CONTINUE;
 			}
 
