@@ -111,6 +111,7 @@ public final class ClassLogger
 	 * Executor service used to send messages to the log.
 	 */
 	@SuppressWarnings( "StaticNonFinalField" )
+	@Nullable
 	private static ExecutorService executorService = null;
 
 	/**
@@ -120,7 +121,8 @@ public final class ClassLogger
 	 *
 	 * @return {@code ClassLogger} for the specified class.
 	 */
-	public static ClassLogger getFor( final Class<?> forClass )
+	@NotNull
+	public static ClassLogger getFor( @NotNull final Class<?> forClass )
 	{
 		return new ClassLogger( forClass.getName() );
 	}
@@ -131,6 +133,7 @@ public final class ClassLogger
 	 *
 	 * @return Log targets.
 	 */
+	@NotNull
 	public static List<LogTarget> getLogTargets()
 	{
 		final List<LogTarget> result;
@@ -173,7 +176,7 @@ public final class ClassLogger
 	 *
 	 * @param logTarget Log target to remove.
 	 */
-	public static void removeTarget( final LogTarget logTarget )
+	public static void removeTarget( @NotNull final LogTarget logTarget )
 	{
 		synchronized ( LOG_TARGETS )
 		{
@@ -244,6 +247,7 @@ public final class ClassLogger
 	 * @throws NullPointerException if any argument is {@code null}.
 	 * @throws IllegalArgumentException if the level could not be parsed.
 	 */
+	@NotNull
 	public static String getLevelName( final int level )
 	{
 		final String result;
@@ -378,6 +382,7 @@ public final class ClassLogger
 		 * Add {@link ConsoleTarget} if system properties are set, or
 		 * if no log target has been added yet.
 		 */
+		//noinspection UseOfSystemOutOrSystemErr
 		final ConsoleTarget consoleTarget = new ConsoleTarget( LOG_TARGETS.isEmpty() ? INFO : NONE, System.err );
 		if ( consoleTarget.getLevel() > NONE )
 		{
@@ -396,7 +401,7 @@ public final class ClassLogger
 	 * @return Result from invoked method ({@code null} if void).
 	 */
 	@Nullable
-	private static Object invokeStatic( final String className, final String methodName, final Class<?> argType, final Object argValue )
+	private static Object invokeStatic( @NotNull final String className, @Nullable final String methodName, @NotNull final Class<?> argType, @Nullable final Object argValue )
 	{
 		return invokeStatic( className, methodName, new Class<?>[] { argType }, new Object[] { argValue } );
 	}
@@ -412,7 +417,7 @@ public final class ClassLogger
 	 * @return Result from invoked method ({@code null} if void).
 	 */
 	@Nullable
-	private static Object invokeStatic( final String className, final String methodName, final Class<?>[] argTypes, final Object[] argValues )
+	private static Object invokeStatic( @NotNull final String className, @Nullable final String methodName, @NotNull final Class<?>[] argTypes, @NotNull final Object[] argValues )
 	{
 		Object result = null;
 
@@ -450,7 +455,7 @@ public final class ClassLogger
 	 *
 	 * @param name Log name (e.g. class name).
 	 */
-	ClassLogger( final String name )
+	ClassLogger( @NotNull final String name )
 	{
 		_name = name;
 	}
@@ -460,6 +465,7 @@ public final class ClassLogger
 	 *
 	 * @return Name of logger ( e.g. class name).
 	 */
+	@NotNull
 	public String getName()
 	{
 		return _name;
@@ -555,7 +561,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void log( final int level, final String message, final Throwable throwable )
+	public void log( final int level, @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( getName(), level, message, throwable );
 	}
@@ -568,7 +574,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void log( final int level, final MessageSupplier message, final Throwable throwable )
+	public void log( final int level, @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( getName(), level, message, throwable );
 	}
@@ -582,7 +588,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	static void log( final String name, final int level, final String message, final Throwable throwable )
+	static void log( @NotNull final String name, final int level, @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		if ( isLevelEnabled( name, level ) )
 		{
@@ -599,7 +605,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	private static void log( final String name, final int level, final MessageSupplier message, final Throwable throwable )
+	private static void log( @NotNull final String name, final int level, @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		if ( isLevelEnabled( name, level ) )
 		{
@@ -616,7 +622,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	static void logImpl( final String name, final int level, final Throwable throwable, final String message )
+	static void logImpl( @NotNull final String name, final int level, @Nullable final Throwable throwable, @NotNull final String message )
 	{
 		final Thread currentThread = Thread.currentThread();
 		final String threadName = currentThread.getName();
@@ -658,7 +664,7 @@ public final class ClassLogger
 	 * @return {@code true} if the log level is enabled; {@code false} if the
 	 * log level is disabled.
 	 */
-	public static boolean isLevelEnabled( final String name, final int level )
+	public static boolean isLevelEnabled( @NotNull final String name, final int level )
 	{
 		boolean result = false;
 
@@ -748,7 +754,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void fatal( final String message )
+	public void fatal( @NotNull final String message )
 	{
 		fatal( message, null );
 	}
@@ -758,7 +764,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void fatal( final MessageSupplier message )
+	public void fatal( @NotNull final MessageSupplier message )
 	{
 		fatal( message, null );
 	}
@@ -768,7 +774,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void error( final String message )
+	public void error( @NotNull final String message )
 	{
 		error( message, null );
 	}
@@ -778,7 +784,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void error( final MessageSupplier message )
+	public void error( @NotNull final MessageSupplier message )
 	{
 		error( message, null );
 	}
@@ -788,7 +794,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void warn( final String message )
+	public void warn( @NotNull final String message )
 	{
 		warn( message, null );
 	}
@@ -798,7 +804,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void warn( final MessageSupplier message )
+	public void warn( @NotNull final MessageSupplier message )
 	{
 		warn( message, null );
 	}
@@ -808,7 +814,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void info( final String message )
+	public void info( @NotNull final String message )
 	{
 		info( message, null );
 	}
@@ -818,7 +824,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void info( final MessageSupplier message )
+	public void info( @NotNull final MessageSupplier message )
 	{
 		info( message, null );
 	}
@@ -828,7 +834,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void debug( final String message )
+	public void debug( @NotNull final String message )
 	{
 		debug( message, null );
 	}
@@ -838,7 +844,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void debug( final MessageSupplier message )
+	public void debug( @NotNull final MessageSupplier message )
 	{
 		debug( message, null );
 	}
@@ -848,7 +854,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void trace( final String message )
+	public void trace( @NotNull final String message )
 	{
 		trace( message, null );
 	}
@@ -858,7 +864,7 @@ public final class ClassLogger
 	 *
 	 * @param message Log message.
 	 */
-	public void trace( final MessageSupplier message )
+	public void trace( @NotNull final MessageSupplier message )
 	{
 		trace( message, null );
 	}
@@ -869,7 +875,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void fatal( final String message, final Throwable throwable )
+	public void fatal( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( FATAL, message, throwable );
 	}
@@ -880,7 +886,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void fatal( final MessageSupplier message, final Throwable throwable )
+	public void fatal( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( FATAL, message, throwable );
 	}
@@ -891,7 +897,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void error( final String message, final Throwable throwable )
+	public void error( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( ERROR, message, throwable );
 	}
@@ -902,7 +908,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void error( final MessageSupplier message, final Throwable throwable )
+	public void error( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( ERROR, message, throwable );
 	}
@@ -913,7 +919,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void warn( final String message, final Throwable throwable )
+	public void warn( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( WARN, message, throwable );
 	}
@@ -924,7 +930,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void warn( final MessageSupplier message, final Throwable throwable )
+	public void warn( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( WARN, message, throwable );
 	}
@@ -935,7 +941,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void info( final String message, final Throwable throwable )
+	public void info( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( INFO, message, throwable );
 	}
@@ -946,7 +952,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void info( final MessageSupplier message, final Throwable throwable )
+	public void info( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( INFO, message, throwable );
 	}
@@ -957,7 +963,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void debug( final String message, final Throwable throwable )
+	public void debug( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( DEBUG, message, throwable );
 	}
@@ -968,7 +974,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void debug( final MessageSupplier message, final Throwable throwable )
+	public void debug( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( DEBUG, message, throwable );
 	}
@@ -979,7 +985,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void trace( final String message, final Throwable throwable )
+	public void trace( @NotNull final String message, @Nullable final Throwable throwable )
 	{
 		log( TRACE, message, throwable );
 	}
@@ -990,7 +996,7 @@ public final class ClassLogger
 	 * @param message   Log message.
 	 * @param throwable Throwable associated with log message.
 	 */
-	public void trace( final MessageSupplier message, final Throwable throwable )
+	public void trace( @NotNull final MessageSupplier message, @Nullable final Throwable throwable )
 	{
 		log( TRACE, message, throwable );
 	}
@@ -1000,7 +1006,7 @@ public final class ClassLogger
 	 *
 	 * @param methodName Name of entered method.
 	 */
-	public void entering( final String methodName )
+	public void entering( @NotNull final String methodName )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1014,7 +1020,7 @@ public final class ClassLogger
 	 * @param methodName Name of entered method.
 	 * @param args       Method arguments.
 	 */
-	public void entering( final String methodName, final Object... args )
+	public void entering( @NotNull final String methodName, @Nullable final Object... args )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1045,7 +1051,7 @@ public final class ClassLogger
 	 *
 	 * @param methodName Name of exited method.
 	 */
-	public void exiting( final String methodName )
+	public void exiting( @NotNull final String methodName )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1067,7 +1073,9 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public <T> T exiting( final String methodName, final T result )
+	@Nullable
+	@Contract( "_, null -> null; _, !null -> !null" )
+	public <T> T exiting( @NotNull final String methodName, @Nullable final T result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1092,7 +1100,7 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public boolean exiting( final String methodName, final boolean result )
+	public boolean exiting( @NotNull final String methodName, final boolean result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1110,7 +1118,7 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public int exiting( final String methodName, final int result )
+	public int exiting( @NotNull final String methodName, final int result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1128,7 +1136,7 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public long exiting( final String methodName, final long result )
+	public long exiting( @NotNull final String methodName, final long result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1146,7 +1154,7 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public float exiting( final String methodName, final float result )
+	public float exiting( @NotNull final String methodName, final float result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1164,7 +1172,7 @@ public final class ClassLogger
 	 *
 	 * @return Result value (returned as-is).
 	 */
-	public double exiting( final String methodName, final double result )
+	public double exiting( @NotNull final String methodName, final double result )
 	{
 		if ( isTraceEnabled() )
 		{
@@ -1183,7 +1191,8 @@ public final class ClassLogger
 	 *
 	 * @return Throwable that is thrown (returned as-is).
 	 */
-	public <T extends Throwable> T throwing( final String methodName, final T throwable )
+	@NotNull
+	public <T extends Throwable> T throwing( @NotNull final String methodName, @NotNull final T throwable )
 	{
 		return throwing( TRACE, methodName, throwable );
 	}
@@ -1198,7 +1207,8 @@ public final class ClassLogger
 	 *
 	 * @return Throwable that is thrown (returned as-is).
 	 */
-	public <T extends Throwable> T throwing( final int logLevel, final String methodName, final T throwable )
+	@NotNull
+	public <T extends Throwable> T throwing( final int logLevel, @NotNull final String methodName, @NotNull final T throwable )
 	{
 		if ( isLevelEnabled( logLevel ) )
 		{
@@ -1228,7 +1238,7 @@ public final class ClassLogger
 	 * @param sb    String buffer to append to.
 	 * @param value Value to print.
 	 */
-	private static void appendValue( final StringBuffer sb, final Object value )
+	private static void appendValue( @NotNull final StringBuffer sb, @Nullable final Object value )
 	{
 		if ( value == null )
 		{
@@ -1291,7 +1301,7 @@ public final class ClassLogger
 	 * @param sb     String buffer to append to.
 	 * @param aClass Class whose name should be appended.
 	 */
-	private static void appendClassName( final StringBuffer sb, final Class<?> aClass )
+	private static void appendClassName( @NotNull final StringBuffer sb, @NotNull final Class<?> aClass )
 	{
 		if ( aClass.isArray() )
 		{
@@ -1311,7 +1321,7 @@ public final class ClassLogger
 	 * @param sb            String buffer to append to.
 	 * @param fullClassName Fully qualified class name whose name to append.
 	 */
-	private static void appendClassName( final StringBuffer sb, final String fullClassName )
+	private static void appendClassName( @NotNull final StringBuffer sb, @NotNull final String fullClassName )
 	{
 		final int len = fullClassName.length();
 		int pos = fullClassName.lastIndexOf( '.' ) + 1;
@@ -1338,6 +1348,7 @@ public final class ClassLogger
 		/**
 		 * Name of log.
 		 */
+		@NotNull
 		private final String _name;
 
 		/**
@@ -1348,16 +1359,19 @@ public final class ClassLogger
 		/**
 		 * Log message.
 		 */
+		@NotNull
 		private final String _message;
 
 		/**
 		 * Throwable associated with log message.
 		 */
+		@Nullable
 		private final Throwable _throwable;
 
 		/**
 		 * Identifies the thread that produced the log message.
 		 */
+		@Nullable
 		private final String _threadName;
 
 		/**
@@ -1370,7 +1384,7 @@ public final class ClassLogger
 		 * @param threadName Identifies the thread that produced the log
 		 *                   message.
 		 */
-		private LogTask( final String name, final int level, final String message, final Throwable throwable, final String threadName )
+		private LogTask( @NotNull final String name, final int level, @NotNull final String message, @Nullable final Throwable throwable, @Nullable final String threadName )
 		{
 			_name = name;
 			_level = level;
@@ -1395,7 +1409,7 @@ public final class ClassLogger
 	/**
 	 * Interface to provide a message string.
 	 */
-	//@FunctionalInterface
+	@FunctionalInterface
 	public interface MessageSupplier
 	{
 		/**
@@ -1403,6 +1417,7 @@ public final class ClassLogger
 		 *
 		 * @return Message.
 		 */
+		@NotNull
 		String get();
 	}
 }
