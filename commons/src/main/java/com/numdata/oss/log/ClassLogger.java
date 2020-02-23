@@ -1409,7 +1409,6 @@ public final class ClassLogger
 	/**
 	 * Interface to provide a message string.
 	 */
-	@FunctionalInterface
 	public interface MessageSupplier
 	{
 		/**
