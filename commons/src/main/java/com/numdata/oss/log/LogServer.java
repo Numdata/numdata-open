@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -143,9 +143,12 @@ public class LogServer
 
 		if ( serverSocket != null )
 		{
-			final Thread serverThread = new Thread( new SocketMonitor( serverSocket ) );
-			serverThread.setPriority( Thread.MIN_PRIORITY );
-			serverThread.setDaemon( true );
+			final DefaultThreadFactory defaultThreadFactory = new DefaultThreadFactory();
+			defaultThreadFactory.setNamePrefix( getClass().getSimpleName() );
+			defaultThreadFactory.setPriority( Thread.MIN_PRIORITY );
+			defaultThreadFactory.setDaemon( true );
+
+			final Thread serverThread = defaultThreadFactory.newThread( new SocketMonitor( serverSocket ) );
 			serverThread.start();
 		}
 	}
