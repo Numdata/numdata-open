@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,83 +48,65 @@ public class CalendarTools
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date
 	 * format.
 	 */
-	public static final SimpleDateFormat ISO8601_DATE_FORMAT;
+	public static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date
 	 * format.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATE_FORMAT;
+	public static final SimpleDateFormat ISO8601_UTC_DATE_FORMAT = createDateFormat( "yyyy-MM-dd", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to minutes.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_FORMAT;
+	public static final SimpleDateFormat ISO8601_DATETIME_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mmZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to minutes.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_FORMAT;
+	public static final SimpleDateFormat ISO8601_UTC_DATETIME_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm'Z'", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to seconds.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_SECONDS_FORMAT;
+	public static final SimpleDateFormat ISO8601_DATETIME_SECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to seconds.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_SECONDS_FORMAT;
+	public static final SimpleDateFormat ISO8601_UTC_DATETIME_SECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to milliseconds.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_MILLISECONDS_FORMAT;
+	public static final SimpleDateFormat ISO8601_DATETIME_MILLISECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to milliseconds.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT;
+	public static final SimpleDateFormat ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US, UTC );
 
-	static
+	/**
+	 * Utility method to create {@link SimpleDateFormat} for a specific time zone.
+	 *
+	 * @param pattern  Pattern describing the date and time format.
+	 * @param locale   Locale whose date format symbols should be used.
+	 * @param timeZone Time zone to use.
+	 *
+	 * @return {@link SimpleDateFormat}.
+	 */
+	@NotNull
+	public static SimpleDateFormat createDateFormat( @NotNull final String pattern, @NotNull final Locale locale, @NotNull final TimeZone timeZone )
 	{
-		//noinspection SpellCheckingInspection
-		ISO8601_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd" );
-
-		//noinspection SpellCheckingInspection
-		final SimpleDateFormat iso8601UtcDateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-		iso8601UtcDateFormat.setTimeZone( UTC );
-		ISO8601_UTC_DATE_FORMAT = iso8601UtcDateFormat;
-
-		//noinspection SpellCheckingInspection
-		ISO8601_DATETIME_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mmZ" );
-
-		//noinspection SpellCheckingInspection
-		final SimpleDateFormat iso8601UtcDateTimeFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm'Z'" );
-		iso8601UtcDateTimeFormat.setTimeZone( UTC );
-		ISO8601_UTC_DATETIME_FORMAT = iso8601UtcDateTimeFormat;
-
-		//noinspection SpellCheckingInspection
-		ISO8601_DATETIME_SECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
-
-		//noinspection SpellCheckingInspection
-		final SimpleDateFormat iso8601UtcDateTimeSecondsFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'" );
-		iso8601UtcDateTimeSecondsFormat.setTimeZone( UTC );
-		ISO8601_UTC_DATETIME_SECONDS_FORMAT = iso8601UtcDateTimeSecondsFormat;
-
-		//noinspection SpellCheckingInspection
-		ISO8601_DATETIME_MILLISECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
-
-		//noinspection SpellCheckingInspection
-		final SimpleDateFormat iso8601UtcDateTimeMillisecondsFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" );
-		iso8601UtcDateTimeMillisecondsFormat.setTimeZone( UTC );
-		ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT = iso8601UtcDateTimeMillisecondsFormat;
+		final SimpleDateFormat result = new SimpleDateFormat( pattern, locale );
+		result.setTimeZone( timeZone );
+		return result;
 	}
 
 	/**
@@ -134,6 +116,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the given date.
 	 */
+	@NotNull
 	public static Calendar getInstance( @NotNull final Date date )
 	{
 		final Calendar calendar = Calendar.getInstance();
@@ -147,6 +130,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the current date, with time fields set to zero.
 	 */
+	@NotNull
 	public static Calendar getDateInstance()
 	{
 		final Calendar calendar = Calendar.getInstance();
