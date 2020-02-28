@@ -110,6 +110,37 @@ public class CalendarTools
 	}
 
 	/**
+	 * Parse date string.
+	 *
+	 * @param format Date format.
+	 * @param string Date string.
+	 *
+	 * @return {@link Date}; {@code null} if {@code string} is {@code null} or empty.
+	 */
+	@Contract( "_,null -> null; _,!null -> !null" )
+	@Nullable
+	public static Date parseDate( @NotNull final DateFormat format, @Nullable final String string )
+	{
+		final Date result;
+		if ( string == null )
+		{
+			result = null;
+		}
+		else
+		{
+			try
+			{
+				result = format.parse( string );
+			}
+			catch ( final ParseException e )
+			{
+				throw new IllegalArgumentException( "Malformed date string '" + string + '\'', e );
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Returns a calendar for the given date.
 	 *
 	 * @param date Date to get calendar for.
