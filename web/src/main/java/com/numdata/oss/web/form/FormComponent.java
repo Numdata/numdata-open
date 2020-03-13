@@ -260,9 +260,11 @@ public abstract class FormComponent
 	/**
 	 * Returns the form containing this component.
 	 *
-	 * @return Containing form; {@code null} if not contained in a form.
+	 * @return Containing form.
+	 *
+	 * @throws IllegalStateException if not added to a form yet.
 	 */
-	@Nullable
+	@NotNull
 	public Form getForm()
 	{
 		Form result = null;
@@ -274,6 +276,11 @@ public abstract class FormComponent
 				result = (Form)component;
 				break;
 			}
+		}
+
+		if ( result == null )
+		{
+			throw new IllegalStateException( "Not added to a form yet" );
 		}
 
 		return result;
