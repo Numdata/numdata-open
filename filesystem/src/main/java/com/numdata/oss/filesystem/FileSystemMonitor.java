@@ -124,6 +124,11 @@ implements ResourceMonitor
 	private Map<Object, Date> _modificationTimeByFile = Collections.emptyMap();
 
 	/**
+	 * Monitor is stopped.
+	 */
+	private boolean _stopped = false;
+
+	/**
 	 * Last exception that occurred.
 	 */
 	@Nullable
@@ -319,11 +324,12 @@ implements ResourceMonitor
 	{
 		LOG.debug( "run()" );
 
+		_stopped = false;
 		_lastException = null;
 		String lastExceptionMessage = null;
 		NewFileHandling newFileHandling = getInitialFileHandling();
 
-		while ( !Thread.interrupted() )
+		while ( !_stopped && !Thread.interrupted() )
 		{
 			try
 			{
@@ -373,6 +379,14 @@ implements ResourceMonitor
 	@Override
 	public void stop()
 	{
+		LOG.debug( "stop()" );
+
+		_stopped = true;
+	}
+
+	public boolean isStopped()
+	{
+		return _stopped;
 	}
 
 	/**
