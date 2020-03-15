@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,12 @@ implements ResourceMonitor
 	public void setPort( final int port )
 	{
 		_port = port;
+	}
+
+	public int getLocalPort()
+	{
+		final ServerSocket serverSocket = _stopped ? null : _serverSocket;
+		return ( serverSocket != null ) && !serverSocket.isClosed() ? serverSocket.getLocalPort() : getPort();
 	}
 
 	@Nullable
@@ -209,7 +215,7 @@ implements ResourceMonitor
 				{
 					_serverSocket = serverSocket;
 
-					LOG.info( "Listening on TCP port " + _port );
+					LOG.info( "Listening on TCP port " + serverSocket.getLocalPort() );
 					while ( !isStopped() && !serverSocket.isClosed() )
 					{
 						try
