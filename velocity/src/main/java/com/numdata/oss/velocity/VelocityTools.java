@@ -37,6 +37,7 @@ import org.apache.velocity.exception.*;
 import org.apache.velocity.runtime.*;
 import org.apache.velocity.runtime.log.*;
 import org.apache.velocity.tools.*;
+import org.apache.velocity.tools.generic.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -130,7 +131,9 @@ public class VelocityTools
 	public static Context creatContext()
 	{
 		final ToolManager toolManager = getSharedToolManager();
-		return toolManager.createContext();
+		final ToolContext result = toolManager.createContext();
+		result.put( "date", new DateTool() );
+		return result;
 	}
 
 	/**
