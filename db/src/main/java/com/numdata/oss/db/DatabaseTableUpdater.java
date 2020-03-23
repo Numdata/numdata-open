@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( "JDBCExecuteWithNonConstantString" )
+@SuppressWarnings( { "JDBCExecuteWithNonConstantString", "UseOfSystemOutOrSystemErr" } )
 public class DatabaseTableUpdater
 {
 	/**
@@ -401,7 +401,7 @@ public class DatabaseTableUpdater
 	 * @return {@link ClassHandler}.
 	 */
 	@NotNull
-	protected static ClassHandler getClassHandler( final Class<?> tableClass )
+	private static ClassHandler getClassHandler( final Class<?> tableClass )
 	{
 		return DbServices.getClassHandler( tableClass );
 	}
@@ -571,8 +571,8 @@ public class DatabaseTableUpdater
 	@Nullable
 	private static String getFirstID( final String createLine )
 	{
-		final int start = createLine.indexOf( (int)'`' ) + 1;
-		final int end = ( start > 0 ) ? createLine.indexOf( (int)'`', start ) : -1;
+		final int start = createLine.indexOf( '`' ) + 1;
+		final int end = ( start > 0 ) ? createLine.indexOf( '`', start ) : -1;
 		return ( end > start ) ? createLine.substring( start, end ) : null;
 	}
 
@@ -587,7 +587,7 @@ public class DatabaseTableUpdater
 	 *
 	 * @throws SQLException if an error occurred while accessing the database.
 	 */
-	private static void addColumn( final boolean realUpdates, final DataSource dataSource, final String tableReference, final String createLine, final String after )
+	private static void addColumn( final boolean realUpdates, @NotNull final DataSource dataSource, @NotNull final String tableReference, @NotNull final String createLine, @Nullable final String after )
 	throws SQLException
 	{
 		executeUpdate( realUpdates, dataSource, "ALTER TABLE " + tableReference + " ADD " + createLine + ( ( after != null ) ? " AFTER `" + after + '`' : "" ) + ';' );
@@ -634,58 +634,200 @@ public class DatabaseTableUpdater
 			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
 			executeUpdate( realUpdates, dataSource, "UPDATE " + tableReference + " SET `" + columnName + "`=(`" + columnName + "`=2);" );
 		}
-		else if ( "enum".equalsIgnoreCase( oldBaseType ) && "enum".equalsIgnoreCase( newBaseType ) )
+		else if ( isEnumBaseType( oldBaseType ) && isEnumBaseType( newBaseType ) )
 		{
 			final Set<String> oldValues = getEnumValues( oldType );
 			final Set<String> newValues = getEnumValues( newType );
 			final boolean possibleDataLoss = !newValues.containsAll( oldValues );
+			final boolean updateAllowed = handleDataLoss( dataLossHandling, realUpdates, possibleDataLoss, tableReference, oldCreateLine, newCreateLine,
+			                                              "Possible data loss due to modified enumeration type" );
 
-			if ( possibleDataLoss )
-			{
-				final String message = "Possible data loss due to modified enumeration type\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference;
-				if ( realUpdates && ( dataLossHandling == DataLossHandling.REFUSE ) )
-				{
-					throw new RuntimeException( message );
-				}
-
-				System.err.println( "WARNING: " + message );
-			}
-
-			executeUpdate( realUpdates && ( !possibleDataLoss || ( dataLossHandling == DataLossHandling.FORCE ) ), dataSource, updatePrefix + newCreateLine + ';' );
+			executeUpdate( updateAllowed, dataSource, updatePrefix + newCreateLine + ';' );
 		}
-		else if ( ( "tinytext".equalsIgnoreCase( oldBaseType ) && "tinyblob".equalsIgnoreCase( newBaseType ) ) ||
-		          ( "text".equalsIgnoreCase( oldBaseType ) && "blob".equalsIgnoreCase( newBaseType ) ) ||
-		          ( "mediumtext".equalsIgnoreCase( oldBaseType ) && "mediumblob".equalsIgnoreCase( newBaseType ) ) )
+		else if ( isCharacterBaseType( oldBaseType ) && isBinaryBaseType( newBaseType ) )
 		{
+			final boolean possibleDataLoss = getMaximumLength( oldType ) > getMaximumLength( newType );
+			final boolean updateAllowed = handleDataLoss( dataLossHandling, realUpdates, possibleDataLoss, tableReference, oldCreateLine, newCreateLine,
+			                                              "Possible data loss due to decreased capacity" );
+
 			if ( oldCreateLine.contains( "CHARACTER SET" ) )
 			{
 				// Convert to default character set first.
-				executeUpdate( realUpdates, dataSource, updatePrefix + '`' + columnName + "` " + oldBaseType + ';' );
+				executeUpdate( updateAllowed, dataSource, updatePrefix + '`' + columnName + "` " + oldBaseType + ';' );
 			}
-			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
+			executeUpdate( updateAllowed, dataSource, updatePrefix + newCreateLine + ';' );
 		}
-		else if ( ( ( "blob".equalsIgnoreCase( oldBaseType ) || "mediumblob".equalsIgnoreCase( oldBaseType ) ) &&
-		            ( "blob".equalsIgnoreCase( newBaseType ) || "mediumblob".equalsIgnoreCase( newBaseType ) ) ) ||
-		          ( ( "date".equalsIgnoreCase( oldBaseType ) || "datetime".equalsIgnoreCase( oldBaseType ) || "time".equalsIgnoreCase( oldBaseType ) ) &&
+		else if ( ( isBinaryBaseType( oldBaseType ) &&
+		            isBinaryBaseType( newBaseType ) ) ||
+		          ( ( isCharacterBaseType( oldBaseType ) || isEnumBaseType( oldBaseType ) ) &&
+		            ( isCharacterBaseType( newBaseType ) || isEnumBaseType( newBaseType ) ) ) )
+		{
+			final boolean possibleDataLoss = getMaximumLength( oldType ) > getMaximumLength( newType );
+			final boolean updateAllowed = handleDataLoss( dataLossHandling, realUpdates, possibleDataLoss, tableReference, oldCreateLine, newCreateLine,
+			                                              "Possible data loss due to decreased capacity" );
+
+			executeUpdate( updateAllowed, dataSource, updatePrefix + newCreateLine + ';' );
+		}
+		else if ( ( ( "date".equalsIgnoreCase( oldBaseType ) || "datetime".equalsIgnoreCase( oldBaseType ) || "time".equalsIgnoreCase( oldBaseType ) ) &&
 		            ( "date".equalsIgnoreCase( newBaseType ) || "datetime".equalsIgnoreCase( newBaseType ) || "time".equalsIgnoreCase( newBaseType ) ) ) ||
 		          ( ( "bigint".equalsIgnoreCase( oldBaseType ) || "decimal".equalsIgnoreCase( oldBaseType ) || "double".equalsIgnoreCase( oldBaseType ) || "float".equalsIgnoreCase( oldBaseType ) || "int".equalsIgnoreCase( oldBaseType ) || "smallint".equalsIgnoreCase( oldBaseType ) || "tinyint".equalsIgnoreCase( oldBaseType ) ) &&
-		            ( "bigint".equalsIgnoreCase( newBaseType ) || "decimal".equalsIgnoreCase( newBaseType ) || "double".equalsIgnoreCase( newBaseType ) || "float".equalsIgnoreCase( newBaseType ) || "int".equalsIgnoreCase( newBaseType ) || "smallint".equalsIgnoreCase( newBaseType ) || "tinyint".equalsIgnoreCase( newBaseType ) ) ) ||
-		          ( ( "char".equalsIgnoreCase( oldBaseType ) || "longtext".equalsIgnoreCase( oldBaseType ) || "mediumtext".equalsIgnoreCase( oldBaseType ) || "text".equalsIgnoreCase( oldBaseType ) || "tinytext".equalsIgnoreCase( oldBaseType ) || "varchar".equalsIgnoreCase( oldBaseType ) ) &&
-		            ( "char".equalsIgnoreCase( newBaseType ) || "longtext".equalsIgnoreCase( newBaseType ) || "mediumtext".equalsIgnoreCase( newBaseType ) || "text".equalsIgnoreCase( newBaseType ) || "tinytext".equalsIgnoreCase( newBaseType ) || "varchar".equalsIgnoreCase( newBaseType ) ) ) ||
-		          ( "enum".equalsIgnoreCase( oldBaseType ) && "varchar".equalsIgnoreCase( newBaseType ) ) ||
-		          ( "varchar".equalsIgnoreCase( oldBaseType ) && "enum".equalsIgnoreCase( newBaseType ) ) )
+		            ( "bigint".equalsIgnoreCase( newBaseType ) || "decimal".equalsIgnoreCase( newBaseType ) || "double".equalsIgnoreCase( newBaseType ) || "float".equalsIgnoreCase( newBaseType ) || "int".equalsIgnoreCase( newBaseType ) || "smallint".equalsIgnoreCase( newBaseType ) || "tinyint".equalsIgnoreCase( newBaseType ) ) ) )
 		{
 			executeUpdate( realUpdates, dataSource, updatePrefix + newCreateLine + ';' );
 		}
 		else
 		{
-			final String message = "Don't know how to convert '" + oldType + "' to '" + newType + "'\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference;
+			final String message = "Don't know how to convert '" + oldType + "' to '" + newType + "'";
 			if ( dataLossHandling != DataLossHandling.SKIP )
 			{
-				throw new RuntimeException( message );
+				throw new RuntimeException( message + "\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference );
 			}
 			System.err.println( "WARNING: " + message );
 		}
+	}
+
+	/**
+	 * Handles possible data loss according to the specified method.
+	 *
+	 * @param dataLossHandling Method for handling data loss handling.
+	 * @param realUpdates      Whether real updates are requested.
+	 * @param possibleDataLoss Whether data loss may occur.
+	 * @param tableReference   SQL reference to table.
+	 * @param oldCreateLine    Old CREATE line for column (from database).
+	 * @param newCreateLine    New CREATE line for key (from specification).
+	 * @param message          Warning/error message.
+	 *
+	 * @return Whether real updates are allowed.
+	 */
+	private static boolean handleDataLoss( @NotNull final DataLossHandling dataLossHandling, final boolean realUpdates, final boolean possibleDataLoss, final String tableReference, final String oldCreateLine, final String newCreateLine, final String message )
+	{
+		if ( possibleDataLoss )
+		{
+			if ( realUpdates && ( dataLossHandling == DataLossHandling.REFUSE ) )
+			{
+				throw new RuntimeException( message + "\nOld create line: " + oldCreateLine + "\nNew create line: " + newCreateLine + "\nTable reference: " + tableReference );
+			}
+
+			System.out.println( "WARNING: " + message );
+		}
+
+		return realUpdates && ( !possibleDataLoss || ( dataLossHandling == DataLossHandling.FORCE ) );
+	}
+
+	/**
+	 * Returns whether the given base type is a binary type.
+	 *
+	 * @param baseType Column base type.
+	 *
+	 * @return {@code true} for binary types.
+	 */
+	private static boolean isBinaryBaseType( @NotNull final String baseType )
+	{
+		return "binary".equalsIgnoreCase( baseType ) || "varbinary".equalsIgnoreCase( baseType ) || "tinyblob".equalsIgnoreCase( baseType ) || "blob".equalsIgnoreCase( baseType ) || "mediumblob".equalsIgnoreCase( baseType ) || "longblob".equalsIgnoreCase( baseType );
+	}
+
+	/**
+	 * Returns whether the given base type is a character type.
+	 *
+	 * @param baseType Column base type.
+	 *
+	 * @return {@code true} for character types.
+	 */
+	private static boolean isCharacterBaseType( @NotNull final String baseType )
+	{
+		return "char".equalsIgnoreCase( baseType ) || "varchar".equalsIgnoreCase( baseType ) || "tinytext".equalsIgnoreCase( baseType ) || "text".equalsIgnoreCase( baseType ) || "mediumtext".equalsIgnoreCase( baseType ) || "longtext".equalsIgnoreCase( baseType );
+	}
+
+	/**
+	 * Returns whether the given base type is an enum type.
+	 *
+	 * @param baseType Column base type.
+	 *
+	 * @return {@code true} for enum types.
+	 */
+	private static boolean isEnumBaseType( @NotNull final String baseType )
+	{
+		return "enum".equalsIgnoreCase( baseType );
+	}
+
+	/**
+	 * Returns the maximum length for values of the given type.
+	 *
+	 * @param type Column type.
+	 *
+	 * @return Maximum length.
+	 */
+	private static long getMaximumLength( @NotNull final String type )
+	{
+		final long result;
+		final String[] baseAndLength = type.split( "[()]" );
+		if ( baseAndLength.length == 1 )
+		{
+			result = getDefaultMaximumLength( baseAndLength[ 0 ] );
+		}
+		else if ( baseAndLength.length == 2 )
+		{
+			if ( isEnumBaseType( baseAndLength[ 0 ] ) )
+			{
+				int maxLength = 0;
+				for ( final String enumValue : getEnumValues( type ) )
+				{
+					maxLength = Math.max( maxLength, enumValue.length() );
+				}
+				result = maxLength;
+			}
+			else
+			{
+				result = Integer.parseInt( baseAndLength[ 1 ] );
+			}
+		}
+		else
+		{
+			throw new IllegalArgumentException( "Unsupported type: " + type );
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the default maximum length for values of the given base type.
+	 *
+	 * @param baseType Column base type.
+	 *
+	 * @return Default maximum length.
+	 */
+	private static long getDefaultMaximumLength( @NotNull final String baseType )
+	{
+		final long result;
+		if ( "binary".equalsIgnoreCase( baseType ) ||
+		     "char".equalsIgnoreCase( baseType ) )
+		{
+			result = 1;
+		}
+		else if ( "tinyblob".equalsIgnoreCase( baseType ) ||
+		          "tinytext".equalsIgnoreCase( baseType ) )
+		{
+			result = 0xff; //2^8 - 1
+		}
+		else if ( "blob".equalsIgnoreCase( baseType ) ||
+		          "text".equalsIgnoreCase( baseType ) )
+		{
+			result = 0xffff; //2^16 - 1
+		}
+		else if ( "mediumblob".equalsIgnoreCase( baseType ) ||
+		          "mediumtext".equalsIgnoreCase( baseType ) )
+		{
+			result = 0xffffff; //2^24 - 1
+		}
+		else if ( "longblob".equalsIgnoreCase( baseType ) ||
+		          "longtext".equalsIgnoreCase( baseType ) )
+		{
+			result = 0xffffffffL; //2^32 - 1
+		}
+		else
+		{
+			throw new IllegalArgumentException( "Unsupported base type: " + baseType );
+		}
+		return result;
 	}
 
 	/**
@@ -695,12 +837,13 @@ public class DatabaseTableUpdater
 	 *
 	 * @return Enumeration values.
 	 */
-	private static Set<String> getEnumValues( final String type )
+	@NotNull
+	private static Set<String> getEnumValues( @NotNull final String type )
 	{
 		final String valueList = type.substring( type.indexOf( '(' ) + 1, type.indexOf( ')' ) );
 		final String[] values = valueList.split( "," );
 		// TODO: Remove quotes, maybe.
-		return ( values == null ) ? Collections.<String>emptySet() : new HashSet<String>( Arrays.asList( values ) );
+		return new HashSet<String>( Arrays.asList( values ) );
 	}
 
 	/**
@@ -778,7 +921,7 @@ public class DatabaseTableUpdater
 	 *
 	 * @throws SQLException if an error occurred while accessing the database.
 	 */
-	private static void executeUpdate( final boolean realUpdates, final DataSource dataSource, final String query )
+	private static void executeUpdate( final boolean realUpdates, @NotNull final DataSource dataSource, @NotNull final String query )
 	throws SQLException
 	{
 		if ( realUpdates )
