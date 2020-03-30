@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,5 +99,71 @@ public final class StreamTools
 		return Collectors.toMap( keyMapper, valueMapper, ( u, v ) -> {
 			throw new IllegalStateException( String.format( "Duplicate key %s", u ) );
 		}, mapSupplier );
+	}
+
+	/**
+	 * Collects the elements of a stream in a {@link HashSet}, but returns
+	 * {@link Collections#emptySet} if the stream is empty.
+	 *
+	 * @param <T>    Element type.
+	 * @param stream Stream to reduce.
+	 *
+	 * @return {@link Set}.
+	 */
+	@NotNull
+	public static <T> Set<T> toSet( @NotNull final Stream<T> stream )
+	{
+		return toSet( stream, HashSet::new );
+	}
+
+	/**
+	 * Collects the elements of a stream in a {@link Set}, but returns
+	 * {@link Collections#emptySet} if the stream is empty.
+	 *
+	 * This is equivalent to:
+	 * <pre>{@code
+	 *     Set<T> result = Collections.emptySet();
+	 *     for ( T element : stream )
+	 *     {
+	 *         if ( result.isEmpty() )
+	 *         {
+	 *             result = setSupplier.get();
+	 *         }
+	 *         result.add( element );
+	 *     }
+	 *     return result;
+	 * }</pre>
+	 * but is not constrained to execute sequentially.
+	 *
+	 * @param <T>         Element type.
+	 * @param stream      Stream to reduce.
+	 * @param setSupplier Supplier for non-empty result.
+	 *
+	 * @return {@link Set}.
+	 */
+	@NotNull
+	public static <T> Set<T> toSet( @NotNull final Stream<T> stream, @NotNull final Supplier<Set<T>> setSupplier )
+	{
+		final BiFunction<Set<T>, T, Set<T>> accumulator = ( set, i ) -> {
+			final Set<T> result = set.isEmpty() ? setSupplier.get() : set;
+			result.add( i );
+			return result;
+		};
+
+		final BinaryOperator<Set<T>> combiner = ( set1, set2 ) -> {
+			final Set<T> result;
+			if ( set1.isEmpty() )
+			{
+				result = set2;
+			}
+			else
+			{
+				set1.addAll( set2 );
+				result = set1;
+			}
+			return result;
+		};
+
+		return stream.reduce( Collections.emptySet(), accumulator, combiner );
 	}
 }
