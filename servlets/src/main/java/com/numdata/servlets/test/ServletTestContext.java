@@ -45,12 +45,12 @@ implements ServletContext
 	/**
 	 * Servlet init parameters.
 	 */
-	private final Map<String, String> _initParameters = new HashMap<String, String>();
+	private final Map<String, String> _initParameters = new HashMap<>();
 
 	/**
 	 * Servlet attributes.
 	 */
-	private final Map<String, Object> _attributes = new HashMap<String, Object>();
+	private final Map<String, Object> _attributes = new HashMap<>();
 
 	{
 		File cwd = new File( "." );
@@ -73,7 +73,7 @@ implements ServletContext
 	/**
 	 * Request dispatchers.
 	 */
-	final Map<String, RequestDispatcher> _requestDispatchers = new HashMap<String, RequestDispatcher>();
+	final Map<String, RequestDispatcher> _requestDispatchers = new HashMap<>();
 
 	/**
 	 * Construct context.
@@ -149,7 +149,6 @@ implements ServletContext
 
 	public URL getResource( final String string )
 	{
-		//noinspection ConstantConditions
 		return _classLoader.getResource( '.' + string );
 	}
 
@@ -320,7 +319,6 @@ implements ServletContext
 	}
 
 	public <T extends Servlet> T createServlet( final Class<T> clazz )
-	throws ServletException
 	{
 		throw new AssertionError( "not implemented" );
 	}
@@ -351,7 +349,6 @@ implements ServletContext
 	}
 
 	public <T extends Filter> T createFilter( final Class<T> clazz )
-	throws ServletException
 	{
 		throw new AssertionError( "not implemented" );
 	}
@@ -402,7 +399,6 @@ implements ServletContext
 	}
 
 	public <T extends EventListener> T createListener( final Class<T> clazz )
-	throws ServletException
 	{
 		throw new AssertionError( "not implemented" );
 	}
@@ -423,6 +419,46 @@ implements ServletContext
 	}
 
 	public String getVirtualServerName()
+	{
+		throw new AssertionError( "not implemented" );
+	}
+
+	public ServletRegistration.Dynamic addJspFile( final String s, final String s1 )
+	{
+		throw new AssertionError( "not implemented" );
+	}
+
+	public int getSessionTimeout()
+	{
+		return 30;
+	}
+
+	@Override
+	public void setSessionTimeout( final int i )
+	{
+		throw new AssertionError( "not implemented" );
+	}
+
+	@Override
+	public String getRequestCharacterEncoding()
+	{
+		return "UTF-8";
+	}
+
+	@Override
+	public void setRequestCharacterEncoding( final String s )
+	{
+		throw new AssertionError( "not implemented" );
+	}
+
+	@Override
+	public String getResponseCharacterEncoding()
+	{
+		return "UTF-8";
+	}
+
+	@Override
+	public void setResponseCharacterEncoding( final String s )
 	{
 		throw new AssertionError( "not implemented" );
 	}
