@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,78 +46,44 @@ public class JdbcTools
 	 * Result processor that takes a string result from the first row/column in
 	 * the result set.
 	 */
-	public static final ResultProcessor<String> GET_STRING = new ResultProcessor<String>()
-	{
-		@Nullable
-		@Override
-		public String process( @NotNull final ResultSet resultSet )
-		throws SQLException
-		{
-			return resultSet.next() ? resultSet.getString( 1 ) : null;
-		}
-	};
+	public static final ResultProcessor<String> GET_STRING = resultSet -> resultSet.next() ? resultSet.getString( 1 ) : null;
 
 	/**
 	 * Result processor that takes an integer result from the first row/column
 	 * in the result set.
 	 */
-	public static final ResultProcessor<Integer> GET_INTEGER = new ResultProcessor<Integer>()
-	{
-		@Nullable
-		@Override
-		public Integer process( @NotNull final ResultSet resultSet )
-		throws SQLException
-		{
-			return resultSet.next() ? resultSet.getInt( 1 ) : null;
-		}
-	};
+	public static final ResultProcessor<Integer> GET_INTEGER = resultSet -> resultSet.next() ? resultSet.getInt( 1 ) : null;
 
 	/**
 	 * Result processor that takes a double precision floating-point result from
 	 * the first row/column in the result set.
 	 */
-	public static final ResultProcessor<Double> GET_DOUBLE = new ResultProcessor<Double>()
-	{
-		@Nullable
-		@Override
-		public Double process( @NotNull final ResultSet resultSet )
-		throws SQLException
-		{
-			return resultSet.next() ? resultSet.getDouble( 1 ) : null;
-		}
-	};
+	public static final ResultProcessor<Double> GET_DOUBLE = resultSet -> resultSet.next() ? resultSet.getDouble( 1 ) : null;
 
 	/**
 	 * Result processor that takes a numeric result from the first row/column in
 	 * the result set.
 	 */
-	public static final ResultProcessor<Number> GET_NUMBER = new ResultProcessor<Number>()
-	{
-		@Nullable
-		@Override
-		public Number process( @NotNull final ResultSet resultSet )
-		throws SQLException
-		{
-			Number result = null;
+	public static final ResultProcessor<Number> GET_NUMBER = resultSet -> {
+		Number result = null;
 
-			if ( resultSet.next() )
+		if ( resultSet.next() )
+		{
+			final Object object = resultSet.getObject( 1 );
+			if ( object != null )
 			{
-				final Object object = resultSet.getObject( 1 );
-				if ( object != null )
+				if ( object instanceof Number )
 				{
-					if ( object instanceof Number )
-					{
-						result = (Number)object;
-					}
-					else
-					{
-						result = resultSet.getDouble( 1 );
-					}
+					result = (Number)object;
+				}
+				else
+				{
+					result = resultSet.getDouble( 1 );
 				}
 			}
-
-			return result;
 		}
+
+		return result;
 	};
 
 	/**
@@ -141,23 +107,10 @@ public class JdbcTools
 	public static boolean tableExists( @NotNull final DataSource dataSource, @NotNull final String tableName )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( true );
-
 			return tableExists( connection, tableName );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -177,8 +130,7 @@ public class JdbcTools
 	{
 		boolean result;
 
-		final Statement statement = connection.createStatement();
-		try
+		try ( final Statement statement = connection.createStatement() )
 		{
 			try
 			{
@@ -188,18 +140,8 @@ public class JdbcTools
 			}
 			catch ( final SQLException ignored )
 			{
+				// exception is expected if table does not exist
 				result = false;
-			}
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
 			}
 		}
 
@@ -221,22 +163,10 @@ public class JdbcTools
 	public static boolean columnExists( @NotNull final DataSource dataSource, @NotNull final String tableName, @NotNull final String column )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( true );
 			return columnExists( connection, tableName, column );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -257,8 +187,7 @@ public class JdbcTools
 	{
 		boolean result;
 
-		final Statement statement = connection.createStatement();
-		try
+		try ( final Statement statement = connection.createStatement() )
 		{
 			try
 			{
@@ -269,17 +198,6 @@ public class JdbcTools
 			catch ( final SQLException ignored )
 			{
 				result = false;
-			}
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
 			}
 		}
 
@@ -447,22 +365,10 @@ public class JdbcTools
 	public static int executeUpdate( @NotNull final DataSource dataSource, @NotNull final String query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( false );
-			return executeUpdate( connection, query, (Object[])arguments );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
+			return executeUpdate( connection, query, arguments );
 		}
 	}
 
@@ -481,22 +387,10 @@ public class JdbcTools
 	public static int executeUpdate( @NotNull final Connection connection, @NotNull final String query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final PreparedStatement statement = connection.prepareStatement( query );
-		try
+		try ( final PreparedStatement statement = connection.prepareStatement( query ) )
 		{
 			prepareStatement( statement, arguments );
 			return statement.executeUpdate();
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -507,6 +401,7 @@ public class JdbcTools
 	 * @param processor  Result set processor.
 	 * @param query      Query to be executed.
 	 * @param arguments  Arguments used in the query.
+	 * @param <R>        Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -516,22 +411,10 @@ public class JdbcTools
 	public static <R> R executeQuery( @NotNull final DataSource dataSource, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( true );
-			return executeQuery( connection, processor, query, (Object[])arguments );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
+			return executeQuery( connection, processor, query, arguments );
 		}
 	}
 
@@ -542,6 +425,7 @@ public class JdbcTools
 	 * @param processor  Result set processor.
 	 * @param query      Query to be executed.
 	 * @param arguments  Arguments used in the query.
+	 * @param <R>        Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -551,22 +435,10 @@ public class JdbcTools
 	public static <R> R executeQuery( @NotNull final Connection connection, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final PreparedStatement statement = connection.prepareStatement( query.toString() );
-		try
+		try ( final PreparedStatement statement = connection.prepareStatement( query.toString() ) )
 		{
 			prepareStatement( statement, arguments );
 			return processor.process( statement.executeQuery() );
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -578,6 +450,7 @@ public class JdbcTools
 	 * @param processor  Result set processor.
 	 * @param query      Query to be executed.
 	 * @param arguments  Arguments used in the query.
+	 * @param <R>        Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -587,22 +460,10 @@ public class JdbcTools
 	public static <R> R executeQueryStreaming( @NotNull final DataSource dataSource, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( true );
-			return executeQueryStreaming( connection, processor, query, (Object[])arguments );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
+			return executeQueryStreaming( connection, processor, query, arguments );
 		}
 	}
 
@@ -614,6 +475,7 @@ public class JdbcTools
 	 * @param processor  Result set processor.
 	 * @param query      Query to be executed.
 	 * @param arguments  Arguments used in the query.
+	 * @param <R>        Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -636,6 +498,7 @@ public class JdbcTools
 	 * @param processor  Result set processor.
 	 * @param query      Query to be executed.
 	 * @param arguments  Arguments used in the query.
+	 * @param <R>        Result type.
 	 *
 	 * @return Result of processor.
 	 *
@@ -645,23 +508,11 @@ public class JdbcTools
 	public static <R> R executeQueryStreaming( @NotNull final Connection connection, final int fetchSize, @NotNull final ResultProcessor<R> processor, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final PreparedStatement statement = connection.prepareStatement( query.toString() );
-		statement.setFetchSize( fetchSize );
-		try
+		try ( final PreparedStatement statement = connection.prepareStatement( query.toString() ) )
 		{
+			statement.setFetchSize( fetchSize );
 			prepareStatement( statement, arguments );
 			return processor.process( statement.executeQuery() );
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -683,22 +534,10 @@ public class JdbcTools
 	public static ResultSetClone executeQuery( @NotNull final DataSource dataSource, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final Connection connection = dataSource.getConnection();
-		try
+		try ( final Connection connection = dataSource.getConnection() )
 		{
 			connection.setReadOnly( true );
-			return executeQuery( connection, query, (Object[])arguments );
-		}
-		finally
-		{
-			try
-			{
-				connection.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
+			return executeQuery( connection, query, arguments );
 		}
 	}
 
@@ -720,22 +559,10 @@ public class JdbcTools
 	public static ResultSetClone executeQuery( @NotNull final Connection connection, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		final PreparedStatement statement = connection.prepareStatement( query.toString() );
-		try
+		try ( final PreparedStatement statement = connection.prepareStatement( query.toString() ) )
 		{
 			prepareStatement( statement, arguments );
 			return new ResultSetClone( statement.executeQuery() );
-		}
-		finally
-		{
-			try
-			{
-				statement.close();
-			}
-			catch ( final SQLException ignored )
-			{
-				/* ignored, would hide real exception */
-			}
 		}
 	}
 
@@ -777,25 +604,19 @@ public class JdbcTools
 	 * </ol>
 	 *
 	 * @param processor Processor for single row in {@link ResultSet}.
+	 * @param <E>       Result type.
 	 *
 	 * @return {@link ResultProcessor}.
 	 */
 	public static <E> ResultProcessor<E> one( @NotNull final ResultProcessor<E> processor )
 	{
-		return new ResultProcessor<E>()
-		{
-			@Nullable
-			@Override
-			public E process( @NotNull final ResultSet resultSet )
-			throws SQLException
+		return resultSet -> {
+			if ( !resultSet.next() )
 			{
-				if ( !resultSet.next() )
-				{
-					throw new NoSuchElementException( "Got no result from query, while at least one result is required" );
-				}
-
-				return processor.process( resultSet );
+				throw new NoSuchElementException( "Got no result from query, while at least one result is required" );
 			}
+
+			return processor.process( resultSet );
 		};
 	}
 
@@ -820,21 +641,13 @@ public class JdbcTools
 	 *
 	 * @param processor    Processor for single row in {@link ResultSet}.
 	 * @param defaultValue Default to return if result set is empty.
+	 * @param <E>          Result type.
 	 *
 	 * @return {@link ResultProcessor}.
 	 */
 	public static <E> ResultProcessor<E> one( @NotNull final ResultProcessor<E> processor, @Nullable final E defaultValue )
 	{
-		return new ResultProcessor<E>()
-		{
-			@Nullable
-			@Override
-			public E process( @NotNull final ResultSet resultSet )
-			throws SQLException
-			{
-				return resultSet.next() ? processor.process( resultSet ) : defaultValue;
-			}
-		};
+		return resultSet -> resultSet.next() ? processor.process( resultSet ) : defaultValue;
 	}
 
 	/**
@@ -857,32 +670,26 @@ public class JdbcTools
 	 * </ol>
 	 *
 	 * @param processor Processor for single row in {@link ResultSet}.
+	 * @param <E>       Result type.
 	 *
 	 * @return {@link ResultProcessor}.
 	 */
 	public static <E> ResultProcessor<E> only( @NotNull final ResultProcessor<E> processor )
 	{
-		return new ResultProcessor<E>()
-		{
-			@Nullable
-			@Override
-			public E process( @NotNull final ResultSet resultSet )
-			throws SQLException
+		return resultSet -> {
+			if ( !resultSet.next() )
 			{
-				if ( !resultSet.next() )
-				{
-					throw new NoSuchElementException( "Got no result from query, while one and only one result is required" );
-				}
-
-				final E result = processor.process( resultSet );
-
-				if ( resultSet.next() )
-				{
-					throw new IllegalStateException( "Got multiple results from query, while one and only one is required" );
-				}
-
-				return result;
+				throw new NoSuchElementException( "Got no result from query, while one and only one result is required" );
 			}
+
+			final E result = processor.process( resultSet );
+
+			if ( resultSet.next() )
+			{
+				throw new IllegalStateException( "Got multiple results from query, while one and only one is required" );
+			}
+
+			return result;
 		};
 	}
 
@@ -894,26 +701,21 @@ public class JdbcTools
 	 * @param processor  Processor for row in {@link ResultSet} to produce
 	 *                   element to collect.
 	 * @param collection Target collection.
+	 * @param <E>        Element type.
+	 * @param <C>        Collection type.
 	 *
 	 * @return {@link ResultProcessor}.
 	 */
 	@NotNull
 	public static <E, C extends Collection<? super E>> ResultProcessor<C> collect( @NotNull final ResultProcessor<E> processor, @NotNull final C collection )
 	{
-		return new ResultProcessor<C>()
-		{
-			@Nullable
-			@Override
-			public C process( @NotNull final ResultSet resultSet )
-			throws SQLException
+		return resultSet -> {
+			while ( resultSet.next() )
 			{
-				while ( resultSet.next() )
-				{
-					collection.add( processor.process( resultSet ) );
-				}
-
-				return collection;
+				collection.add( processor.process( resultSet ) );
 			}
+
+			return collection;
 		};
 	}
 
@@ -930,15 +732,9 @@ public class JdbcTools
 	public static void dumpAsTextTable( @NotNull final DataSource dataSource, @NotNull final CharSequence query, @NotNull final Object... arguments )
 	throws SQLException
 	{
-		executeQuery( dataSource, new ResultProcessor<Void>()
-		{
-			@Override
-			public Void process( @NotNull final ResultSet resultSet )
-			throws SQLException
-			{
-				dumpAsTextTable( resultSet, System.out, "" );
-				return null;
-			}
+		executeQuery( dataSource, (ResultProcessor<Void>)resultSet -> {
+			dumpAsTextTable( resultSet, System.out, "" );
+			return null;
 		}, query, arguments );
 	}
 
@@ -957,17 +753,17 @@ public class JdbcTools
 		final ResultSetMetaData metaData = resultSet.getMetaData();
 		final int columnCount = metaData.getColumnCount();
 
-		final List<String> headers = new ArrayList<String>();
+		final List<String> headers = new ArrayList<>();
 		for ( int i = 1; i <= columnCount; i++ )
 		{
 			headers.add( metaData.getColumnLabel( i ) );
 		}
 
-		final List<List<?>> data = new ArrayList<List<?>>();
+		final List<List<?>> data = new ArrayList<>();
 
 		while ( resultSet.next() )
 		{
-			final List<Object> row = new ArrayList<Object>( columnCount );
+			final List<Object> row = new ArrayList<>( columnCount );
 			for ( int i = 1; i <= columnCount; i++ )
 			{
 				row.add( resultSet.getObject( i ) );
@@ -977,7 +773,7 @@ public class JdbcTools
 
 		try
 		{
-			TextTools.writeTableAsText( out, headers, data, false, indent, "\n", "NULL" );
+			TextTable.write( out, headers, data, indent, "\n", "NULL" );
 		}
 		catch ( final IOException e )
 		{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ import java.util.zip.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.io.*;
+import com.numdata.oss.log.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines the client/server protocol.
@@ -42,15 +44,19 @@ import com.numdata.oss.io.*;
 public class Protocol
 {
 	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final ClassLogger LOG = ClassLogger.getFor( Protocol.class );
+
+	/**
 	 * Send packet to remote.
 	 *
 	 * @param out    Stream to send message to.
 	 * @param packet Packet to send.
 	 *
 	 * @throws IOException if a problem occurred while sending the message.
-	 * @throws NullPointerException if either argument is {@code null}.
 	 */
-	public static void send( final OutputStream out, final Packet packet )
+	public static void send( @NotNull final OutputStream out, @NotNull final Packet packet )
 	throws IOException
 	{
 		final MessageDigest digest = getDigest();
@@ -61,7 +67,8 @@ public class Protocol
 
 		DataStreamTools.writeString( gzipOutputStream, packet.getMessage() );
 
-		@SuppressWarnings ( "IOResourceOpenedButNotSafelyClosed" ) final ObjectOutputStream objectOutputStream = new ObjectOutputStream( gzipOutputStream );
+		// IMPORTANT: should not close temporary stream, otherwise the stream would be closed as well, which we don't want!
+		@SuppressWarnings( { "IOResourceOpenedButNotSafelyClosed", "resource" } ) final ObjectOutput objectOutputStream = new ObjectOutputStream( gzipOutputStream );
 		objectOutputStream.writeObject( packet.getAttributes() );
 		gzipOutputStream.finish();
 
@@ -78,7 +85,8 @@ public class Protocol
 	 *
 	 * @throws IOException if a problem occurred while receiving the message.
 	 */
-	public static Packet receive( final InputStream in, final int contentLength )
+	@NotNull
+	public static Packet receive( @NotNull final InputStream in, final int contentLength )
 	throws IOException
 	{
 		final MessageDigest digest = getDigest();
@@ -101,8 +109,7 @@ public class Protocol
 		final String message;
 		final byte[] decompressed;
 		{
-			final GZIPInputStream gzipInputStream = new GZIPInputStream( new ByteArrayInputStream( data ) );
-			try
+			try ( final GZIPInputStream gzipInputStream = new GZIPInputStream( new ByteArrayInputStream( data ) ) )
 			{
 				message = DataStreamTools.readString( gzipInputStream );
 				if ( message == null )
@@ -112,31 +119,26 @@ public class Protocol
 
 				decompressed = DataStreamTools.readByteArray( gzipInputStream );
 			}
-			finally
-			{
-				gzipInputStream.close();
-			}
 		}
 
 		final Map<String, Serializable> attributes;
 		try
 		{
-			@SuppressWarnings ( "IOResourceOpenedButNotSafelyClosed" ) final ObjectInputStream objectInputStream = new ObjectInputStream( new ByteArrayInputStream( decompressed ) );
+			// IMPORTANT: should not close temporary stream, otherwise the stream would be closed as well, which we don't want!
+			@SuppressWarnings( { "IOResourceOpenedButNotSafelyClosed", "resource" } ) final ObjectInputStream objectInputStream = new ObjectInputStream( new ByteArrayInputStream( decompressed ) );
 			attributes = (Map<String, Serializable>)objectInputStream.readObject();
 		}
-		catch ( ClassNotFoundException e )
+		catch ( final ClassNotFoundException e )
 		{
-			System.err.println( "Class not found while deserializing message." );
-			dumpData( decompressed );
-
-			throw new ProtocolException( e.getMessage(), e );
+			final String warning = "Class not found while deserializing message.";
+			LOG.warn( warning, e );
+			throw new ProtocolException( appendDataDump( warning + " (" + e.getMessage() + ')', decompressed ), e );
 		}
-		catch ( IOException e )
+		catch ( final IOException e )
 		{
-			System.err.println( "Error in serialized message. Serialized data dump:" );
-			dumpData( decompressed );
-
-			throw new ProtocolException( e.getMessage(), e );
+			final String warning = "Error in serialized message.";
+			LOG.warn( warning, e );
+			throw new ProtocolException( appendDataDump( warning + " (" + e.getMessage() + ')', decompressed ), e );
 		}
 
 		final Packet result = new Packet( message );
@@ -153,22 +155,32 @@ public class Protocol
 	}
 
 	/**
-	 * Dump data to console.
+	 * Append data dump to the given message.
 	 *
-	 * @param data Data to dump.
+	 * @param message Message to append dump to.
+	 * @param data    Data to dump.
 	 *
-	 * @throws IOException if an error occurs while accessing resources.
+	 * @return Message with data appended.
 	 */
-	private static void dumpData( final byte[] data )
-	throws IOException
+	@NotNull
+	private static String appendDataDump( @NotNull final String message, @NotNull final byte[] data )
 	{
-		System.err.println( "Serialized data dump:" );
+		final StringWriter buffer = new StringWriter();
+		buffer.append( message ).append( "\nSerialized data dump:\n" );
 		final int maxLength = 1024;
 		if ( data.length > maxLength )
 		{
-			System.err.println( "(dumping only first " + maxLength + " bytes of message; actual data size was " + data.length + " bytes)" );
+			buffer.append( "(dumping only first " + maxLength + " bytes of message; actual data size was " ).append( String.valueOf( data.length ) ).append( " bytes)\n" );
 		}
-		TextTools.hexdump( System.err, data, 0, Math.min( data.length, maxLength ) );
+		try
+		{
+			HexDump.write( buffer, data, 0, Math.min( data.length, maxLength ) );
+		}
+		catch ( final IOException e ) // impossible with StringWriter
+		{
+			throw new AssertionError( e );
+		}
+		return buffer.toString();
 	}
 
 	/**
@@ -178,6 +190,7 @@ public class Protocol
 	 *
 	 * @throws ProtocolException if the required algorithm is not available.
 	 */
+	@NotNull
 	private static MessageDigest getDigest()
 	throws ProtocolException
 	{
@@ -185,7 +198,7 @@ public class Protocol
 		{
 			return MessageDigest.getInstance( "MD5" );
 		}
-		catch ( NoSuchAlgorithmException e )
+		catch ( final NoSuchAlgorithmException e )
 		{
 			throw new ProtocolException( "MD5 unavailable", e );
 		}

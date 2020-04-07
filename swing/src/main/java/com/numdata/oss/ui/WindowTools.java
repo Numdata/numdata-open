@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
  */
 package com.numdata.oss.ui;
 
-import java.awt.*;
 import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.regex.*;
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.border.*;
 
 import com.numdata.oss.*;
@@ -105,7 +105,7 @@ public class WindowTools
 
 		try
 		{
-			final int response = JOptionPane.showConfirmDialog( owner, TextTools.plainTextToHTML( message ), title, JOptionPane.YES_NO_CANCEL_OPTION );
+			final int response = JOptionPane.showConfirmDialog( owner, HTMLTools.plainTextToHTML( message ), title, JOptionPane.YES_NO_CANCEL_OPTION );
 			switch ( response )
 			{
 				case JOptionPane.YES_OPTION:
@@ -295,7 +295,7 @@ public class WindowTools
 	 *
 	 * <li>Set the default close operation to {@link JFrame#EXIT_ON_CLOSE}.</li>
 	 *
-	 * <li>Resize the frame to the specified width and height.<br /><br />
+	 * <li>Resize the frame to the specified width and height.<br><br>
 	 * Negative values can be used to define a width and/or height relative to
 	 * the screen size, e.g. specifying {@code 600} for the width, and {@code
 	 * -200} for the height, will set the window width to 600 pixels, and the
@@ -362,7 +362,7 @@ public class WindowTools
 	{
 		final JPanel contentPane = new JPanel( new BorderLayout() );
 		contentPane.setBorder( BorderFactory.createEmptyBorder( 16, 16, 16, 16 ) );
-		contentPane.add( new JLabel( TextTools.plainTextToHTML( message ), JLabel.CENTER ), BorderLayout.CENTER );
+		contentPane.add( new JLabel( HTMLTools.plainTextToHTML( message ), JLabel.CENTER ), BorderLayout.CENTER );
 
 		final JDialog result;
 		if ( owner instanceof Frame )
@@ -807,7 +807,7 @@ public class WindowTools
 		System.err.println( message );
 		System.err.println( TextTools.getFixed( 80, '-' ) );
 
-		showMessageDialog( owner, title, TextTools.plainTextToHTML( message ), JOptionPane.ERROR_MESSAGE, 0 );
+		showMessageDialog( owner, title, HTMLTools.plainTextToHTML( message ), JOptionPane.ERROR_MESSAGE, 0 );
 	}
 
 	/**
@@ -822,7 +822,7 @@ public class WindowTools
 	 */
 	public static void showWarningDialog( @Nullable final Component owner, @Nullable final String title, @Nullable final String message )
 	{
-		showMessageDialog( owner, title, TextTools.plainTextToHTML( message ), JOptionPane.WARNING_MESSAGE, 0 );
+		showMessageDialog( owner, title, HTMLTools.plainTextToHTML( message ), JOptionPane.WARNING_MESSAGE, 0 );
 	}
 
 	/**
@@ -919,7 +919,7 @@ public class WindowTools
 		dialog.setUndecorated( true );
 		dialog.setResizable( false );
 
-		final JLabel label = new JLabel( TextTools.plainTextToHTML( message ) );
+		final JLabel label = new JLabel( HTMLTools.plainTextToHTML( message ) );
 		if ( font != null )
 		{
 			label.setFont( font );

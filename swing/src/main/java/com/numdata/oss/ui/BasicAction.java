@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import javax.swing.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.measurement.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This implementation of the {@code Action} interface provides getters and
@@ -59,27 +60,19 @@ implements Runnable
 	 * Construct basic action with settings from resource bundle using the
 	 * specified key. The following properties are set:
 	 *
-	 * <table>
-	 *
+	 * <table summary="Resource entries used for action">
 	 * <tr><th>resource key</th><th>assigned to property</th><th>default</th></tr>
-	 *
 	 * <tr><td>{key}</td><td>name</td><td>{key}</td></tr>
-	 *
 	 * <tr><td>{key}Icon</td><td>smallIcon</td><td>none</td></tr>
-	 *
 	 * <tr><td>{key}Tip</td><td>shortDescription</td><td>none</td></tr>
-	 *
-	 * <tr><td>{key}KeyStroke</td><td>keyboardAccellerator</td></td>none
-	 * </td></tr>
-	 *
+	 * <tr><td>{key}KeyStroke</td><td>keyboardAccellerator</td><td>none</td></tr>
 	 * <tr><td>{key}Mnemonic</td><td>mnemonicKey</td><td>none</td></tr>
-	 *
 	 * </table>
 	 *
 	 * @param bundle Resource bundle to get settings from.
 	 * @param key    Resource key to use (also used as action command).
 	 */
-	protected BasicAction( final ResourceBundle bundle, final String key )
+	protected BasicAction( @NotNull final ResourceBundle bundle, @NotNull final String key )
 	{
 		_bundle = bundle;
 		setActionCommand( key );
@@ -143,7 +136,7 @@ implements Runnable
 		{
 			run();
 		}
-		catch ( Throwable problem )
+		catch ( final Throwable problem )
 		{
 			WindowTools.showErrorDialog( null, problem, getClass() );
 		}
@@ -305,7 +298,7 @@ implements Runnable
 	 */
 	public void setMnemonicKey( final int key )
 	{
-		putValue( MNEMONIC_KEY, ( key < 0 ) ? null : new Integer( key ) );
+		putValue( MNEMONIC_KEY, ( key < 0 ) ? null : key );
 	}
 
 	/**
@@ -349,7 +342,7 @@ implements Runnable
 	 */
 	public void setShortDescription( final String description )
 	{
-		putValue( SHORT_DESCRIPTION, TextTools.plainTextToHTML( description ) );
+		putValue( SHORT_DESCRIPTION, HTMLTools.plainTextToHTML( description ) );
 	}
 
 	/**

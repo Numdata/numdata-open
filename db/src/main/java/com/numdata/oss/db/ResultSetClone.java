@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@ package com.numdata.oss.db;
 import java.io.*;
 import java.math.*;
 import java.net.*;
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.util.*;
 
 import com.numdata.oss.*;
@@ -134,10 +134,15 @@ implements ResultSet
 	/**
 	 * Row index in the result set. The following table should explain this
 	 * value (there is obviously not a first nor a last row when the result set
-	 * is empty): <table> <th><td>row index</td><td>description</td></th>
-	 * <tr><td>-1</td><td>before first</td></tr> <tr><td>0</td><td>first
-	 * row</td></tr> <tr><td>#rows - 1</td><td>last row</td></tr>
-	 * <tr><td>#rows</td><td>after last</td></tr> </table>
+	 * is empty):
+	 *
+	 * <table summary="Row index in result set">
+	 *   <tr><th>row index</th><th>description</th></tr>
+	 *   <tr><td>-1</td><td>before first</td></tr>
+	 *   <tr><td>0</td><td>first row</td></tr>
+	 *   <tr><td>#rows - 1</td><td>last row</td></tr>
+	 *   <tr><td>#rows</td><td>after last</td></tr>
+	 * </table>
 	 */
 	private int _rowIndex;
 
@@ -176,7 +181,7 @@ implements ResultSet
 
 		final int columnCount = _metaData.getColumnCount();
 
-		final Collection<Object[]> data = new ArrayList<Object[]>( source.getFetchSize() );
+		final Collection<Object[]> data = new ArrayList<>( source.getFetchSize() );
 		while ( source.next() )
 		{
 			final Object[] row = new Object[ columnCount ];
@@ -711,7 +716,7 @@ implements ResultSet
 		}
 		else if ( obj instanceof String )
 		{
-			result = Boolean.valueOf( (String)obj );
+			result = Boolean.parseBoolean( (String)obj );
 		}
 		else
 		{
@@ -794,6 +799,7 @@ implements ResultSet
 		return getBytes( findColumn( columnName ) );
 	}
 
+	@SuppressWarnings( "resource" )
 	@Nullable
 	@Override
 	public Reader getCharacterStream( final int columnIndex )
@@ -1943,6 +1949,7 @@ implements ResultSet
 	 *
 	 * @throws SQLException if an error occurs while accessing the database.
 	 */
+	@NotNull
 	public String toFriendlyString()
 	throws SQLException
 	{
@@ -1950,16 +1957,16 @@ implements ResultSet
 
 		final int columnCount = metaData.getColumnCount();
 
-		final List<String> columnHeaders = new ArrayList<String>( columnCount );
+		final List<String> columnHeaders = new ArrayList<>( columnCount );
 		for ( int i = 1; i <= columnCount; i++ )
 		{
 			columnHeaders.add( metaData.getColumnLabel( i ) + ':' + metaData.getColumnTypeName( i ) );
 		}
 
-		final List<List<String>> tableData = new ArrayList<List<String>>();
+		final List<List<String>> tableData = new ArrayList<>();
 		while ( next() )
 		{
-			final List<String> rowData = new ArrayList<String>( columnCount );
+			final List<String> rowData = new ArrayList<>( columnCount );
 			for ( int i = 1; i <= columnCount; i++ )
 			{
 				rowData.add( getString( i ) );
@@ -1968,6 +1975,6 @@ implements ResultSet
 			tableData.add( rowData );
 		}
 
-		return TextTools.getTableAsText( columnHeaders, tableData );
+		return TextTable.getText( columnHeaders, tableData );
 	}
 }

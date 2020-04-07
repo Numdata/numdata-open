@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package com.numdata.oss;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.regex.*;
 
 import org.jetbrains.annotations.*;
 
@@ -43,6 +44,32 @@ public class HTMLTools
 	 * Floating point number format used for CSS values.
 	 */
 	public static final NumberFormat CSS_FLOAT_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 3, false );
+
+	/**
+	 * State used for whitespace by {@link #plainTextToHTML} method.
+	 *
+	 * @see #plainTextToHTML
+	 */
+	private static final int ASCII_HTML_SPACE = 0;
+
+	/**
+	 * State used for body text by {@link #plainTextToHTML} method.
+	 *
+	 * @see #plainTextToHTML
+	 */
+	private static final int ASCII_HTML_TEXT = 1;
+
+	/**
+	 * State used for HTML tags by {@link #plainTextToHTML} method.
+	 *
+	 * @see #plainTextToHTML
+	 */
+	private static final int ASCII_HTML_TAG = 2;
+
+	/**
+	 * {@code &lt;html&gt;} element pattern.
+	 */
+	private static final Pattern HTML_TAG_PATTERN = Pattern.compile( "(?i)<html>" );
 
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -1237,5 +1264,181 @@ public class HTMLTools
 	public static String rgbToCssColor( final int red, final int green, final int blue, final int alpha )
 	{
 		return "rgba(" + red + ',' + green + ',' + blue + ',' + CSS_FLOAT_FORMAT.format( alpha / 255.0 ) + ')';
+	}
+
+	/**
+	 * Convert a plain text string to HTML formatted string. This is most useful
+	 * for use in Swing tool tips (this allows you to use multi-line tool tips,
+	 * for example).
+	 *
+	 * @param string Plain text string to convert.
+	 *
+	 * @return HTML-formatted text (includes '{@code &lt;html&gt;}' tag); {@code
+	 * null} if {@code string} is {@code null}.
+	 */
+	@Nullable
+	@Contract( value = "null -> null; !null -> !null", pure = true )
+	public static String plainTextToHTML( @Nullable final String string )
+	{
+		final String result;
+
+		if ( ( string != null ) && !string.isEmpty() && !HTML_TAG_PATTERN.matcher( string ).matches() )
+		{
+			final int len = string.length();
+			final StringBuilder resultBuffer = new StringBuilder( len + 14 );
+			final StringBuilder tokenBuffer = new StringBuilder( Math.min( 40, len / 2 ) );
+
+			resultBuffer.append( "<html>" );
+
+			int state = ASCII_HTML_SPACE;
+			boolean inPreFormattedSection = false;
+
+			for ( int pos = 0; pos < len; pos++ )
+			{
+				final char ch = string.charAt( pos );
+
+				switch ( state )
+				{
+					case ASCII_HTML_SPACE:
+						//noinspection fallthrough
+					case ASCII_HTML_TEXT:
+						if ( ch == '<' )
+						{
+							appendHtmlText( resultBuffer, tokenBuffer, inPreFormattedSection );
+
+							tokenBuffer.setLength( 0 );
+							tokenBuffer.append( '<' );
+							state = ASCII_HTML_TAG;
+						}
+						else if ( !Character.isWhitespace( ch ) )
+						{
+							tokenBuffer.append( ch );
+							state = ASCII_HTML_TEXT;
+						}
+						else if ( state == ASCII_HTML_TEXT )
+						{
+							if ( inPreFormattedSection )
+							{
+								tokenBuffer.append( ch );
+							}
+							else
+							{
+								tokenBuffer.append( ' ' );
+								state = ASCII_HTML_SPACE;
+							}
+						}
+						break;
+
+					case ASCII_HTML_TAG:
+						if ( ch == '>' )
+						{
+							tokenBuffer.append( '>' );
+
+							if ( inPreFormattedSection )
+							{
+								if ( TextTools.equals( "</pre>", tokenBuffer ) )
+								{
+									inPreFormattedSection = false;
+									resultBuffer.append( tokenBuffer );
+									tokenBuffer.setLength( 0 );
+									state = ASCII_HTML_TEXT;
+								}
+								else
+								{
+									state = ASCII_HTML_TEXT;
+								}
+							}
+							else
+							{
+								final int tokenLength = tokenBuffer.length();
+
+								if ( TextTools.equals( "<pre>", tokenBuffer ) )
+								{
+									inPreFormattedSection = true;
+								}
+								else if ( tokenBuffer.charAt( tokenLength - 2 ) == '/' )
+								{
+									tokenBuffer.delete( tokenLength - 2, tokenLength - 1 );
+								}
+
+								resultBuffer.append( tokenBuffer );
+								tokenBuffer.setLength( 0 );
+								state = ASCII_HTML_TEXT;
+							}
+						}
+						else if ( !Character.isWhitespace( ch ) )
+						{
+							tokenBuffer.append( ch );
+						}
+						break;
+				}
+			}
+
+			appendHtmlText( resultBuffer, tokenBuffer, inPreFormattedSection );
+
+//			if ( inPreFormattedSection )
+//				resultBuffer.append( "</pre>" );
+
+//			resultBuffer.append( "</html>" );
+
+			result = resultBuffer.toString();
+		}
+		else
+		{
+			result = string;
+		}
+
+		return result;
+	}
+
+	private static void appendHtmlText( final StringBuilder result, final StringBuilder tokenBuffer, final boolean inPreFormattedSection )
+	{
+		if ( !inPreFormattedSection )
+		{
+			while ( ( tokenBuffer.length() > 0 ) && Character.isWhitespace( tokenBuffer.charAt( tokenBuffer.length() - 1 ) ) )
+			{
+				tokenBuffer.setLength( tokenBuffer.length() - 1 );
+			}
+
+			while ( tokenBuffer.length() > 66 )
+			{
+				final int breakAt = tokenBuffer.lastIndexOf( " ", 66 );
+				if ( ( breakAt < 0 ) || ( tokenBuffer.indexOf( " ", breakAt + 1 ) < 0 ) )
+				{
+					break;
+				}
+
+				result.ensureCapacity( breakAt + 4 );
+				for ( int i = 0; i < breakAt; i++ )
+				{
+					result.append( tokenBuffer.charAt( i ) );
+				}
+				result.append( "<br>" );
+				tokenBuffer.delete( 0, breakAt + 1 );
+			}
+
+			result.append( tokenBuffer );
+		}
+		else
+		{
+			final int len = tokenBuffer.length();
+			result.ensureCapacity( len );
+
+			for ( int i = 0; i < len; i++ )
+			{
+				final char c = tokenBuffer.charAt( i );
+				switch ( c )
+				{
+					case '<':
+						result.append( "&lt;" );
+						break;
+					case '>':
+						result.append( "&gt;" );
+						break;
+					default:
+						result.append( c );
+				}
+			}
+		}
 	}
 }

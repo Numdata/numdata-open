@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( { "JavaDoc", "ConstantConditions" } )
+@SuppressWarnings( "JavaDoc" )
 public final class TextTool
 {
 	public String getFixed( final int length, final char fillChar )
@@ -222,22 +222,6 @@ public final class TextTool
 	public String decapitalize( final CharSequence cs )
 	{
 		return TextTools.decapitalize( cs );
-	}
-
-	public String getTableAsText( final List<String> headers, final List<? extends List<?>> data )
-	{
-		return TextTools.getTableAsText( headers, data );
-	}
-
-	public String getTableAsText( final List<String> headers, final List<? extends List<?>> data, final boolean linesBetweenRows )
-	{
-		return TextTools.getTableAsText( headers, data, linesBetweenRows );
-	}
-
-	public void writeTableAsText( final Appendable out, final List<String> headers, final List<? extends List<?>> data, final boolean linesBetweenRows, final String lineSeparator )
-	throws IOException
-	{
-		TextTools.writeTableAsText( out, headers, data, linesBetweenRows, lineSeparator );
 	}
 
 	public String wildcardPatternToRegex( @NotNull final String wildcardPattern )
