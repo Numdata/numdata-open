@@ -30,8 +30,8 @@
 			<!-- Needed to use com.numdata.oss.log.CommonsLoggingAdapter -->
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
 			<optional>true</optional>
 			<!-- Needed to use com.numdata.oss.log.ClassLogger with Log4j -->
 		</dependency>

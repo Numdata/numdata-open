@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,17 @@
  */
 package com.numdata.oss.log;
 
-import org.apache.log4j.*;
+import org.apache.logging.log4j.*;
 
 /**
  * This class implements {@link LogTarget} to provide Log4j support.
  *
- * @see     ClassLogger
- * @see     LogTarget
- *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
+ * @see ClassLogger
+ * @see LogTarget
  */
-public final class Log4jTarget
-	implements LogTarget
+public class Log4jTarget
+implements LogTarget
 {
 	@Override
 	public boolean isLevelEnabled( final String name, final int level )
@@ -48,13 +47,32 @@ public final class Log4jTarget
 
 		switch ( level )
 		{
-			case ClassLogger.FATAL : result = logger.isEnabledFor( Priority.FATAL ); break;
-			case ClassLogger.ERROR : result = logger.isEnabledFor( Priority.ERROR ); break;
-			case ClassLogger.WARN  : result = logger.isEnabledFor( Priority.WARN  ); break;
-			case ClassLogger.INFO  : result = logger.isEnabledFor( Priority.INFO  ); break;
-			case ClassLogger.DEBUG :
-			case ClassLogger.TRACE : result = logger.isEnabledFor( Priority.DEBUG ); break; /* Log4j has no 'TRACE' level (yet?) */
-			default    : result = false;
+			case ClassLogger.FATAL:
+				result = logger.isFatalEnabled();
+				break;
+
+			case ClassLogger.ERROR:
+				result = logger.isErrorEnabled();
+				break;
+
+			case ClassLogger.WARN:
+				result = logger.isWarnEnabled();
+				break;
+
+			case ClassLogger.INFO:
+				result = logger.isInfoEnabled();
+				break;
+
+			case ClassLogger.DEBUG:
+				result = logger.isDebugEnabled();
+				break;
+
+			case ClassLogger.TRACE:
+				result = logger.isTraceEnabled();
+				break;
+
+			default:
+				result = false;
 		}
 
 		return result;
@@ -67,12 +85,29 @@ public final class Log4jTarget
 
 		switch ( level )
 		{
-			case ClassLogger.FATAL : logger.fatal( message , throwable ); break;
-			case ClassLogger.ERROR : logger.error( message , throwable ); break;
-			case ClassLogger.WARN :  logger.warn ( message , throwable ); break;
-			case ClassLogger.INFO :  logger.info ( message , throwable ); break;
-			case ClassLogger.DEBUG :
-			case ClassLogger.TRACE : logger.debug( message , throwable ); break;
+			case ClassLogger.FATAL:
+				logger.fatal( message, throwable );
+				break;
+
+			case ClassLogger.ERROR:
+				logger.error( message, throwable );
+				break;
+
+			case ClassLogger.WARN:
+				logger.warn( message, throwable );
+				break;
+
+			case ClassLogger.INFO:
+				logger.info( message, throwable );
+				break;
+
+			case ClassLogger.DEBUG:
+				logger.debug( message, throwable );
+				break;
+
+			case ClassLogger.TRACE:
+				logger.trace( message, throwable );
+				break;
 		}
 	}
 }

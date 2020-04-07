@@ -39,10 +39,10 @@ import org.jetbrains.annotations.*;
  * in such situations prefixing all variables references with a name for that
  * one bean is a bit useless.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class VelocityBeanContext
-	implements Context
+implements Context
 {
 	/**
 	 * Bean to get properties from.
@@ -58,27 +58,27 @@ public class VelocityBeanContext
 	/**
 	 * Cached property getters for the current bean class.
 	 */
-	final Map<String,Method> _getters = new HashMap<String, Method>();
+	private final Map<String, Method> _getters = new HashMap<>();
 
 	/**
 	 * Cached property setters for the current bean class.
 	 */
-	final Map<String,Method> _setters = new HashMap<String, Method>();
+	private final Map<String, Method> _setters = new HashMap<>();
 
 	/**
 	 * Cached fields for the current bean class.
 	 */
-	final Map<String,Field> _fields = new HashMap<String, Field>( );
+	private final Map<String, Field> _fields = new HashMap<>();
 
 	/**
 	 * Cached bean property names.
 	 */
-	private Set<String> _beanPropertyNames = new HashSet<String>();
+	private final Set<String> _beanPropertyNames = new HashSet<>();
 
 	/**
 	 * Variables that are automatically created by the velocity template.
 	 */
-	private Map<String,Object> _variables = new HashMap<String,Object>();
+	private final Map<String, Object> _variables = new HashMap<>();
 
 	/**
 	 * Construct context.
@@ -90,7 +90,7 @@ public class VelocityBeanContext
 	/**
 	 * Construct context.
 	 *
-	 * @param   bean    Bean to get properties from.
+	 * @param bean Bean to get properties from.
 	 */
 	public VelocityBeanContext( final Object bean )
 	{
@@ -100,7 +100,7 @@ public class VelocityBeanContext
 	/**
 	 * Set bean to get properties from.
 	 *
-	 * @param   bean    Bean to get properties from.
+	 * @param bean Bean to get properties from.
 	 */
 	public void setBean( final Object bean )
 	{
@@ -128,6 +128,8 @@ public class VelocityBeanContext
 
 			if ( beanClass != null )
 			{
+				_beanClass = beanClass;
+
 				for ( final Method method : beanClass.getMethods() )
 				{
 					final int modifiers = method.getModifiers();
@@ -217,11 +219,11 @@ public class VelocityBeanContext
 						}
 					}
 				}
-				catch ( IllegalAccessException e )
+				catch ( final IllegalAccessException e )
 				{
 					throw new IllegalArgumentException( '\'' + key + "' not accessible", e );
 				}
-				catch ( InvocationTargetException e )
+				catch ( final InvocationTargetException e )
 				{
 					throw new IllegalArgumentException( "Getting '" + key + "' caused an internal error", e );
 				}
@@ -236,11 +238,11 @@ public class VelocityBeanContext
 	}
 
 	@Override
-	public boolean containsKey( final Object key )
+	public boolean containsKey( final String key )
 	{
 		boolean result = _variables.containsKey( key );
 
-		if ( !result && ( key instanceof String ) )
+		if ( !result && ( key != null ) )
 		{
 			inspectBean();
 			result = _beanPropertyNames.contains( key );
@@ -287,11 +289,11 @@ public class VelocityBeanContext
 					}
 				}
 			}
-			catch ( IllegalAccessException e )
+			catch ( final IllegalAccessException e )
 			{
 				throw new IllegalArgumentException( '\'' + key + "' not accessible", e );
 			}
-			catch ( InvocationTargetException e )
+			catch ( final InvocationTargetException e )
 			{
 				throw new IllegalArgumentException( "Getting '" + key + "' caused an internal error", e );
 			}
@@ -305,19 +307,19 @@ public class VelocityBeanContext
 	}
 
 	@Override
-	public Object[] getKeys()
+	public String[] getKeys()
 	{
 		inspectBean();
 
-		final HashSet<Object> result = new HashSet<Object>();
+		final HashSet<String> result = new HashSet<>();
 		result.addAll( _beanPropertyNames );
 		result.addAll( _variables.keySet() );
-		return result.toArray();
+		return result.toArray( new String[ 0 ] );
 	}
 
 	@Nullable
 	@Override
-	public Object remove( final Object key )
+	public Object remove( final String key )
 	{
 		final Object result;
 

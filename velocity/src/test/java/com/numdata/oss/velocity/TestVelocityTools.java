@@ -67,7 +67,7 @@ public class TestVelocityTools
 		assertPattern( "Hello ${name} world!", singletonMap( "name", "happy" ),
 		               "Hello happy world!", singletonMap( "name", "[a-z]+" ) );
 
-		final Map<String, String> variableValues = new HashMap<>();
+		final Map<String, Object> variableValues = new HashMap<>();
 		variableValues.put( "var1", "awesome" );
 		variableValues.put( "var2", "1337" );
 
@@ -107,7 +107,7 @@ public class TestVelocityTools
 	 * @param expectedOutput       Result of the template for the given values.
 	 * @param variableReplacements Variable replacements used to create a pattern.
 	 */
-	private static void assertPattern( @NotNull final String template, @NotNull final Map<String, String> variableValues, @NotNull final String expectedOutput, @NotNull final Map<String, String> variableReplacements )
+	private static void assertPattern( @NotNull final String template, @NotNull final Map<String, Object> variableValues, @NotNull final String expectedOutput, @NotNull final Map<String, String> variableReplacements )
 	{
 		final Map<String, Integer> capturingGroups = new HashMap<>();
 		final String templateOutput = VelocityTools.evaluate( template, new VelocityContext( variableValues ), "assertPattern" );
@@ -117,7 +117,7 @@ public class TestVelocityTools
 		final Matcher matcher = pattern.matcher( templateOutput );
 		assertTrue( "Created pattern \"" + pattern.pattern() + "\" does not match template output \"" + templateOutput + "\"", matcher.matches() );
 
-		for ( final Map.Entry<String, String> entry : variableValues.entrySet() )
+		for ( final Map.Entry<String, Object> entry : variableValues.entrySet() )
 		{
 			final Integer group = capturingGroups.get( entry.getKey() );
 			if ( entry.getValue().equals( ESCAPED_VALUE ) )

@@ -35,7 +35,6 @@ import com.numdata.oss.log.*;
 import org.apache.velocity.context.*;
 import org.apache.velocity.exception.*;
 import org.apache.velocity.runtime.*;
-import org.apache.velocity.runtime.log.*;
 import org.apache.velocity.tools.*;
 import org.apache.velocity.tools.generic.*;
 import org.jetbrains.annotations.*;
@@ -54,22 +53,18 @@ public class VelocityTools
 
 	/**
 	 * Pattern to parse line and column numbers in velocity exception message.
-	 *
-	 * @see Log#formatFileString(String, int, int)
 	 */
-	public static final Pattern VELOCITY_LOG_FILE_POSITION_PATTERN = Pattern.compile( "\\[line (\\d+), column (\\d+)\\]" );
+	public static final Pattern VELOCITY_LOG_FILE_POSITION_PATTERN = Pattern.compile( "\\[line (\\d+), column (\\d+)]" );
 
 	/**
 	 * Shared engine instance. Created on-demand by {@link
 	 * #getSharedRuntime()}.
 	 */
-	@SuppressWarnings( "StaticNonFinalField" )
 	private static RuntimeInstance sharedRuntime = null;
 
 	/**
 	 * Shared {@link ToolManager} for Velocity Tools.
 	 */
-	@SuppressWarnings( "StaticNonFinalField" )
 	private static ToolManager toolManager = null;
 
 	/**
@@ -144,9 +139,7 @@ public class VelocityTools
 	@NotNull
 	public static RuntimeInstance createRuntime()
 	{
-		final RuntimeInstance result = new RuntimeInstance();
-		result.setProperty( RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, VelocityClassLoggerChute.class );
-		return result;
+		return new RuntimeInstance();
 	}
 
 	/**
@@ -377,19 +370,19 @@ public class VelocityTools
 		}
 
 		@Override
-		public boolean containsKey( final Object key )
+		public boolean containsKey( final String s )
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Object[] getKeys()
+		public String[] getKeys()
 		{
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public Object remove( final Object key )
+		public Object remove( final String s )
 		{
 			throw new UnsupportedOperationException();
 		}
@@ -426,7 +419,7 @@ public class VelocityTools
 		 *
 		 * @param capturingGroups Receives the capturing group index in the resulting pattern for each variable.
 		 */
-		public CapturingGroupInfo( @NotNull final Map<String, Integer> capturingGroups )
+		private CapturingGroupInfo( @NotNull final Map<String, Integer> capturingGroups )
 		{
 			_capturingGroups = capturingGroups;
 		}
