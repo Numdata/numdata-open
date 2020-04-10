@@ -289,13 +289,13 @@ public class SimpleHttpClient
 	 *
 	 * @param uri    URI to associated cookie with; {@code null} to not
 	 *               associate the cookie with an URI.
-	 * @param header Cookie to be set; see {@link HttpCookie#parse}.
+	 * @param header Cookie to be set; see {@link HttpCookie#parse(String)}.
 	 *
 	 * @throws IllegalArgumentException if the header is malformed.
-	 * @see HttpCookie#parse
+	 * @see HttpCookie#parse(String)
 	 * @see CookieStore#add
 	 */
-	public void setCookie( @NotNull final URI uri, @NotNull final String header )
+	public void setCookie( @Nullable final URI uri, @NotNull final String header )
 	{
 		if ( LOG.isTraceEnabled() )
 		{
@@ -595,6 +595,9 @@ public class SimpleHttpClient
 		}
 	}
 
+	/**
+	 * Disables hostname verification.
+	 */
 	private static class DummyHostnameVerifier
 	implements HostnameVerifier
 	{
@@ -659,6 +662,7 @@ public class SimpleHttpClient
 		/**
 		 * Text content that was received.
 		 */
+		@Nullable
 		private String _textContent = null;
 
 		/**
