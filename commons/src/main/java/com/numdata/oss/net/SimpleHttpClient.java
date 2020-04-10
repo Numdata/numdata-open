@@ -400,7 +400,7 @@ public class SimpleHttpClient
 				}
 				catch ( final UnsupportedCharsetException ignored )
 				{
-					System.err.println( "Unknown charset: " + charsetName );
+					LOG.warn( "Unknown charset: " + charsetName );
 				}
 			}
 		}
