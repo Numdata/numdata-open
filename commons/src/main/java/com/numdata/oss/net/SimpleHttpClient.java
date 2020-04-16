@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2013-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -289,13 +289,13 @@ public class SimpleHttpClient
 	 *
 	 * @param uri    URI to associated cookie with; {@code null} to not
 	 *               associate the cookie with an URI.
-	 * @param header Cookie to be set; see {@link HttpCookie#parse}.
+	 * @param header Cookie to be set; see {@link HttpCookie#parse(String)}.
 	 *
 	 * @throws IllegalArgumentException if the header is malformed.
-	 * @see HttpCookie#parse
+	 * @see HttpCookie#parse(String)
 	 * @see CookieStore#add
 	 */
-	public void setCookie( @NotNull final URI uri, @NotNull final String header )
+	public void setCookie( @Nullable final URI uri, @NotNull final String header )
 	{
 		if ( LOG.isTraceEnabled() )
 		{
@@ -400,7 +400,7 @@ public class SimpleHttpClient
 				}
 				catch ( final UnsupportedCharsetException ignored )
 				{
-					System.err.println( "Unknown charset: " + charsetName );
+					LOG.warn( "Unknown charset: " + charsetName );
 				}
 			}
 		}
@@ -595,6 +595,9 @@ public class SimpleHttpClient
 		}
 	}
 
+	/**
+	 * Disables hostname verification.
+	 */
 	private static class DummyHostnameVerifier
 	implements HostnameVerifier
 	{
@@ -659,6 +662,7 @@ public class SimpleHttpClient
 		/**
 		 * Text content that was received.
 		 */
+		@Nullable
 		private String _textContent = null;
 
 		/**
@@ -841,7 +845,6 @@ public class SimpleHttpClient
 			if ( !_connected )
 			{
 				HttpURLConnection connection = getUrlConnection();
-				connection.connect();
 				acceptCookiesFromResponse( connection );
 
 				int responseCode = connection.getResponseCode();
@@ -868,12 +871,23 @@ public class SimpleHttpClient
 
 						final URL loginUrl = UrlTools.buildUrl( connection.getURL(), loginAction.group( 1 ), "j_username", user, "j_password", password );
 
-						connection = createUrlConnection( GET, loginUrl, isUseCaches(), isBadCertIgnored(), false );
+						connection = createUrlConnection( GET, loginUrl, isUseCaches(), isBadCertIgnored(), false, false );
 						try
 						{
 							acceptCookiesFromResponse( connection );
 
 							responseCode = connection.getResponseCode();
+							if ( responseCode == HttpURLConnection.HTTP_MOVED_TEMP ||
+							     responseCode == HttpURLConnection.HTTP_SEE_OTHER )
+							{
+								final URL authenticatedUrl = UrlTools.buildUrl( connection.getURL(), connection.getHeaderField( "Location" ) );
+
+								connection = createUrlConnection( GET, authenticatedUrl, isUseCaches(), isBadCertIgnored(), false, false );
+								acceptCookiesFromResponse( connection );
+
+								responseCode = connection.getResponseCode();
+							}
+
 							if ( responseCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
 							     responseCode == HttpURLConnection.HTTP_FORBIDDEN )
 							{
@@ -933,6 +947,7 @@ public class SimpleHttpClient
 		 * @param badCertIgnored        Whether to ignore bad SSL certificates.
 		 * @param authorizationIncluded Include 'Authorization' header in
 		 *                              request if credentials are available.
+		 * @param followRedirects       Whether HTTP redirects should be automatically followed.
 		 *
 		 * @return {@link HttpURLConnection}.
 		 *
@@ -940,7 +955,7 @@ public class SimpleHttpClient
 		 * @throws IllegalArgumentException if URL is no a HTTP or HTTPS url.
 		 */
 		@NotNull
-		protected HttpURLConnection createUrlConnection( @NotNull final String method, @NotNull final URL url, final boolean useCaches, final boolean badCertIgnored, final boolean authorizationIncluded )
+		protected HttpURLConnection createUrlConnection( @NotNull final String method, @NotNull final URL url, final boolean useCaches, final boolean badCertIgnored, final boolean authorizationIncluded, final boolean followRedirects )
 		throws IOException
 		{
 			final boolean trace = LOG.isTraceEnabled();
@@ -956,6 +971,7 @@ public class SimpleHttpClient
 			}
 
 			final HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+			connection.setInstanceFollowRedirects( followRedirects );
 			if ( badCertIgnored && ( connection instanceof HttpsURLConnection ) )
 			{
 				if ( trace )
@@ -1131,7 +1147,7 @@ public class SimpleHttpClient
 			HttpURLConnection connection = _urlConnection;
 			if ( connection == null )
 			{
-				connection = createUrlConnection( getMethod(), getUrl(), isUseCaches(), isBadCertIgnored(), isAuthorizationIncluded() );
+				connection = createUrlConnection( getMethod(), getUrl(), isUseCaches(), isBadCertIgnored(), isAuthorizationIncluded(), true );
 			}
 			return connection;
 		}
