@@ -213,7 +213,7 @@
 			<dependency>
 				<groupId>org.json</groupId>
 				<artifactId>json</artifactId>
-				<version>20180813</version> <!-- 20190722 does not parse BigDecimals properly -->
+				<version>20190722</version>
 			</dependency>
 			<dependency>
 				<groupId>com.trilead</groupId>
