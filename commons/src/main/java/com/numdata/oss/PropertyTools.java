@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2003-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,6 @@ public class PropertyTools
 	 *
 	 * @return {@link Properties} instance (see comments).
 	 */
-	@SuppressWarnings( "ConstantConditions" )
 	public static Properties fromString( @Nullable final Properties defaults, @Nullable final CharSequence propertyString, final boolean createIfNeeded )
 	{
 		final Properties result;
@@ -200,7 +199,7 @@ public class PropertyTools
 		}
 
 		final int len = propertyString.length();
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		int pos = 0;
 
@@ -342,7 +341,7 @@ public class PropertyTools
 				/*
 				 * Require separator or end of line
 				 */
-				if ( pos < len && separators.indexOf( (int)propertyString.charAt( pos++ ) ) < 0 )
+				if ( pos < len && separators.indexOf( propertyString.charAt( pos++ ) ) < 0 )
 				{
 					return false;
 				}
@@ -357,6 +356,192 @@ public class PropertyTools
 				final String value = sb.toString();
 
 				properties.setProperty( name, value.trim() );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get property {@link Map} from a string with format
+	 * "{key}['='|':']{value}[{separator}...]" into. Whitespace is ignored, the
+	 * value may contain standard escapes like "\n", "\t", etc. and values may
+	 * be surrounded by single or double quotes (allowing a value to contain
+	 * leading or trailing whitespace and separators).
+	 *
+	 * The result is {@code true} if all properties in the string were parsed
+	 * successfully. If a problem occurs, the result will be {@code false}, but
+	 * the result {@link Map} object may be altered for properties that
+	 * have been parsed.
+	 *
+	 * @param map            Target {@link Map} object.
+	 * @param propertyString String with properties (may be {@code null}).
+	 *
+	 * @return {@code true} if the properties were parsed successfully; {@code
+	 * false} if the property string was malformed.
+	 */
+	@SuppressWarnings( "MethodWithMultipleReturnPoints" )
+	public static boolean fromString( @NotNull final Map<String, String> map, @Nullable final CharSequence propertyString )
+	{
+		final String separators = ",\r\n";
+		if ( propertyString == null )
+		{
+			return false;
+		}
+
+		final int len = propertyString.length();
+		final StringBuilder sb = new StringBuilder();
+
+		int pos = 0;
+
+		while ( ( pos >= 0 ) && ( pos < len ) )
+		{
+			/*
+			 * Skip whitespace
+			 */
+			while ( Character.isWhitespace( propertyString.charAt( pos ) ) )
+			{
+				if ( ++pos == len )
+				{
+					return true;
+				}
+			}
+
+			/*
+			 * Get property name
+			 */
+			final int namePos = pos;
+			final StringBuilder nameBuffer = new StringBuilder();
+
+			boolean escaped = false;
+			char ch;
+			while ( true )
+			{
+				ch = propertyString.charAt( pos );
+				if ( !escaped && ( ch == '\\' ) )
+				{
+					escaped = true;
+				}
+				else
+				{
+					if ( escaped )
+					{
+						final char unescaped;
+						switch ( ch )
+						{
+							case 'r':
+								unescaped = '\r';
+								break;
+							case 'n':
+								unescaped = '\n';
+								break;
+							default:
+								unescaped = ch;
+						}
+						nameBuffer.append( unescaped );
+						escaped = false;
+					}
+					else if ( Character.isWhitespace( ch ) || ( ch == '=' ) || ( ch == ':' ) )
+					{
+						break;
+					}
+					else
+					{
+						nameBuffer.append( ch );
+					}
+				}
+
+				if ( ++pos == len )
+				{
+					return false;
+				}
+			}
+
+			final String name = nameBuffer.toString();
+
+			/*
+			 * Skip whitespace
+			 */
+			while ( Character.isWhitespace( propertyString.charAt( pos ) ) )
+			{
+				if ( ++pos == len )
+				{
+					return false;
+				}
+			}
+
+			/*
+			 * Require '=' or ':' character.
+			 */
+			ch = propertyString.charAt( pos );
+			if ( ( ( ch != ':' ) && ( ch != '=' ) ) || ( ++pos == len ) )
+			{
+				return false;
+			}
+
+			/*
+			 * Skip whitespace
+			 */
+			while ( Character.isWhitespace( propertyString.charAt( pos ) ) )
+			{
+				if ( ++pos == len )
+				{
+					return false;
+				}
+			}
+
+			/*
+			 * Get value
+			 */
+			final char quote = propertyString.charAt( pos );
+			if ( ( quote == '\'' ) || ( quote == '"' ) )
+			{
+				/*
+				 * Skip quote
+				 */
+				if ( pos++ == len )
+				{
+					return false;
+				}
+
+				/*
+				 * Get quoted value
+				 */
+				sb.setLength( 0 );
+				pos = TextTools.unescape( propertyString, pos, sb, String.valueOf( quote ) );
+				if ( pos < 0 )
+				{
+					return false;
+				}
+
+				map.put( name, sb.toString() );
+
+				/*
+				 * Skip whitespace
+				 */
+				while ( pos < len && Character.isWhitespace( propertyString.charAt( pos ) ) )
+				{
+					pos++;
+				}
+
+				/*
+				 * Require separator or end of line
+				 */
+				if ( pos < len && separators.indexOf( propertyString.charAt( pos++ ) ) < 0 )
+				{
+					return false;
+				}
+			}
+			else
+			{
+				/*
+				 * Get unquoted value, remove whitespace
+				 */
+				sb.setLength( 0 );
+				pos = TextTools.unescape( propertyString, pos, sb, separators );
+				final String value = sb.toString();
+
+				map.put( name, value.trim() );
 			}
 		}
 
@@ -419,6 +604,41 @@ public class PropertyTools
 		}
 
 		return ( sb == null ) ? "" : sb.toString();
+	}
+
+	/**
+	 * Create a string with format "property=value,..." based on the specified
+	 * {@link Map} object.
+	 *
+	 * @param map Map to convert.
+	 *
+	 * @return String with properties.
+	 */
+	public static String toString( @NotNull final Map<String, String> map )
+	{
+		final String result;
+
+		if ( map.isEmpty() )
+		{
+			result = "";
+		}
+		else
+		{
+			final StringBuffer sb = new StringBuffer();
+			for ( final Map.Entry<String, String> entry : map.entrySet() )
+			{
+				if ( sb.length() > 0 )
+				{
+					sb.append( ',' );
+				}
+				escapeKey( sb, entry.getKey() );
+				sb.append( '=' );
+				escapeValue( sb, entry.getValue() );
+			}
+			result = sb.toString();
+		}
+
+		return result;
 	}
 
 	/**
@@ -506,7 +726,7 @@ public class PropertyTools
 					if ( quote == '\0' )
 					{
 						// prefer " as quote, but use ' when value contains ", but no '
-						quote = ( ( value.indexOf( (int)'"', index ) >= 0 ) && ( value.indexOf( (int)'\'', index ) < 0 ) ) ? '\'' : '"';
+						quote = ( ( value.indexOf( '"', index ) >= 0 ) && ( value.indexOf( '\'', index ) < 0 ) ) ? '\'' : '"';
 						buffer.insert( quotePos, quote );
 					}
 
@@ -602,7 +822,6 @@ public class PropertyTools
 			}
 		}
 
-		//noinspection ConstantConditions
 		return result;
 	}
 
@@ -856,6 +1075,7 @@ public class PropertyTools
 	 * @param properties Properties to read from.
 	 * @param name       Property name.
 	 * @param enumType   Type of enumeration.
+	 * @param <T>        Enum type.
 	 *
 	 * @return Enumeration value.
 	 *
@@ -875,6 +1095,7 @@ public class PropertyTools
 		}
 		catch ( final IllegalArgumentException e )
 		{
+			//noinspection ProhibitedExceptionCaught
 			try
 			{
 				final int intValue = Integer.parseInt( string );
@@ -899,6 +1120,7 @@ public class PropertyTools
 	 * @param properties   Properties to read from.
 	 * @param name         Property name.
 	 * @param defaultValue Default value for property.
+	 * @param <T>          Enum type.
 	 *
 	 * @return Enumeration value; {@code defaultValue} if property is not found.
 	 *
@@ -922,6 +1144,7 @@ public class PropertyTools
 			}
 			catch ( final IllegalArgumentException ignored )
 			{
+				//noinspection ProhibitedExceptionCaught
 				try
 				{
 					final int intValue = Integer.parseInt( string );
@@ -952,6 +1175,7 @@ public class PropertyTools
 	 * @param properties   Properties object to get property from.
 	 * @param name         Property name.
 	 * @param defaultValue Default value for property.
+	 * @param <T>          Enum type.
 	 *
 	 * @return Array of enumeration values; {@code defaultValue} if property is
 	 * not found.
@@ -995,6 +1219,7 @@ public class PropertyTools
 						}
 						catch ( final IllegalArgumentException e )
 						{
+							//noinspection ProhibitedExceptionCaught
 							try
 							{
 								final int intValue = Integer.parseInt( element );
@@ -1481,7 +1706,7 @@ public class PropertyTools
 		}
 		else
 		{
-			properties.setProperty( name, String.valueOf( value ) );
+			properties.setProperty( name, value );
 		}
 	}
 
@@ -1581,7 +1806,7 @@ public class PropertyTools
 		}
 		else
 		{
-			final StringBuffer sb = new StringBuffer();
+			final StringBuilder sb = new StringBuilder();
 			toFriendlyString( sb, 0, properties );
 			result = sb.toString();
 		}
@@ -1595,13 +1820,13 @@ public class PropertyTools
 	 * properties and indent them for improved readability.
 	 *
 	 * This the internal (recursive) helper method that will write the result to
-	 * a {@code StringBuffer} and allow indentation to be specified.
+	 * a {@code StringBuilder} and allow indentation to be specified.
 	 *
 	 * @param sb           Buffer to write string to.
 	 * @param indentSpaces Number of spaces to prepend to each line.
 	 * @param properties   Properties to create a string representation of.
 	 */
-	private static void toFriendlyString( @NotNull final StringBuffer sb, final int indentSpaces, @NotNull final Properties properties )
+	private static void toFriendlyString( @NotNull final StringBuilder sb, final int indentSpaces, @NotNull final Properties properties )
 	{
 		final List<String> namesList = new ArrayList<String>();
 		int maxKeyLength = 0;
@@ -1614,7 +1839,7 @@ public class PropertyTools
 			maxKeyLength = Math.max( maxKeyLength, name.length() );
 		}
 
-		final String[] names = namesList.toArray( new String[ namesList.size() ] );
+		final String[] names = namesList.toArray( new String[ 0 ] );
 		Arrays.sort( names );
 
 		for ( final String name : names )
@@ -1623,7 +1848,7 @@ public class PropertyTools
 
 			TextTools.appendSpace( sb, indentSpaces );
 
-			final Properties nested = ( value.indexOf( (int)'=' ) > 0 ) ? fromString( value ) : null;
+			final Properties nested = ( value.indexOf( '=' ) > 0 ) ? fromString( value ) : null;
 			if ( nested != null )
 			{
 				sb.append( name );
