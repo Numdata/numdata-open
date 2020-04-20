@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package com.numdata.oss;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import org.jetbrains.annotations.*;
 
@@ -49,7 +50,8 @@ implements Serializable
 	/**
 	 * Map's locale to string value.
 	 */
-	private final Properties _values = new Properties();
+	@NotNull
+	private final Map<String, String> _values = new ConcurrentHashMap<String, String>();
 
 	/**
 	 * Construct empty nested field.
@@ -185,7 +187,7 @@ implements Serializable
 
 		if ( string != null )
 		{
-			if ( !PropertyTools.fromString( result._values, true, string ) )
+			if ( !PropertyTools.fromString( result._values, string ) )
 			{
 				result._values.clear();
 				result.set( string );
@@ -319,10 +321,9 @@ implements Serializable
 
 			if ( result == null )
 			{
-				final Enumeration<?> names = _values.propertyNames();
-				if ( names.hasMoreElements() )
+				if ( !_values.isEmpty() )
 				{
-					result = getSpecific( (String)names.nextElement() );
+					result = _values.values().iterator().next();
 				}
 			}
 		}
@@ -347,7 +348,7 @@ implements Serializable
 	@Nullable
 	public String getSpecific( @Nullable final String locale )
 	{
-		return _values.getProperty( ( locale == null ) ? "" : locale );
+		return _values.get( ( locale == null ) ? "" : locale );
 	}
 
 	/**
@@ -386,7 +387,7 @@ implements Serializable
 	 */
 	public void set( @Nullable final String locale, @NotNull final String string )
 	{
-		_values.setProperty( ( locale == null ) ? "" : locale, string );
+		_values.put( ( locale == null ) ? "" : locale, string );
 	}
 
 	/**
@@ -398,7 +399,7 @@ implements Serializable
 	@NotNull
 	public Set<String> getLocales()
 	{
-		return _values.stringPropertyNames();
+		return Collections.unmodifiableSet( _values.keySet() );
 	}
 
 	/**
@@ -517,7 +518,7 @@ implements Serializable
 	@NotNull
 	public Map<String, String> toMap()
 	{
-		return PropertyTools.toMap( _values );
+		return Collections.unmodifiableMap( _values );
 	}
 
 	/**
