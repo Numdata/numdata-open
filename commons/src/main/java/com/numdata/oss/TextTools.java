@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2003-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -336,9 +336,9 @@ public final class TextTools
 	{
 		final String result;
 
-		if ( ( source != null ) && ( source.length() >= length ) )
+		if ( ( source != null ) && ( source.length() >= length ) || ( length <= 0 ) )
 		{
-			result = source.substring( 0, length );
+			result = length > 0 ? source.substring( 0, length ) : "";
 		}
 		else // source is absent or too short => need to add fill chars
 		{
@@ -419,14 +419,32 @@ public final class TextTools
 	 * @param end    End index of sub-sequence (exclusive).
 	 *
 	 * @return Trimmed sub-sequence.
+	 *
+	 * @throws StringIndexOutOfBoundsException if start > end.
 	 */
 	@NotNull
 	public static CharSequence getTrimmedSubsequence( @NotNull final CharSequence source, final int start, final int end )
 	{
+		if ( start < 0 )
+		{
+			throw new StringIndexOutOfBoundsException( start );
+		}
+
+		final int length = source.length();
+		if ( end > length )
+		{
+			throw new StringIndexOutOfBoundsException( end );
+		}
+
+		if ( start > end )
+		{
+			throw new StringIndexOutOfBoundsException( end - start );
+		}
+
 		int trimmedStart = start;
 		int trimmedEnd = end;
 
-		if ( ( trimmedStart >= 0 ) && ( trimmedStart < trimmedEnd ) && ( trimmedEnd <= source.length() ) )
+		if ( trimmedStart < trimmedEnd )
 		{
 			while ( ( trimmedStart < trimmedEnd ) && Character.isWhitespace( source.charAt( trimmedStart ) ) )
 			{
@@ -3001,7 +3019,8 @@ public final class TextTools
 	/**
 	 * Test whether the given file path is secure. This is true if the file path
 	 * is a slash- or backslash-separated list of secure file names (see {@link
-	 * #isSecureFilename}).
+	 * #isSecureFilename}). An absolute path (with a leading slash or backslash)
+	 * is not considered secure.
 	 *
 	 * @param filePath File path to check.
 	 *
@@ -3070,6 +3089,12 @@ public final class TextTools
 				}
 
 				previousCh = ch;
+			}
+
+			// filename ends with whitespace
+			if ( Character.isWhitespace( previousCh ) )
+			{
+				result = false;
 			}
 		}
 
@@ -3266,7 +3291,7 @@ public final class TextTools
 	 *
 	 * @param millis       Number of milliseconds.
 	 * @param seconds      Whether to include seconds in the result.
-	 * @param milliseconds Whether to include milliseconds in the result.
+	 * @param milliseconds Whether to include seconds and milliseconds in the result.
 	 *
 	 * @return Duration string.
 	 */
