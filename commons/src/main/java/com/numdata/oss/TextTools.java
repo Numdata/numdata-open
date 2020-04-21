@@ -310,9 +310,9 @@ public final class TextTools
 	{
 		final String result;
 
-		if ( ( source != null ) && ( source.length() >= length ) )
+		if ( ( source != null ) && ( source.length() >= length ) || ( length <= 0 ) )
 		{
-			result = source.substring( 0, length );
+			result = length > 0 ? source.substring( 0, length ) : "";
 		}
 		else // source is absent or too short => need to add fill chars
 		{
@@ -393,14 +393,32 @@ public final class TextTools
 	 * @param end    End index of sub-sequence (exclusive).
 	 *
 	 * @return Trimmed sub-sequence.
+	 *
+	 * @throws StringIndexOutOfBoundsException if start > end.
 	 */
 	@NotNull
 	public static CharSequence getTrimmedSubsequence( @NotNull final CharSequence source, final int start, final int end )
 	{
+		if ( start < 0 )
+		{
+			throw new StringIndexOutOfBoundsException( start );
+		}
+
+		final int length = source.length();
+		if ( end > length )
+		{
+			throw new StringIndexOutOfBoundsException( end );
+		}
+
+		if ( start > end )
+		{
+			throw new StringIndexOutOfBoundsException( end - start );
+		}
+
 		int trimmedStart = start;
 		int trimmedEnd = end;
 
-		if ( ( trimmedStart >= 0 ) && ( trimmedStart < trimmedEnd ) && ( trimmedEnd <= source.length() ) )
+		if ( trimmedStart < trimmedEnd )
 		{
 			while ( ( trimmedStart < trimmedEnd ) && Character.isWhitespace( source.charAt( trimmedStart ) ) )
 			{
@@ -2522,12 +2540,13 @@ public final class TextTools
 	@NotNull
 	public static String formatBinary( final long number )
 	{
-		return formatBinary( number, 3 );
+		return formatBinary( number, 2 );
 	}
 
 	/**
 	 * Format number using a binary prefix according to IEC 60027-2 A.2 and
-	 * ISO/IEC 80000 standards.
+	 * ISO/IEC 80000 standards. Fractions are rounded according to
+	 * {@link RoundingMode#HALF_UP}.
 	 *
 	 * @param number            Number to format.
 	 * @param maxFractionDigits Maximum fraction digits (0-2).
@@ -2537,11 +2556,11 @@ public final class TextTools
 	@NotNull
 	public static String formatBinary( final long number, final int maxFractionDigits )
 	{
-		long quotient = number;
+		long quotient = Math.abs( number );
 		int remainder = 0;
 		int scale = 0;
 
-		while ( quotient > 1024L )
+		while ( quotient >= 1024L )
 		{
 			remainder = (int)( quotient % 1024L );
 			quotient /= 1024L;
@@ -2552,11 +2571,18 @@ public final class TextTools
 		if ( ( scale != 0 ) && ( maxFractionDigits > 0 ) && ( quotient < 100L ) )
 		{
 			final int fractionScale = ( quotient > 10L ) ? 1 : Math.min( 2, maxFractionDigits );
-			fraction = String.valueOf( (double)remainder / 1024.0 );
-			fraction = '.' + fraction.substring( 2, Math.min( fraction.length(), 2 + fractionScale ) );
+			final int fractionMultiplier = fractionScale == 1 ? 100 : 1000;
+			final int fractionInt = remainder * fractionMultiplier / 1024;
+			final int fractionIntRounded = ( fractionInt + 5 ) / 10;
+			final boolean fractionZero = ( fractionScale == 2 ) && ( fractionIntRounded > 0 ) && ( fractionIntRounded < 10 );
+			fraction = "." + ( fractionZero ? "0" : "" ) + fractionIntRounded;
+		}
+		else if ( remainder >= 512 )
+		{
+			quotient++;
 		}
 
-		return quotient + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
+		return ( number < 0 ? "-" : "" ) + quotient + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
 	}
 
 	/**
@@ -2577,7 +2603,8 @@ public final class TextTools
 	/**
 	 * Test whether the given file path is secure. This is true if the file path
 	 * is a slash- or backslash-separated list of secure file names (see {@link
-	 * #isSecureFilename}).
+	 * #isSecureFilename}). An absolute path (with a leading slash or backslash)
+	 * is not considered secure.
 	 *
 	 * @param filePath File path to check.
 	 *
@@ -2646,6 +2673,12 @@ public final class TextTools
 				}
 
 				previousCh = ch;
+			}
+
+			// filename ends with whitespace
+			if ( Character.isWhitespace( previousCh ) )
+			{
+				result = false;
 			}
 		}
 
@@ -2782,7 +2815,7 @@ public final class TextTools
 	 *
 	 * @param millis       Number of milliseconds.
 	 * @param seconds      Whether to include seconds in the result.
-	 * @param milliseconds Whether to include milliseconds in the result.
+	 * @param milliseconds Whether to include seconds and milliseconds in the result.
 	 *
 	 * @return Duration string.
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,9 +51,9 @@ describe( 'DecimalFormat', function()
 			for ( let i = 0; i < inputs.length; i++ )
 			{
 				const expected = test.expected[ i ];
-				it( 'format( ' + inputs[ i ] + ' ) -> ' + expected, function() {
+				it( 'format( ' + inputs[ i ] + ' ) -> ' + expected, ( ( i, expected ) => () => {
 					assert.equal( decimalFormat.format( inputs[ i ] ), expected );
-				} );
+				} )( i, expected ) );
 			}
 		} );
 	} );

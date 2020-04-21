@@ -10,6 +10,7 @@
     "email": "meinders@numdata.com"
   },
   "license": "SEE LICENSE IN LICENSE.TXT",
+  "main": "./module.js",
   "module": "./module.js",
   "dependencies": {
     "@babel/runtime": "^7.1.5",

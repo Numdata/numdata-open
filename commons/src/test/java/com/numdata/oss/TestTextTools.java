@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,8 @@
  */
 package com.numdata.oss;
 
+import java.io.*;
+
 import static com.numdata.oss.TextTools.*;
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -35,9 +37,112 @@ import org.junit.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( "SpellCheckingInspection" )
+@SuppressWarnings( { "SpellCheckingInspection", "JavaDoc" } )
 public class TestTextTools
 {
+	@Test
+	public void testAppendFixed()
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append( "start" );
+		TextTools.appendFixed( sb, "abc", 5 );
+		sb.append( "end" );
+		assertEquals( "Unexpected result.", "startabc  end", sb.toString() );
+
+		sb.setLength( 0 );
+		sb.append( "start" );
+		TextTools.appendFixed( sb, "abc", 5, true, ' ' );
+		sb.append( "end" );
+		assertEquals( "Unexpected result.", "start  abcend", sb.toString() );
+
+		for ( int i = 0; i < 2; i++ )
+		{
+			final boolean rightAligned = i == 1;
+
+			sb.setLength( 0 );
+			sb.append( "start" );
+			TextTools.appendFixed( sb, "abcdef", 5, rightAligned, ' ' );
+			sb.append( "end" );
+			assertEquals( "Unexpected result.", "startabcdeend", sb.toString() );
+
+			sb.setLength( 0 );
+			sb.append( "start" );
+			TextTools.appendFixed( sb, "", 5, rightAligned, ' ' );
+			sb.append( "end" );
+			assertEquals( "Unexpected result.", "start     end", sb.toString() );
+
+			sb.setLength( 0 );
+			sb.append( "start" );
+			TextTools.appendFixed( sb, null, 5, rightAligned, ' ' );
+			sb.append( "end" );
+			assertEquals( "Unexpected result.", "start     end", sb.toString() );
+		}
+
+		sb.setLength( 0 );
+		sb.append( "start" );
+		TextTools.appendFixed( sb, null, -5 );
+		sb.append( "end" );
+		assertEquals( "Unexpected result.", "startend", sb.toString() );
+
+		final StringBuffer stringBuffer = new StringBuffer();
+		stringBuffer.append( "start" );
+		TextTools.appendFixed( stringBuffer, "abc", 5 );
+		stringBuffer.append( "end" );
+		assertEquals( "Unexpected result.", "startabc  end", stringBuffer.toString() );
+
+		stringBuffer.setLength( 0 );
+		stringBuffer.append( "start" );
+		TextTools.appendFixed( stringBuffer, "abc", 5, false, ' ' );
+		stringBuffer.append( "end" );
+		assertEquals( "Unexpected result.", "startabc  end", stringBuffer.toString() );
+	}
+
+	@Test
+	public void testAppendSpace()
+	{
+		final StringBuilder sb = new StringBuilder();
+		TextTools.appendSpace( sb, 5 );
+		assertEquals( "Unexpected result.", "     ", sb.toString() );
+		TextTools.appendSpace( sb, 7 );
+		assertEquals( "Unexpected result.", "            ", sb.toString() );
+
+		final StringBuffer stringBuffer = new StringBuffer();
+		TextTools.appendSpace( stringBuffer, 5 );
+		assertEquals( "Unexpected result.", "     ", stringBuffer.toString() );
+		TextTools.appendSpace( stringBuffer, 7 );
+		assertEquals( "Unexpected result.", "            ", stringBuffer.toString() );
+	}
+
+	@Test
+	public void testGetFixed()
+	{
+		assertEquals( "Unexpected result.", "aaaaa", TextTools.getFixed( 5, 'a' ) );
+		assertEquals( "Unexpected result.", "", TextTools.getFixed( 0, 'a' ) );
+		assertEquals( "Unexpected result.", "", TextTools.getFixed( -3, 'a' ) );
+		assertEquals( "Unexpected result.", "     ", TextTools.getFixed( null, 5, false, ' ' ) );
+		assertEquals( "Unexpected result.", "     ", TextTools.getFixed( null, 5, true, ' ' ) );
+		assertEquals( "Unexpected result.", "     ", TextTools.getFixed( "", 5, false, ' ' ) );
+		assertEquals( "Unexpected result.", "     ", TextTools.getFixed( "", 5, true, ' ' ) );
+		assertEquals( "Unexpected result.", "abc  ", TextTools.getFixed( "abc", 5, false, ' ' ) );
+		assertEquals( "Unexpected result.", "  abc", TextTools.getFixed( "abc", 5, true, ' ' ) );
+		assertEquals( "Unexpected result.", "abcde", TextTools.getFixed( "abcdef", 5, false, ' ' ) );
+		assertEquals( "Unexpected result.", "abcde", TextTools.getFixed( "abcdef", 5, true, ' ' ) );
+		assertEquals( "Unexpected result.", "", TextTools.getFixed( "abc", -1, false, ' ' ) );
+		assertEquals( "Unexpected result.", "", TextTools.getFixed( "abc", -1, true, ' ' ) );
+	}
+
+	@Test
+	public void testTrim()
+	{
+		final StringBuffer sb = new StringBuffer( "abc" );
+		assertSame( "Unexpected result.", sb, TextTools.trim( sb ) );
+		assertEquals( "Unexpected result.", "abc", TextTools.trim( new StringBuffer( "abc" ) ).toString() );
+		assertEquals( "Unexpected result.", "abc", TextTools.trim( new StringBuffer( " abc" ) ).toString() );
+		assertEquals( "Unexpected result.", "abc", TextTools.trim( new StringBuffer( "abc " ) ).toString() );
+		assertEquals( "Unexpected result.", "abc", TextTools.trim( new StringBuffer( "\tabc \r\n" ) ).toString() );
+		assertEquals( "Unexpected result.", "", TextTools.trim( new StringBuffer( "\t \r\n" ) ).toString() );
+	}
+
 	@Test
 	public void testEscape()
 	{
@@ -149,7 +254,50 @@ public class TestTextTools
 	@Test
 	public void testGetTrimmedSubstring()
 	{
+		assertEquals( "Unexpected result.", "abc", getTrimmedSubstring( "  abc  ", 0, 5 ) );
+
 		assertEquals( "Unexpected result.", "abc", getTrimmedSubsequence( "  abc  ", 0, 5 ) );
+		assertEquals( "Unexpected result.", "abcde", getTrimmedSubsequence( " abcde ", 1, 6 ) );
+		assertEquals( "Unexpected result.", "abcde", getTrimmedSubsequence( "  abcde  ", 2, 7 ) );
+		assertEquals( "Unexpected result.", "abcde", getTrimmedSubsequence( "  abcde  ", 1, 8 ) );
+		assertEquals( "Unexpected result.", "", getTrimmedSubsequence( "  \t\r\n  ", 1, 6 ) );
+		assertEquals( "Unexpected result.", "", getTrimmedSubsequence( " abc ", 3, 3 ) );
+
+		try
+		{
+			assertEquals( "Unexpected result.", "", getTrimmedSubsequence( " abc ", -1, 2 ) );
+			fail( "Expected 'StringIndexOutOfBoundsException'" );
+		}
+		catch ( StringIndexOutOfBoundsException ignored )
+		{
+		}
+
+		try
+		{
+			assertEquals( "Unexpected result.", "", getTrimmedSubsequence( " abc ", 4, -1 ) );
+			fail( "Expected 'StringIndexOutOfBoundsException'" );
+		}
+		catch ( StringIndexOutOfBoundsException ignored )
+		{
+		}
+
+		try
+		{
+			assertEquals( "Unexpected result.", "", getTrimmedSubsequence( " abc ", 4, 8 ) );
+			fail( "Expected 'StringIndexOutOfBoundsException'" );
+		}
+		catch ( StringIndexOutOfBoundsException ignored )
+		{
+		}
+
+		try
+		{
+			assertEquals( "Unexpected result.", "", getTrimmedSubsequence( " abc ", 4, 2 ) );
+			fail( "Expected 'StringIndexOutOfBoundsException'" );
+		}
+		catch ( StringIndexOutOfBoundsException ignored )
+		{
+		}
 	}
 
 	@Test
@@ -262,4 +410,166 @@ public class TestTextTools
 		assertEquals( "Unexpected result for replace( 'abcdefgh', 'abcdefghabcdefgh', 'xxx' )", "abcdefgh", replace( "abcdefgh", "abcdefghabcdefgh", "xxx" ) );
 	}
 
+	@Test
+	public void testFormatBinary()
+	{
+		assertEquals( "Unexpected result.", "1.0 Ki", TextTools.formatBinary( 1024 ) ); // 1024 ^ 1
+		assertEquals( "Unexpected result.", "1.0 Mi", TextTools.formatBinary( 1048576 ) ); // 1024 ^ 2
+		assertEquals( "Unexpected result.", "1.0 Gi", TextTools.formatBinary( 1073741824 ) ); // 1024 ^ 3
+		assertEquals( "Unexpected result.", "1.0 Ti", TextTools.formatBinary( 1099511627776L ) ); // 1024 ^ 4
+		assertEquals( "Unexpected result.", "1.0 Pi", TextTools.formatBinary( 1125899906842624L ) ); // 1024 ^ 5
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000 ) );
+		assertEquals( "Unexpected result.", "9.77 Ki", TextTools.formatBinary( 10000 ) );
+		assertEquals( "Unexpected result.", "97.7 Ki", TextTools.formatBinary( 100000 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000 ) );
+		assertEquals( "Unexpected result.", "9.54 Mi", TextTools.formatBinary( 10000000 ) );
+		assertEquals( "Unexpected result.", "95.4 Mi", TextTools.formatBinary( 100000000 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000 ) );
+		assertEquals( "Unexpected result.", "9.31 Gi", TextTools.formatBinary( 10000000000L ) );
+		assertEquals( "Unexpected result.", "93.1 Gi", TextTools.formatBinary( 100000000000L ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L ) );
+		assertEquals( "Unexpected result.", "9.09 Ti", TextTools.formatBinary( 10000000000000L ) );
+		assertEquals( "Unexpected result.", "90.9 Ti", TextTools.formatBinary( 100000000000000L ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L ) );
+		assertEquals( "Unexpected result.", "8.88 Pi", TextTools.formatBinary( 10000000000000000L ) );
+		assertEquals( "Unexpected result.", "88.8 Pi", TextTools.formatBinary( 100000000000000000L ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L ) );
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1, 1 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10, 1 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100, 1 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000, 1 ) );
+		assertEquals( "Unexpected result.", "9.8 Ki", TextTools.formatBinary( 10000, 1 ) );
+		assertEquals( "Unexpected result.", "97.7 Ki", TextTools.formatBinary( 100000, 1 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000, 1 ) );
+		assertEquals( "Unexpected result.", "9.5 Mi", TextTools.formatBinary( 10000000, 1 ) );
+		assertEquals( "Unexpected result.", "95.4 Mi", TextTools.formatBinary( 100000000, 1 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000, 1 ) );
+		assertEquals( "Unexpected result.", "9.3 Gi", TextTools.formatBinary( 10000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "93.1 Gi", TextTools.formatBinary( 100000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "9.1 Ti", TextTools.formatBinary( 10000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "90.9 Ti", TextTools.formatBinary( 100000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "8.9 Pi", TextTools.formatBinary( 10000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "88.8 Pi", TextTools.formatBinary( 100000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L, 1 ) );
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1, 0 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10, 0 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100, 0 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000, 0 ) );
+		assertEquals( "Unexpected result.", "10 Ki", TextTools.formatBinary( 10000, 0 ) );
+		assertEquals( "Unexpected result.", "98 Ki", TextTools.formatBinary( 100000, 0 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000, 0 ) );
+		assertEquals( "Unexpected result.", "10 Mi", TextTools.formatBinary( 10000000, 0 ) );
+		assertEquals( "Unexpected result.", "95 Mi", TextTools.formatBinary( 100000000, 0 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000, 0 ) );
+		assertEquals( "Unexpected result.", "9 Gi", TextTools.formatBinary( 10000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "93 Gi", TextTools.formatBinary( 100000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "9 Ti", TextTools.formatBinary( 10000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "91 Ti", TextTools.formatBinary( 100000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "9 Pi", TextTools.formatBinary( 10000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "89 Pi", TextTools.formatBinary( 100000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L, 0 ) );
+
+		assertEquals( "Unexpected result.", "0 ", TextTools.formatBinary( 0 ) );
+
+		assertEquals( "Unexpected result.", "-1 ", TextTools.formatBinary( -1 ) );
+		assertEquals( "Unexpected result.", "-10 ", TextTools.formatBinary( -10 ) );
+		assertEquals( "Unexpected result.", "-100 ", TextTools.formatBinary( -100 ) );
+		assertEquals( "Unexpected result.", "-1000 ", TextTools.formatBinary( -1000 ) );
+		assertEquals( "Unexpected result.", "-9.77 Ki", TextTools.formatBinary( -10000 ) );
+		assertEquals( "Unexpected result.", "-97.7 Ki", TextTools.formatBinary( -100000 ) );
+		assertEquals( "Unexpected result.", "-977 Ki", TextTools.formatBinary( -1000000 ) );
+		assertEquals( "Unexpected result.", "-9.54 Mi", TextTools.formatBinary( -10000000 ) );
+		assertEquals( "Unexpected result.", "-95.4 Mi", TextTools.formatBinary( -100000000 ) );
+		assertEquals( "Unexpected result.", "-954 Mi", TextTools.formatBinary( -1000000000 ) );
+		assertEquals( "Unexpected result.", "-9.31 Gi", TextTools.formatBinary( -10000000000L ) );
+		assertEquals( "Unexpected result.", "-93.1 Gi", TextTools.formatBinary( -100000000000L ) );
+		assertEquals( "Unexpected result.", "-931 Gi", TextTools.formatBinary( -1000000000000L ) );
+		assertEquals( "Unexpected result.", "-9.09 Ti", TextTools.formatBinary( -10000000000000L ) );
+		assertEquals( "Unexpected result.", "-90.9 Ti", TextTools.formatBinary( -100000000000000L ) );
+		assertEquals( "Unexpected result.", "-909 Ti", TextTools.formatBinary( -1000000000000000L ) );
+		assertEquals( "Unexpected result.", "-8.88 Pi", TextTools.formatBinary( -10000000000000000L ) );
+		assertEquals( "Unexpected result.", "-88.8 Pi", TextTools.formatBinary( -100000000000000000L ) );
+		assertEquals( "Unexpected result.", "-888 Pi", TextTools.formatBinary( -1000000000000000000L ) );
+	}
+
+	@Test
+	public void testIsSecureFilePath()
+	{
+		//noinspection ConstantConditions
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( null ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "" ) );
+		assertEquals( "Test needs to be updated to new 'MAXIMUM_FILENAME_LENGTH' value.", 255, MAXIMUM_FILENAME_LENGTH );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( TextTools.getFixed( 255, 'x' ) ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( TextTools.getFixed( 256, 'x' ) ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( " blabla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla bla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "blabla " ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( ".blabla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla.bla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "blabla." ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "\nblabla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla\nbla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "blabla\n" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla /bla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla/bla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "/bla/bla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla/bla/" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "/bla/bla/" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla\\bla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla//bla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla\\\\bla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla/bla\\bla" ) );
+	}
+
+	@Test
+	public void testIsSecureFilename()
+	{
+		//noinspection ConstantConditions
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( null ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "" ) );
+		assertEquals( "Test needs to be updated to new 'MAXIMUM_FILENAME_LENGTH' value.", 255, MAXIMUM_FILENAME_LENGTH );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilename( TextTools.getFixed( 255, 'x' ) ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( TextTools.getFixed( 256, 'x' ) ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( " blabla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilename( "bla bla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "blabla " ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( ".blabla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilename( "bla.bla" ) );
+		assertTrue( "Unexpected result.", TextTools.isSecureFilename( "blabla." ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "\nblabla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "bla\nbla" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "blabla\n" ) );
+	}
+
+	@Test
+	public void testHexDump()
+	throws IOException
+	{
+		final StringBuilder sb = new StringBuilder();
+		TextTools.hexdump( sb, "##Hello world!\n##".getBytes(), 2, 13 );
+		assertEquals( "Unexpected output.", "00000: 48 65 6C 6C 6F 20 77 6F 72 6C 64 21 0A           |Hello world!.   |\n", sb.toString() );
+		sb.setLength( 0 );
+		TextTools.hexdump( sb, "##Hello hexdump(..) world!\n##".getBytes(), 2, 25 );
+		assertEquals( "Unexpected output.", "00000: 48 65 6C 6C 6F 20 68 65 78 64 75 6D 70 28 2E 2E  |Hello hexdump(..|\n" +
+		                                    "00010: 29 20 77 6F 72 6C 64 21 0A                       |) world!.       |\n", sb.toString() );
+	}
+
+	@Test
+	public void testGetDurationString()
+	{
+		assertEquals( "Unexpected result.", "34:18", TextTools.getDurationString( 123456789, false, false ) );
+		assertEquals( "Unexpected result.", "34:17:37", TextTools.getDurationString( 123456789, true, false ) );
+		assertEquals( "Unexpected result.", "34:17:36.789", TextTools.getDurationString( 123456789, true, true ) );
+		assertEquals( "Unexpected result.", "34:17:36.789", TextTools.getDurationString( 123456789, false, true ) );
+	}
 }

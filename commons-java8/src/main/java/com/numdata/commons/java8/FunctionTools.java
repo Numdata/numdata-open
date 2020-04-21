@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -223,6 +223,94 @@ public final class FunctionTools
 			try
 			{
 				checkedConsumer.apply( element );
+			}
+			catch ( final Exception ex )
+			{
+				sneakyThrow( ex );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntConsumer} with an unchecked {@link IntConsumer}.
+	 * Any checked exception thrown by the {@link CheckedIntConsumer} will be
+	 * wrapped by a {@link RuntimeException}.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntConsumer {@link CheckedIntConsumer} to wrap.
+	 *
+	 * @return {@link IntConsumer}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	public static IntConsumer wrapIntConsumerException( @NotNull final CheckedIntConsumer<?> checkedIntConsumer )
+	{
+		return element -> {
+			try
+			{
+				checkedIntConsumer.apply( element );
+			}
+			catch ( final RuntimeException | Error e )
+			{
+				throw e;
+			}
+			catch ( final Exception e )
+			{
+				throw new RuntimeException( e );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntConsumer} with an unchecked {@link IntConsumer},
+	 * but still declare the checked exception that might abort the stream and
+	 * be thrown.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntConsumer {@link CheckedIntConsumer} to wrap.
+	 * @param <EX>               Checked exception type.
+	 *
+	 * @return {@link IntConsumer}.
+	 *
+	 * @throws EX checked exception from {@code checkedIntConsumer}.
+	 */
+	@SuppressWarnings( "RedundantThrows" )
+	@NotNull
+	@Contract( pure = true )
+	public static <EX extends Exception> IntConsumer liftIntConsumerException( @NotNull final CheckedIntConsumer<EX> checkedIntConsumer )
+	throws EX
+	{
+		return hideIntConsumerException( checkedIntConsumer );
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntConsumer} with an unchecked {@link IntConsumer}.
+	 *
+	 * IMPORTANT: Never use this method directly, because it will cause checked
+	 * exceptions to appear where they are not declared. Please use the {@link
+	 * #liftIntConsumerException(CheckedIntConsumer)} method instead to declare
+	 * the checked exception.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntConsumer {@link CheckedIntConsumer} to wrap.
+	 * @param <EX>               Checked exception type.
+	 *
+	 * @return {@link IntConsumer}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	private static <EX extends Exception> IntConsumer hideIntConsumerException( @NotNull final CheckedIntConsumer<EX> checkedIntConsumer )
+	{
+		return element -> {
+			try
+			{
+				checkedIntConsumer.apply( element );
 			}
 			catch ( final Exception ex )
 			{
