@@ -411,6 +411,98 @@ public class TestTextTools
 	}
 
 	@Test
+	public void testFormatBinary()
+	{
+		assertEquals( "Unexpected result.", "1.0 Ki", TextTools.formatBinary( 1024 ) ); // 1024 ^ 1
+		assertEquals( "Unexpected result.", "1.0 Mi", TextTools.formatBinary( 1048576 ) ); // 1024 ^ 2
+		assertEquals( "Unexpected result.", "1.0 Gi", TextTools.formatBinary( 1073741824 ) ); // 1024 ^ 3
+		assertEquals( "Unexpected result.", "1.0 Ti", TextTools.formatBinary( 1099511627776L ) ); // 1024 ^ 4
+		assertEquals( "Unexpected result.", "1.0 Pi", TextTools.formatBinary( 1125899906842624L ) ); // 1024 ^ 5
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000 ) );
+		assertEquals( "Unexpected result.", "9.77 Ki", TextTools.formatBinary( 10000 ) );
+		assertEquals( "Unexpected result.", "97.7 Ki", TextTools.formatBinary( 100000 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000 ) );
+		assertEquals( "Unexpected result.", "9.54 Mi", TextTools.formatBinary( 10000000 ) );
+		assertEquals( "Unexpected result.", "95.4 Mi", TextTools.formatBinary( 100000000 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000 ) );
+		assertEquals( "Unexpected result.", "9.31 Gi", TextTools.formatBinary( 10000000000L ) );
+		assertEquals( "Unexpected result.", "93.1 Gi", TextTools.formatBinary( 100000000000L ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L ) );
+		assertEquals( "Unexpected result.", "9.09 Ti", TextTools.formatBinary( 10000000000000L ) );
+		assertEquals( "Unexpected result.", "90.9 Ti", TextTools.formatBinary( 100000000000000L ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L ) );
+		assertEquals( "Unexpected result.", "8.88 Pi", TextTools.formatBinary( 10000000000000000L ) );
+		assertEquals( "Unexpected result.", "88.8 Pi", TextTools.formatBinary( 100000000000000000L ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L ) );
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1, 1 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10, 1 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100, 1 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000, 1 ) );
+		assertEquals( "Unexpected result.", "9.8 Ki", TextTools.formatBinary( 10000, 1 ) );
+		assertEquals( "Unexpected result.", "97.7 Ki", TextTools.formatBinary( 100000, 1 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000, 1 ) );
+		assertEquals( "Unexpected result.", "9.5 Mi", TextTools.formatBinary( 10000000, 1 ) );
+		assertEquals( "Unexpected result.", "95.4 Mi", TextTools.formatBinary( 100000000, 1 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000, 1 ) );
+		assertEquals( "Unexpected result.", "9.3 Gi", TextTools.formatBinary( 10000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "93.1 Gi", TextTools.formatBinary( 100000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "9.1 Ti", TextTools.formatBinary( 10000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "90.9 Ti", TextTools.formatBinary( 100000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "8.9 Pi", TextTools.formatBinary( 10000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "88.8 Pi", TextTools.formatBinary( 100000000000000000L, 1 ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L, 1 ) );
+
+		assertEquals( "Unexpected result.", "1 ", TextTools.formatBinary( 1, 0 ) );
+		assertEquals( "Unexpected result.", "10 ", TextTools.formatBinary( 10, 0 ) );
+		assertEquals( "Unexpected result.", "100 ", TextTools.formatBinary( 100, 0 ) );
+		assertEquals( "Unexpected result.", "1000 ", TextTools.formatBinary( 1000, 0 ) );
+		assertEquals( "Unexpected result.", "10 Ki", TextTools.formatBinary( 10000, 0 ) );
+		assertEquals( "Unexpected result.", "98 Ki", TextTools.formatBinary( 100000, 0 ) );
+		assertEquals( "Unexpected result.", "977 Ki", TextTools.formatBinary( 1000000, 0 ) );
+		assertEquals( "Unexpected result.", "10 Mi", TextTools.formatBinary( 10000000, 0 ) );
+		assertEquals( "Unexpected result.", "95 Mi", TextTools.formatBinary( 100000000, 0 ) );
+		assertEquals( "Unexpected result.", "954 Mi", TextTools.formatBinary( 1000000000, 0 ) );
+		assertEquals( "Unexpected result.", "9 Gi", TextTools.formatBinary( 10000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "93 Gi", TextTools.formatBinary( 100000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "931 Gi", TextTools.formatBinary( 1000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "9 Ti", TextTools.formatBinary( 10000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "91 Ti", TextTools.formatBinary( 100000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "909 Ti", TextTools.formatBinary( 1000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "9 Pi", TextTools.formatBinary( 10000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "89 Pi", TextTools.formatBinary( 100000000000000000L, 0 ) );
+		assertEquals( "Unexpected result.", "888 Pi", TextTools.formatBinary( 1000000000000000000L, 0 ) );
+
+		assertEquals( "Unexpected result.", "0 ", TextTools.formatBinary( 0 ) );
+
+		assertEquals( "Unexpected result.", "-1 ", TextTools.formatBinary( -1 ) );
+		assertEquals( "Unexpected result.", "-10 ", TextTools.formatBinary( -10 ) );
+		assertEquals( "Unexpected result.", "-100 ", TextTools.formatBinary( -100 ) );
+		assertEquals( "Unexpected result.", "-1000 ", TextTools.formatBinary( -1000 ) );
+		assertEquals( "Unexpected result.", "-9.77 Ki", TextTools.formatBinary( -10000 ) );
+		assertEquals( "Unexpected result.", "-97.7 Ki", TextTools.formatBinary( -100000 ) );
+		assertEquals( "Unexpected result.", "-977 Ki", TextTools.formatBinary( -1000000 ) );
+		assertEquals( "Unexpected result.", "-9.54 Mi", TextTools.formatBinary( -10000000 ) );
+		assertEquals( "Unexpected result.", "-95.4 Mi", TextTools.formatBinary( -100000000 ) );
+		assertEquals( "Unexpected result.", "-954 Mi", TextTools.formatBinary( -1000000000 ) );
+		assertEquals( "Unexpected result.", "-9.31 Gi", TextTools.formatBinary( -10000000000L ) );
+		assertEquals( "Unexpected result.", "-93.1 Gi", TextTools.formatBinary( -100000000000L ) );
+		assertEquals( "Unexpected result.", "-931 Gi", TextTools.formatBinary( -1000000000000L ) );
+		assertEquals( "Unexpected result.", "-9.09 Ti", TextTools.formatBinary( -10000000000000L ) );
+		assertEquals( "Unexpected result.", "-90.9 Ti", TextTools.formatBinary( -100000000000000L ) );
+		assertEquals( "Unexpected result.", "-909 Ti", TextTools.formatBinary( -1000000000000000L ) );
+		assertEquals( "Unexpected result.", "-8.88 Pi", TextTools.formatBinary( -10000000000000000L ) );
+		assertEquals( "Unexpected result.", "-88.8 Pi", TextTools.formatBinary( -100000000000000000L ) );
+		assertEquals( "Unexpected result.", "-888 Pi", TextTools.formatBinary( -1000000000000000000L ) );
+	}
+
+	@Test
 	public void testIsSecureFilePath()
 	{
 		//noinspection ConstantConditions
@@ -428,6 +520,7 @@ public class TestTextTools
 		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "\nblabla" ) );
 		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla\nbla" ) );
 		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "blabla\n" ) );
+		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "bla /bla" ) );
 		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla/bla" ) );
 		assertFalse( "Unexpected result.", TextTools.isSecureFilePath( "/bla/bla" ) );
 		assertTrue( "Unexpected result.", TextTools.isSecureFilePath( "bla/bla/" ) );

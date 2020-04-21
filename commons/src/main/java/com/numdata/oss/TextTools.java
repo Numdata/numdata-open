@@ -2964,12 +2964,13 @@ public final class TextTools
 	@NotNull
 	public static String formatBinary( final long number )
 	{
-		return formatBinary( number, 3 );
+		return formatBinary( number, 2 );
 	}
 
 	/**
 	 * Format number using a binary prefix according to IEC 60027-2 A.2 and
-	 * ISO/IEC 80000 standards.
+	 * ISO/IEC 80000 standards. Fractions are rounded according to
+	 * {@link RoundingMode#HALF_UP}.
 	 *
 	 * @param number            Number to format.
 	 * @param maxFractionDigits Maximum fraction digits (0-2).
@@ -2979,11 +2980,11 @@ public final class TextTools
 	@NotNull
 	public static String formatBinary( final long number, final int maxFractionDigits )
 	{
-		long quotient = number;
+		long quotient = Math.abs( number );
 		int remainder = 0;
 		int scale = 0;
 
-		while ( quotient > 1024L )
+		while ( quotient >= 1024L )
 		{
 			remainder = (int)( quotient % 1024L );
 			quotient /= 1024L;
@@ -2994,11 +2995,18 @@ public final class TextTools
 		if ( ( scale != 0 ) && ( maxFractionDigits > 0 ) && ( quotient < 100L ) )
 		{
 			final int fractionScale = ( quotient > 10L ) ? 1 : Math.min( 2, maxFractionDigits );
-			fraction = String.valueOf( (double)remainder / 1024.0 );
-			fraction = '.' + fraction.substring( 2, Math.min( fraction.length(), 2 + fractionScale ) );
+			final int fractionMultiplier = fractionScale == 1 ? 100 : 1000;
+			final int fractionInt = remainder * fractionMultiplier / 1024;
+			final int fractionIntRounded = ( fractionInt + 5 ) / 10;
+			final boolean fractionZero = ( fractionScale == 2 ) && ( fractionIntRounded > 0 ) && ( fractionIntRounded < 10 );
+			fraction = "." + ( fractionZero ? "0" : "" ) + fractionIntRounded;
+		}
+		else if ( remainder >= 512 )
+		{
+			quotient++;
 		}
 
-		return quotient + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
+		return ( number < 0 ? "-" : "" ) + quotient + fraction + ' ' + IEC_BINARY_PREFIXES[ scale ];
 	}
 
 	/**
