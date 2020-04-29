@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@ import java.lang.reflect.*;
 import java.math.*;
 import java.net.*;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.regex.*;
 
 import com.numdata.oss.*;
@@ -78,7 +78,7 @@ implements FieldTarget
 	 * Construct new reflected field target.
 	 *
 	 * @param target Target object.
-	 * @param name   Name of field .
+	 * @param name   Name of field.
 	 */
 	public ReflectedFieldTarget( final Object target, final String name )
 	{
@@ -231,7 +231,7 @@ implements FieldTarget
 	private static Method getAccessor( final Class<?> aClass, final String prefix, final String property, @Nullable final Class<?> type )
 	{
 		final String name = prefix + Character.toUpperCase( property.charAt( 0 ) ) + property.substring( 1 );
-		@SuppressWarnings( "rawtypes" ) final Class<?>[] args = ( type == null ) ? new Class[] {} : new Class[] { type };
+		final Class<?>[] args = ( type == null ) ? new Class[] {} : new Class[] { type };
 
 		Method result;
 
@@ -255,7 +255,7 @@ implements FieldTarget
 	 * @return String representation of value.
 	 */
 	@Nullable
-	public static String toString( final Object value )
+	protected String toString( final Object value )
 	{
 		final String result;
 
