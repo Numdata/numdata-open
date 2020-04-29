@@ -26,8 +26,6 @@
  */
 package com.numdata.oss;
 
-import java.io.*;
-
 import static com.numdata.oss.TextTools.*;
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -549,19 +547,6 @@ public class TestTextTools
 		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "\nblabla" ) );
 		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "bla\nbla" ) );
 		assertFalse( "Unexpected result.", TextTools.isSecureFilename( "blabla\n" ) );
-	}
-
-	@Test
-	public void testHexDump()
-	throws IOException
-	{
-		final StringBuilder sb = new StringBuilder();
-		TextTools.hexdump( sb, "##Hello world!\n##".getBytes(), 2, 13 );
-		assertEquals( "Unexpected output.", "00000: 48 65 6C 6C 6F 20 77 6F 72 6C 64 21 0A           |Hello world!.   |\n", sb.toString() );
-		sb.setLength( 0 );
-		TextTools.hexdump( sb, "##Hello hexdump(..) world!\n##".getBytes(), 2, 25 );
-		assertEquals( "Unexpected output.", "00000: 48 65 6C 6C 6F 20 68 65 78 64 75 6D 70 28 2E 2E  |Hello hexdump(..|\n" +
-		                                    "00010: 29 20 77 6F 72 6C 64 21 0A                       |) world!.       |\n", sb.toString() );
 	}
 
 	@Test
