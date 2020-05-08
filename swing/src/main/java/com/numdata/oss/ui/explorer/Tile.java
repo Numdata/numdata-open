@@ -27,13 +27,11 @@
 package com.numdata.oss.ui.explorer;
 
 import java.awt.*;
-import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
-import com.numdata.oss.*;
 import com.numdata.oss.ui.*;
 
 /**
@@ -43,7 +41,6 @@ import com.numdata.oss.ui.*;
  */
 public class Tile
 	extends TileRenderer
-	implements ListCellRenderer
 {
 	/**
 	 * Explorer for which this item is used.
