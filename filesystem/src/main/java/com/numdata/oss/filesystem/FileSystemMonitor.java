@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -291,29 +291,16 @@ implements ResourceMonitor
 	{
 		final ResourceStatus result = new ResourceStatus();
 		result.setLastOnline( getLastUpdated() );
-		try
+		final Exception exception = getLastException();
+		if ( exception == null )
 		{
-			listFiles();
-
-			final Exception exception = getLastException();
-			if ( exception == null )
-			{
-				result.setStatus( ResourceStatus.Status.AVAILABLE );
-				result.setDetails( "Running (initialFileHandling=" + getInitialFileHandling() + ", delay=" + getDelay() + ", pathFilter=" + TextTools.quote( getPathFilter() ) + ", singleFile=" + isSingleFile() + ", alwaysModified=" + isAlwaysModified() );
-			}
-			else
-			{
-				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
-				result.setDetails( "File system is available, but update failed" );
-				result.setException( exception );
-			}
+			result.setStatus( ResourceStatus.Status.AVAILABLE );
+			result.setDetails( "Running (initialFileHandling=" + getInitialFileHandling() + ", delay=" + getDelay() + ", pathFilter=" + TextTools.quote( getPathFilter() ) + ", singleFile=" + isSingleFile() + ", alwaysModified=" + isAlwaysModified() );
 		}
-		catch ( final Exception e )
+		else
 		{
-			_lastException = e;
-			result.setStatus( ResourceStatus.Status.UNREACHABLE );
-			result.setDetails( "Failed to access file system" );
-			result.setException( e );
+			result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+			result.setException( exception );
 		}
 
 		return result;
