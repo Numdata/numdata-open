@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,17 +55,20 @@ implements AuthenticationInformant
 		_servletRequest = servletRequest;
 	}
 
+	@Override
 	@NotNull
 	public String getDomainName()
 	{
 		return _servletRequest.getServerName();
 	}
 
+	@Override
 	public String getUserName()
 	{
 		return _servletRequest.getRemoteUser();
 	}
 
+	@Override
 	public boolean isUserInRole( @NotNull final String role )
 	{
 		return _servletRequest.isUserInRole( role );
