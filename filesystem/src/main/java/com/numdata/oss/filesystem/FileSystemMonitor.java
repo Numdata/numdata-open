@@ -309,7 +309,12 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
-		LOG.debug( "run()" );
+		final boolean trace = LOG.isTraceEnabled();
+		final boolean debug = trace || LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( '[' + getName() + "] run()" );
+		}
 
 		_stopped = false;
 		_lastException = null;
@@ -350,10 +355,14 @@ implements ResourceMonitor
 				}
 			}
 
-			LOG.trace( "sleep" );
+			final long delay = getDelay();
+			if ( trace )
+			{
+				LOG.trace( "sleep( " + delay + " )" );
+			}
 			try
 			{
-				Thread.sleep( getDelay() );
+				Thread.sleep( delay );
 			}
 			catch ( final InterruptedException e )
 			{
@@ -367,7 +376,11 @@ implements ResourceMonitor
 	@Override
 	public void stop()
 	{
-		LOG.debug( "stop()" );
+		final boolean debug = LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( '[' + getName() + "] stop()" );
+		}
 
 		_stopped = true;
 	}
@@ -389,7 +402,10 @@ implements ResourceMonitor
 	throws IOException
 	{
 		final boolean trace = LOG.isTraceEnabled();
-		LOG.trace( "checkForUpdates" );
+		if ( trace )
+		{
+			LOG.trace( '[' + getName() + "] checkForUpdates( " + newFileHandling + " )" );
+		}
 
 		/*
 		 * Update modification times.
@@ -741,7 +757,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileAddedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileAddedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -766,7 +782,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileModifiedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileModifiedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -792,7 +808,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileRemovedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileRemovedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -803,7 +819,7 @@ implements ResourceMonitor
 			}
 			catch ( final Exception e )
 			{
-				LOG.error( "Unhandled exception in 'fileRemoved' method of " + listener, e );
+				LOG.error( '[' + getName() + "] Unhandled exception in 'fileRemoved' method of " + listener, e );
 			}
 		}
 	}

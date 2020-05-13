@@ -87,6 +87,11 @@ implements ResourceMonitor
 	 */
 	public ServerSocketMonitor( final int port )
 	{
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( "ServerSocketMonitor( " + port + " )" );
+		}
+
 		_port = port;
 	}
 
@@ -168,6 +173,11 @@ implements ResourceMonitor
 	@Override
 	public ResourceStatus getStatus()
 	{
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] getStatus()" );
+		}
+
 		final ResourceStatus result = new ResourceStatus();
 		result.setException( getLastException() );
 		result.setLastOnline( getLastConnected() );
@@ -203,6 +213,12 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
+		final boolean debug = LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( '[' + getName() + "] run()" );
+		}
+
 		_stopped = false;
 		_lastException = null;
 
@@ -215,7 +231,7 @@ implements ResourceMonitor
 				{
 					_serverSocket = serverSocket;
 
-					LOG.info( "Listening on TCP port " + serverSocket.getLocalPort() );
+					LOG.info( '[' + getName() + "] Listening on TCP port " + serverSocket.getLocalPort() );
 					while ( !isStopped() && !serverSocket.isClosed() )
 					{
 						try
@@ -225,14 +241,20 @@ implements ResourceMonitor
 							try
 							{
 								_lastConnected = System.currentTimeMillis();
-								LOG.debug( "Accepted connection from " + socket.getRemoteSocketAddress() + '.' );
+								if ( debug )
+								{
+									LOG.debug( '[' + getName() + "] Accepted connection from " + socket.getRemoteSocketAddress() + '.' );
+								}
 								handleConnection( socket );
-								LOG.debug( "Connection handled." );
+								if ( debug )
+								{
+									LOG.debug( '[' + getName() + "] Connection handled." );
+								}
 							}
 							catch ( final RuntimeException e )
 							{
 								_lastException = e;
-								LOG.error( "Unhandled exception while processing client request: " + e, e );
+								LOG.error( '[' + getName() + "] Unhandled exception while processing client request: " + e, e );
 							}
 							finally
 							{
@@ -250,11 +272,11 @@ implements ResourceMonitor
 							_lastException = e;
 							if ( serverSocket.isClosed() )
 							{
-								LOG.debug( "Exception while socket was closed: " + e, e );
+								LOG.debug( '[' + getName() + "] Exception while socket was closed: " + e, e );
 							}
 							else
 							{
-								LOG.warn( "Failed to accept client connection.", e );
+								LOG.warn( '[' + getName() + "] Failed to accept client connection.", e );
 							}
 						}
 					}
@@ -266,11 +288,11 @@ implements ResourceMonitor
 						try
 						{
 							serverSocket.close();
-							LOG.info( "Server socket closed." );
+							LOG.info( '[' + getName() + "] Server socket closed." );
 						}
 						catch ( final IOException e )
 						{
-							LOG.warn( "Failed to close server socket.", e );
+							LOG.warn( '[' + getName() + "] Failed to close server socket.", e );
 						}
 					}
 				}
@@ -278,26 +300,30 @@ implements ResourceMonitor
 			}
 			catch ( final IOException e )
 			{
-				LOG.error( "Failed to open server socket.", e );
+				LOG.error( '[' + getName() + "] Failed to open server socket.", e );
 
 			}
 			catch ( final Throwable e )
 			{
-				LOG.error( "Fatal exception!", e );
+				LOG.error( '[' + getName() + "] Fatal exception!", e );
 			}
 		}
 
-		LOG.info( "ServerSocketMonitor stopped." );
+		LOG.info( '[' + getName() + "] Monitor stopped." );
 	}
 
 	@Override
 	public void stop()
 	{
-		LOG.trace( "stop()" );
+		final ServerSocket serverSocket = _serverSocket;
+
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] stop() serverSocket=" + serverSocket );
+		}
 
 		_stopped = true;
 
-		final ServerSocket serverSocket = _serverSocket;
 		if ( serverSocket != null )
 		{
 			try
@@ -327,6 +353,12 @@ implements ResourceMonitor
 	throws IOException
 	{
 		final ConnectionHandler handler = getHandler();
+
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] handleConnection( " + socket + " ) handler=" + handler );
+		}
+
 		if ( handler == null )
 		{
 			throw new IllegalStateException( "No handler installed" );
