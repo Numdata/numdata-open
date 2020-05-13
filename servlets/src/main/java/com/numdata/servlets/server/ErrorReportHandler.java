@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,17 @@ import org.jetbrains.annotations.*;
 /**
  * Handles 'ping' requests.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class ErrorReportHandler
-	implements RequestHandler
+implements RequestHandler
 {
 	/**
 	 * Log used for messages related to this class.
 	 */
 	private static final ClassLogger LOG = ClassLogger.getFor( ErrorReportHandler.class );
 
+	@Override
 	@Nullable
 	public Serializable handleRequest( @NotNull final ServletContext servletContext, @NotNull final HttpServletRequest servletRequest, @NotNull final AuthenticationInformant informant, @NotNull final Packet request )
 	throws ProtocolException
