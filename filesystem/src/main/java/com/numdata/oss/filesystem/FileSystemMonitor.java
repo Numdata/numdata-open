@@ -341,7 +341,7 @@ implements ResourceMonitor
 
 				if ( TextTools.equals( logMessage, lastExceptionMessage ) )
 				{
-					LOG.warn( "Again: " + e );
+					LOG.warn( "Again <" + e + ">" );
 				}
 				else
 				{
@@ -350,6 +350,7 @@ implements ResourceMonitor
 				}
 			}
 
+			LOG.trace( "sleep" );
 			try
 			{
 				Thread.sleep( getDelay() );
