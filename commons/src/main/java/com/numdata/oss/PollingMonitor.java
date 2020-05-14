@@ -353,7 +353,10 @@ implements ResourceMonitor
 					delay = getPollTime();
 				}
 
-				sleep( delay );
+				if ( !sleep( delay ) )
+				{
+					break;
+				}
 			}
 		}
 		catch ( final Exception e )
@@ -395,7 +398,6 @@ implements ResourceMonitor
 			LOG.trace( '[' + getName() + "] sleep( " + time + " )" );
 		}
 
-		boolean result = true;
 		for ( int remaining = time; ( remaining > 0 ) && !_stop; remaining -= 1000 )
 		{
 			try
@@ -405,11 +407,12 @@ implements ResourceMonitor
 			}
 			catch ( final InterruptedException ignored )
 			{
-				result = false;
+				LOG.info( '[' + getName() + "] Sleep was interrupted, monitor should stop." );
+				_stop = true;
 				break;
 			}
 		}
-		return result && !_stop;
+		return !_stop;
 	}
 
 	@Override
