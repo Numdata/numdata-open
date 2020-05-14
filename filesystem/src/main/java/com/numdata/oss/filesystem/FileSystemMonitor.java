@@ -357,16 +357,7 @@ implements ResourceMonitor
 				}
 			}
 
-			final long delay = getDelay();
-			if ( trace )
-			{
-				LOG.trace( "sleep( " + delay + " )" );
-			}
-			try
-			{
-				Thread.sleep( delay );
-			}
-			catch ( final InterruptedException e )
+			if ( !sleep( getDelay() ) )
 			{
 				break;
 			}
@@ -374,6 +365,42 @@ implements ResourceMonitor
 
 		LOG.info( "File system monitor '" + getName() + "' was interrupted" );
 	}
+
+	/**
+	 * Internal helper-method to suspend the current thread for the given
+	 * amount of time.
+	 *
+	 * @param time Time to sleep in milliseconds.
+	 *
+	 * @return {@code true} if process should continue normally;
+	 * {@code false} if the monitor was interrupted/should stop.
+	 *
+	 * @throws IllegalArgumentException if the value of {@code millis} is negative
+	 */
+	protected boolean sleep( final long time )
+	{
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( '[' + getName() + "] sleep( " + time + " )" );
+		}
+
+		for ( long remaining = time; ( remaining > 0 ) && !_stopped; remaining -= 1000 )
+		{
+			try
+			{
+				//noinspection BusyWait
+				Thread.sleep( Math.min( 1000, remaining ) );
+			}
+			catch ( final InterruptedException ignored )
+			{
+				LOG.info( '[' + getName() + "] Sleep was interrupted, monitor should stop." );
+				_stopped = true;
+				break;
+			}
+		}
+		return !_stopped;
+	}
+
 
 	@Override
 	public void stop()
