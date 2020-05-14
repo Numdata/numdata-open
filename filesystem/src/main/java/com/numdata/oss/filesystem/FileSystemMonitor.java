@@ -346,11 +346,13 @@ implements ResourceMonitor
 
 				if ( TextTools.equals( logMessage, lastExceptionMessage ) )
 				{
-					LOG.warn( "Again <" + e + ">" );
+					final String message = e.toString();
+					final int eol = message.indexOf( '\n' );
+					LOG.warn( '[' + getName() + "] Again <" + ( ( eol < 0 ) ? message : message.substring( 0, eol ) ) + ">" );
 				}
 				else
 				{
-					LOG.warn( "Failed to check for updates: " + e, e );
+					LOG.warn( '[' + getName() + "] Failed to check for updates: " + e, e );
 					lastExceptionMessage = logMessage;
 				}
 			}

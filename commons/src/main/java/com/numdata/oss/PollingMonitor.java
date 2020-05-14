@@ -329,7 +329,9 @@ implements ResourceMonitor
 					final String exceptionMessage = w.toString();
 					if ( TextTools.equals( exceptionMessage, lastException ) )
 					{
-						LOG.error( '[' + getName() + "] Again: " + e.getClass() + ": " + e.getMessage() );
+						final String message = e.toString();
+						final int eol = message.indexOf( '\n' );
+						LOG.error( '[' + getName() + "] Again <" + ( ( eol < 0 ) ? message : message.substring( 0, eol ) ) + ">" );
 					}
 					else
 					{
