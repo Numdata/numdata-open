@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -291,29 +291,16 @@ implements ResourceMonitor
 	{
 		final ResourceStatus result = new ResourceStatus();
 		result.setLastOnline( getLastUpdated() );
-		try
+		final Exception exception = getLastException();
+		if ( exception == null )
 		{
-			listFiles();
-
-			final Exception exception = getLastException();
-			if ( exception == null )
-			{
-				result.setStatus( ResourceStatus.Status.AVAILABLE );
-				result.setDetails( "Running (initialFileHandling=" + getInitialFileHandling() + ", delay=" + getDelay() + ", pathFilter=" + TextTools.quote( getPathFilter() ) + ", singleFile=" + isSingleFile() + ", alwaysModified=" + isAlwaysModified() );
-			}
-			else
-			{
-				result.setStatus( ResourceStatus.Status.UNAVAILABLE );
-				result.setDetails( "File system is available, but update failed" );
-				result.setException( exception );
-			}
+			result.setStatus( ResourceStatus.Status.AVAILABLE );
+			result.setDetails( "Running (initialFileHandling=" + getInitialFileHandling() + ", delay=" + getDelay() + ", pathFilter=" + TextTools.quote( getPathFilter() ) + ", singleFile=" + isSingleFile() + ", alwaysModified=" + isAlwaysModified() );
 		}
-		catch ( final Exception e )
+		else
 		{
-			_lastException = e;
-			result.setStatus( ResourceStatus.Status.UNREACHABLE );
-			result.setDetails( "Failed to access file system" );
-			result.setException( e );
+			result.setStatus( ResourceStatus.Status.UNAVAILABLE );
+			result.setException( exception );
 		}
 
 		return result;
@@ -322,7 +309,12 @@ implements ResourceMonitor
 	@Override
 	public void run()
 	{
-		LOG.debug( "run()" );
+		final boolean trace = LOG.isTraceEnabled();
+		final boolean debug = trace || LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( '[' + getName() + "] run()" );
+		}
 
 		_stopped = false;
 		_lastException = null;
@@ -354,20 +346,18 @@ implements ResourceMonitor
 
 				if ( TextTools.equals( logMessage, lastExceptionMessage ) )
 				{
-					LOG.warn( "Again: " + e );
+					final String message = e.toString();
+					final int eol = message.indexOf( '\n' );
+					LOG.warn( '[' + getName() + "] Again <" + ( ( eol < 0 ) ? message : message.substring( 0, eol ) ) + ">" );
 				}
 				else
 				{
-					LOG.warn( "Failed to check for updates: " + e, e );
+					LOG.warn( '[' + getName() + "] Failed to check for updates: " + e, e );
 					lastExceptionMessage = logMessage;
 				}
 			}
 
-			try
-			{
-				Thread.sleep( getDelay() );
-			}
-			catch ( final InterruptedException e )
+			if ( !sleep( getDelay() ) )
 			{
 				break;
 			}
@@ -376,10 +366,50 @@ implements ResourceMonitor
 		LOG.info( "File system monitor '" + getName() + "' was interrupted" );
 	}
 
+	/**
+	 * Internal helper-method to suspend the current thread for the given
+	 * amount of time.
+	 *
+	 * @param time Time to sleep in milliseconds.
+	 *
+	 * @return {@code true} if process should continue normally;
+	 * {@code false} if the monitor was interrupted/should stop.
+	 *
+	 * @throws IllegalArgumentException if the value of {@code millis} is negative
+	 */
+	protected boolean sleep( final long time )
+	{
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( '[' + getName() + "] sleep( " + time + " )" );
+		}
+
+		for ( long remaining = time; ( remaining > 0 ) && !_stopped; remaining -= 1000 )
+		{
+			try
+			{
+				//noinspection BusyWait
+				Thread.sleep( Math.min( 1000, remaining ) );
+			}
+			catch ( final InterruptedException ignored )
+			{
+				LOG.info( '[' + getName() + "] Sleep was interrupted, monitor should stop." );
+				_stopped = true;
+				break;
+			}
+		}
+		return !_stopped;
+	}
+
+
 	@Override
 	public void stop()
 	{
-		LOG.debug( "stop()" );
+		final boolean debug = LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( '[' + getName() + "] stop()" );
+		}
 
 		_stopped = true;
 	}
@@ -401,7 +431,10 @@ implements ResourceMonitor
 	throws IOException
 	{
 		final boolean trace = LOG.isTraceEnabled();
-		LOG.trace( "checkForUpdates" );
+		if ( trace )
+		{
+			LOG.trace( '[' + getName() + "] checkForUpdates( " + newFileHandling + " )" );
+		}
 
 		/*
 		 * Update modification times.
@@ -753,7 +786,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileAddedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileAddedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -778,7 +811,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileModifiedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileModifiedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -804,7 +837,7 @@ implements ResourceMonitor
 	{
 		if ( LOG.isDebugEnabled() )
 		{
-			LOG.debug( "fireFileRemovedEvent( " + getPath( file ) + " )" );
+			LOG.debug( '[' + getName() + "] fireFileRemovedEvent( " + getPath( file ) + " )" );
 		}
 
 		for ( final FileSystemMonitorListener listener : _listeners )
@@ -815,7 +848,7 @@ implements ResourceMonitor
 			}
 			catch ( final Exception e )
 			{
-				LOG.error( "Unhandled exception in 'fileRemoved' method of " + listener, e );
+				LOG.error( '[' + getName() + "] Unhandled exception in 'fileRemoved' method of " + listener, e );
 			}
 		}
 	}

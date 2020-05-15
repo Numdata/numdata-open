@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -221,6 +221,11 @@ implements ResourceMonitor
 	@Override
 	public ResourceStatus getStatus()
 	{
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( '[' + getName() + "] getStatus()" );
+		}
+
 		final ResourceStatus result = new ResourceStatus();
 		result.setLastOnline( getLastPolled() );
 
@@ -258,6 +263,12 @@ implements ResourceMonitor
 	throws Exception
 	{
 		final CheckedRunnable<?> initializer = getInitializer();
+
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] initialize() initializer=" + initializer );
+		}
+
 		if ( initializer != null )
 		{
 			initializer.run();
@@ -275,6 +286,12 @@ implements ResourceMonitor
 	throws Exception
 	{
 		final CheckedRunnable<?> check = getCheck();
+
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( '[' + getName() + "] poll() check=" + check );
+		}
+
 		if ( check != null )
 		{
 			check.run();
@@ -290,7 +307,7 @@ implements ResourceMonitor
 
 		try
 		{
-			LOG.info( "Initializing monitor." );
+			LOG.info( '[' + getName() + "] Initializing monitor" );
 			initialize();
 
 			String lastException = null;
@@ -312,11 +329,13 @@ implements ResourceMonitor
 					final String exceptionMessage = w.toString();
 					if ( TextTools.equals( exceptionMessage, lastException ) )
 					{
-						LOG.error( "Again: " + e.getClass() + ": " + e.getMessage() );
+						final String message = e.toString();
+						final int eol = message.indexOf( '\n' );
+						LOG.error( '[' + getName() + "] Again <" + ( ( eol < 0 ) ? message : message.substring( 0, eol ) ) + ">" );
 					}
 					else
 					{
-						LOG.error( "Monitor failed to poll: " + e, e );
+						LOG.error( '[' + getName() + "] Monitor failed to poll: " + e, e );
 						lastException = exceptionMessage;
 					}
 				}
@@ -336,12 +355,15 @@ implements ResourceMonitor
 					delay = getPollTime();
 				}
 
-				sleep( delay );
+				if ( !sleep( delay ) )
+				{
+					break;
+				}
 			}
 		}
 		catch ( final Exception e )
 		{
-			LOG.error( "Failed to initialize monitor.", e );
+			LOG.error( '[' + getName() + "] Failed to initialize monitor: " + e, e );
 			_lastException = e;
 		}
 		finally
@@ -350,7 +372,7 @@ implements ResourceMonitor
 			_stop = false;
 			try
 			{
-				LOG.info( "Shutting down monitor." );
+				LOG.info( '[' + getName() + "] Shutting down monitor." );
 				stopped();
 			}
 			catch ( final Exception e )
@@ -373,7 +395,11 @@ implements ResourceMonitor
 	 */
 	protected boolean sleep( final int time )
 	{
-		boolean result = true;
+		if ( LOG.isTraceEnabled() )
+		{
+			LOG.trace( '[' + getName() + "] sleep( " + time + " )" );
+		}
+
 		for ( int remaining = time; ( remaining > 0 ) && !_stop; remaining -= 1000 )
 		{
 			try
@@ -383,16 +409,21 @@ implements ResourceMonitor
 			}
 			catch ( final InterruptedException ignored )
 			{
-				result = false;
+				LOG.info( '[' + getName() + "] Sleep was interrupted, monitor should stop." );
+				_stop = true;
 				break;
 			}
 		}
-		return result && !_stop;
+		return !_stop;
 	}
 
 	@Override
 	public void stop()
 	{
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] stop()" );
+		}
 		_stop = true;
 	}
 
@@ -402,6 +433,12 @@ implements ResourceMonitor
 	protected void stopped()
 	{
 		final Runnable finalizer = getFinalizer();
+
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] stopped() finalizer=" + finalizer );
+		}
+
 		if ( finalizer != null )
 		{
 			try

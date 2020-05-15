@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2012-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -169,7 +169,7 @@ implements ResourceMonitor
 	@NotNull
 	public String getName()
 	{
-		return _host + ':' + _port;
+		return "socket://" + _host + ':' + _port;
 	}
 
 	@NotNull
@@ -213,12 +213,17 @@ implements ResourceMonitor
 		_socket = null;
 		_lastException = null;
 
-		LOG.debug( "Starting socket monitor to '" + _host + ':' + _port + '\'' );
+		final boolean debug = LOG.isDebugEnabled();
+		if ( debug )
+		{
+			LOG.debug( "Starting socket monitor to '" + _host + ':' + _port + '\'' );
+		}
 		while ( !Thread.interrupted() && !isStopped() )
 		{
 			try
 			{
-				if ( LOG.isTraceEnabled() )
+				final boolean trace = LOG.isTraceEnabled();
+				if ( trace )
 				{
 					LOG.trace( "Connect to '" + _host + ':' + _port + '\'' );
 				}
@@ -231,7 +236,7 @@ implements ResourceMonitor
 					_lastException = null;
 					_lastConnected = System.currentTimeMillis();
 
-					if ( LOG.isTraceEnabled() )
+					if ( trace )
 					{
 						LOG.trace( "Connected to '" + _host + ':' + _port + '\'' );
 					}
@@ -239,7 +244,7 @@ implements ResourceMonitor
 					final OutputStream out = socket.getOutputStream();
 					final InputStream in = socket.getInputStream();
 
-					if ( LOG.isTraceEnabled() )
+					if ( trace )
 					{
 						LOG.trace( "Handle connection to " + socket.getInetAddress() );
 					}
@@ -334,6 +339,12 @@ implements ResourceMonitor
 	throws IOException
 	{
 		final ConnectionHandler handler = getHandler();
+
+		if ( LOG.isDebugEnabled() )
+		{
+			LOG.debug( '[' + getName() + "] handleConnection( " + socket + " ) handler=" + handler );
+		}
+
 		if ( handler == null )
 		{
 			throw new IllegalStateException( "No handler installed" );

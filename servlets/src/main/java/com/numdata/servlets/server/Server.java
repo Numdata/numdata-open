@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,7 +138,7 @@ public class Server
 		{
 			LOG.info( "Received unsupported '" + request.getMessage() + "' request from " + informant.getUserName() + '@' + informant.getDomainName() );
 			result = new Packet( "err" );
-			result.setAttribute( "exception", new UnsupportedRequestException( request.getMessage() ) );
+			result.setAttribute( "exception", new UnsupportedOperationException( request.getMessage() ) );
 		}
 
 		return LOG.exiting( "handleRequest", result );

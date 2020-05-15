@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,29 +36,32 @@ import org.jetbrains.annotations.*;
 /**
  * This interface defines a handler for requests to a {@link ServerServlet}.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public interface RequestHandler
 {
 	/**
 	 * Return value to indicate that a request was not handled.
 	 */
-	Serializable NOT_HANDLED = new UnsupportedRequestException( null );
+	@SuppressWarnings( "serial" )
+	Serializable NOT_HANDLED = new Serializable()
+	{
+	};
 
 	/**
 	 * Handle request.
 	 *
-	 * @param   servletContext  Servlet context for server.
-	 * @param   servletRequest  Servlet request being handled.
-	 * @param   informant       Provides authentication information.
-	 * @param   request         Request to handle.
+	 * @param servletContext Servlet context for server.
+	 * @param servletRequest Servlet request being handled.
+	 * @param informant      Provides authentication information.
+	 * @param request        Request to handle.
 	 *
-	 * @return  Response object;
-	 *          {@link #NOT_HANDLED} if request was not handled.
+	 * @return Response object;
+	 * {@link #NOT_HANDLED} if request was not handled.
 	 *
-	 * @throws  Exception if there was a problem handling the request.
+	 * @throws Exception if there was a problem handling the request.
 	 */
 	@Nullable
 	Serializable handleRequest( @NotNull ServletContext servletContext, @NotNull HttpServletRequest servletRequest, @NotNull AuthenticationInformant informant, @NotNull Packet request )
-		throws Exception;
+	throws Exception;
 }

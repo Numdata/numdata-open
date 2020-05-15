@@ -14,6 +14,8 @@ import org.jetbrains.annotations.*;
  *
  * <p>Please check for details and code from Aleksandr Dubinsky at Stack Overflow article <a href="https://stackoverflow.com/questions/6040962/wait-for-cancel-on-futuretask">Wait for cancel() on FutureTask</a>.
  *
+ * @param <T> Result type returned by {@code get} methods.
+ *
  * @author Aleksandr Dubinsky, Aleksey Otrubennikov, FooJBar
  */
 public class WaitingFutureTask<T>
@@ -44,13 +46,15 @@ extends FutureTask<T>
 	 */
 	public WaitingFutureTask( @NotNull final Callable<T> callable )
 	{
-		this( new MyCallable( callable ) );
+		this( new MyCallable<>( callable ) );
 	}
 
 	/**
-	 * Some ugly code to work around the compiler's limitations on constructors
+	 * Some ugly code to work around the compiler's limitations on constructors.
+	 *
+	 * @param myCallable Wrapped callable.
 	 */
-	private WaitingFutureTask( final MyCallable<T> myCallable )
+	private WaitingFutureTask( @NotNull final MyCallable<T> myCallable )
 	{
 		super( myCallable );
 		myCallable.task = this;
@@ -149,13 +153,13 @@ extends FutureTask<T>
 
 	/**
 	 * Attempts to cancel execution of this task and waits for the task to complete if it has been started.
-	 * If the task has not started when {@code cancelWithJoin} is called, this task should never run.
+	 * If the task has not started when {@code cancelAndWait} is called, this task should never run.
 	 * If the task has already started, then the {@code mayInterruptIfRunning} parameter determines
 	 * whether the thread executing this task should be interrupted in an attempt to stop the task.
 	 *
 	 * <p>After this method returns, subsequent calls to {@link #isDone} will
 	 * always return {@code true}.  Subsequent calls to {@link #isCancelled}
-	 * will always return {@code true} if this method returned {@code true}.
+	 * will always return {@code true}.
 	 *
 	 * @param mayInterruptIfRunning {@code true} if the thread executing this task should be interrupted;
 	 *                              otherwise, in-progress tasks are allowed to complete
@@ -168,5 +172,40 @@ extends FutureTask<T>
 		cancel( mayInterruptIfRunning );
 		semaphore.acquire();
 		semaphore.release();
+	}
+
+	/**
+	 * Attempts to cancel execution of this task and waits for the task to complete if it has been started.
+	 * If the task has not started when {@code cancelAndWait} is called, this task should never run.
+	 * If the task has already started, then the {@code mayInterruptIfRunning} parameter determines
+	 * whether the thread executing this task should be interrupted in an attempt to stop the task.
+	 *
+	 * If the task is completed, this return returns {@code true}. If the task
+	 * is not completed within the given time limit, this method will return
+	 * {@code false}.
+	 *
+	 * <p>After this method returns, subsequent calls to {@link #isDone} will
+	 * always return {@code true}. Subsequent calls to {@link #isCancelled}
+	 * will always return {@code true}.
+	 *
+	 * @param mayInterruptIfRunning {@code true} if the thread executing this task should be interrupted;
+	 *                              otherwise, in-progress tasks are allowed to complete
+	 * @param timeout               Maximum time to wait for the task to complete.
+	 * @param timeUnit              Unit of the {@code timeout} argument
+	 *
+	 * @return {@code true} if execution was cancelled; {@code false} if timeout occurred.
+	 *
+	 * @throws InterruptedException if the thread is interrupted
+	 */
+	public boolean cancelAndWait( final boolean mayInterruptIfRunning, final int timeout, @NotNull final TimeUnit timeUnit )
+	throws InterruptedException
+	{
+		cancel( mayInterruptIfRunning );
+		final boolean result = semaphore.tryAcquire( timeout, timeUnit );
+		if ( result )
+		{
+			semaphore.release();
+		}
+		return result;
 	}
 }
