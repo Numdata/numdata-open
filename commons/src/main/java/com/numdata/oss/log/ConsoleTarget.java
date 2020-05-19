@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package com.numdata.oss.log;
 
 import java.io.*;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This class implements {@link LogTarget} to log messages to a {@link
  * PrintStream}, which is the the standard error output stream by default.
@@ -53,6 +55,7 @@ extends AbstractStreamTarget
 	/**
 	 * Print stream to write log messages to.
 	 */
+	@NotNull
 	private final PrintStream _out;
 
 	/**
@@ -74,7 +77,7 @@ extends AbstractStreamTarget
 	 *
 	 * @return Default stream to use for console output.
 	 */
-	@SuppressWarnings ( "AccessOfSystemProperties" )
+	@SuppressWarnings( { "AccessOfSystemProperties", "UseOfSystemOutOrSystemErr" } )
 	protected static PrintStream getDefaultStream()
 	{
 		PrintStream result = System.err;
@@ -102,13 +105,32 @@ extends AbstractStreamTarget
 	 * @param defaultLogLevel Default log level.
 	 * @param out             Print stream to write log messages to.
 	 */
-	public ConsoleTarget( final int defaultLogLevel, final PrintStream out )
+	public ConsoleTarget( final int defaultLogLevel, @NotNull final PrintStream out )
 	{
 		super( defaultLogLevel, LEVEL_SYSTEM_PROPERTY );
 
 		_out = out;
 	}
 
+	/**
+	 * Construct logger with the given levels that sends its output to the
+	 * specified stream.
+	 *
+	 * NOTE: This constructor does not support the
+	 * '{@code console.logger.level}' system property.
+	 *
+	 * @param out             Print stream to write log messages to.
+	 * @param defaultLogLevel Default log level.
+	 * @param levels          Specifies log levels to be set (see {@link #setLevels(String)}).
+	 */
+	public ConsoleTarget( @NotNull final PrintStream out, final int defaultLogLevel, @NotNull final String levels )
+	{
+		super( defaultLogLevel, null );
+		_out = out;
+		setLevels( levels );
+	}
+
+	@NotNull
 	@Override
 	public PrintStream getLogStream()
 	{
