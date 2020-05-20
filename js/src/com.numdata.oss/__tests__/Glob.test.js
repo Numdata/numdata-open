@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2017 Numdata BV.  All rights reserved.
+ * Copyright (c) 2017-2020 Numdata BV.  All rights reserved.
  *
  * Numdata Open Source Software License, Version 1.0
  *
@@ -44,7 +44,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import { assert } from 'chai';
-import Glob from '../../lib/com.numdata.oss/Glob';
+import Glob from '../Glob';
 
 describe( 'Glob', function()
 {

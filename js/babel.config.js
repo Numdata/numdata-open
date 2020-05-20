@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,29 +24,5 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import { assert } from 'chai';
-import AugmentedArrayList from '../../lib/com.numdata.oss/AugmentedArrayList';
 
-describe( 'AugmentedArrayList', function()
-{
-	it( 'constructor', function()
-	{
-		const list = new AugmentedArrayList();
-		assert.equal( list.size(), 0, 'should be empty' );
-	} );
-
-	it( 'clone constructor (list)', function()
-	{
-		const original = new AugmentedArrayList();
-		original.add( "one" );
-		original.add( "two" );
-		original.add( "three" );
-
-		const clone = new AugmentedArrayList( original );
-		assert.equal( clone.size(), 3, 'should have same size' );
-		for ( let i = 0; i < 3; i++ )
-		{
-			assert.equal( clone.get( i ), original.get( i ), 'should have same elements (' + i + ')' );
-		}
-	} );
-} );
+module.exports = require( '@numdata/common-config/babel.config' );

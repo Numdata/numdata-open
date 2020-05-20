@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,11 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import { expect } from 'chai';
 import { BigDecimal } from 'bigdecimal';
 import bigRat from 'big-rational';
-import LengthMeasurePreferences from '../../lib/com.numdata.oss/LengthMeasurePreferences';
-import Locale from '../../lib/com.numdata.oss/Locale';
+import LengthMeasurePreferences from '../LengthMeasurePreferences';
+import Locale from '../Locale';
 
 const parseBigRational = bigRat;
 
@@ -112,7 +111,7 @@ describe( 'LengthMeasureFormat', () =>
 			var measureFormat = preferences.getNumberFormat( locale );
 			measureFormat.setUsingBigValues( true );
 			var parsed1 = measureFormat.parse( text );
-			expect( measureFormat.format( parsed1 ) ).to.equal( text );
+			expect( measureFormat.format( parsed1 ) ).toBe( text );
 		} );
 
 		it( "should reproduce the original text for a native number (" + text + ")", () =>
@@ -120,7 +119,7 @@ describe( 'LengthMeasureFormat', () =>
 			var measureFormat = preferences.getNumberFormat( locale );
 			measureFormat.setUsingBigValues( false );
 			var parsed2 = measureFormat.parse( text );
-			expect( measureFormat.format( parsed2 ) ).to.equal( text );
+			expect( measureFormat.format( parsed2 ) ).toBe( text );
 		} );
 	} );
 } );
@@ -192,7 +191,10 @@ describe( "LengthMeasureFormat.format", () =>
 		var text = test._text;
 
 		var measureFormat = preferences.getNumberFormat( locale );
-		it( 'should properly format ' + number, () => expect( measureFormat.format( number ) ).to.equal( text ) );
+		it( 'should properly format ' + number, () =>
+		{
+			expect( measureFormat.format( number ) ).toBe( text );
+		} );
 	} );
 } );
 
@@ -226,9 +228,15 @@ describe( 'unit conversion', () =>
 		var measureFormat = preferences.getNumberFormat( locale );
 		var formatted = measureFormat.format( number );
 
-		it( 'should properly format number ' + number, () => expect( formatted ).to.equal( text ) );
+		it( 'should properly format number ' + number, () =>
+		{
+			expect( formatted ).toBe( text );
+		} );
 
 		var parsed = measureFormat.parse( formatted );
-		it( 'should properly format number ' + number, () => expect( number ).to.equal( parsed ) );
+		it( 'should properly format number ' + number, () =>
+		{
+			expect( number ).toBe( parsed );
+		} );
 	} );
 } );

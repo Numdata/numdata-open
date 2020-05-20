@@ -19,8 +19,11 @@
     "scrollparent": "^2.0.1"
   },
   "devDependencies": {
-    "@numdata/common-build-gulp": "^1.0.0",
-    "chai": "^4.2.0"
+    "@numdata/common-build-gulp": "^2.0.0",
+    "@numdata/common-config": "^1.0.0",
+    "chai": "^4.2.0",
+    "gulp": "^4.0.2",
+    "jest": "^26.0.1"
   },
   "sideEffects": false
 }

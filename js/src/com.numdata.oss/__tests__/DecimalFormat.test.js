@@ -26,7 +26,7 @@
  */
 
 import { assert } from 'chai';
-import DecimalFormat from '../../lib/com.numdata.oss/DecimalFormat';
+import DecimalFormat from '../DecimalFormat';
 
 describe( 'DecimalFormat', function()
 {

@@ -25,9 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
-const build = require( '@numdata/common-build-gulp' ).build;
-build( {
+module.exports = require( '@numdata/common-build-gulp' ).build( {
 	source: 'src/**/*.js',
 	target: 'lib',
 	test: 'test/**/Test*.js',
