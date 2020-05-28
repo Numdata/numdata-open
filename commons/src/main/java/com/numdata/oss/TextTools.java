@@ -2937,6 +2937,99 @@ public final class TextTools
 	}
 
 	/**
+	 * Escaped the given string, optionally add quotes, truncate at the
+	 * given maximum length, add an ellipsis (…) if the output is truncated.
+	 *
+	 * @param string    String to be truncated.
+	 * @param quote     Add quotes around the string.
+	 * @param maxLength Maximum length of the result (excluding quotes).
+	 *
+	 * @return Truncated/escaped string ("null" is the input was {@code null}).
+	 */
+	@NotNull
+	public static String truncateEscaped( @Nullable final String string, final boolean quote, final int maxLength )
+	{
+		final String result;
+
+		if ( string == null )
+		{
+			result = "null";
+		}
+		else
+		{
+			final int inputLength = string.length();
+			if ( inputLength == 0 )
+			{
+				result = quote ? "''" : "";
+			}
+			else if ( maxLength == 0 )
+			{
+				result = "…";
+			}
+			else
+			{
+				final StringBuilder sb = new StringBuilder( inputLength + 10 );
+				if ( quote )
+				{
+					sb.append( '\'' );
+				}
+
+				final int truncateAt = maxLength + sb.length();
+				boolean truncated = false;
+
+				for ( int index = 0; index < inputLength; index++ )
+				{
+					final int lengthBeforeEscape = sb.length();
+					if ( lengthBeforeEscape == truncateAt )
+					{
+						// truncate, because maximum length reached
+						truncated = true;
+						break;
+					}
+					escape( sb, string.charAt( index ) );
+					if ( sb.length() > truncateAt )
+					{
+						// character escape caused overflow, so truncate at previous character
+						sb.setLength( lengthBeforeEscape );
+						truncated = true;
+						break;
+					}
+				}
+
+				if ( quote )
+				{
+					if ( truncated && ( sb.length() == 1 ) )
+					{
+						sb.setLength( 0 );
+					}
+					else
+					{
+						sb.append( '\'' );
+					}
+				}
+
+				if ( truncated )
+				{
+					sb.append( '…' );
+				}
+
+				if ( !quote && !truncated && ( inputLength == sb.length() ) )
+				{
+					// input string was not changed
+					result = string;
+				}
+				else
+				{
+					result = sb.toString();
+				}
+			}
+		}
+
+		return result;
+
+	}
+
+	/**
 	 * Truncates the given string to the specified length. If the string is
 	 * already shorter than {@code length} the string is returned as-is.
 	 *
