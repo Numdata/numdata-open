@@ -41,11 +41,6 @@ import org.jetbrains.annotations.*;
 public class HTMLTools
 {
 	/**
-	 * Floating point number format used for CSS values.
-	 */
-	public static final NumberFormat CSS_FLOAT_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 3, false );
-
-	/**
 	 * State used for whitespace by {@link #plainTextToHTML} method.
 	 *
 	 * @see #plainTextToHTML
@@ -1263,7 +1258,8 @@ public class HTMLTools
 	 */
 	public static String rgbToCssColor( final int red, final int green, final int blue, final int alpha )
 	{
-		return "rgba(" + red + ',' + green + ',' + blue + ',' + CSS_FLOAT_FORMAT.format( alpha / 255.0 ) + ')';
+		final NumberFormat cssFloatFormat = TextTools.getNumberFormat( Locale.US, 1, 3, false );
+		return "rgba(" + red + ',' + green + ',' + blue + ',' + cssFloatFormat.format( alpha / 255.0 ) + ')';
 	}
 
 	/**

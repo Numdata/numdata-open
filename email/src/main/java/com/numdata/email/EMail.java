@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,8 @@
  */
 package com.numdata.email;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TimeZone;
+import java.text.*;
+import java.util.*;
 
 /**
  * This class represents an E-mail message.
@@ -44,16 +40,16 @@ public final class EMail
 	/**
 	 * Date format used for the 'Message-ID' header.
 	 */
-	private static final SimpleDateFormat MSGID_DATE_FORMAT =
-		new SimpleDateFormat( "yy_MM_dd_mm_ss_SSS" );
+	private final SimpleDateFormat _msgidDateFormat =
+	new SimpleDateFormat( "yy_MM_dd_mm_ss_SSS" );
 
 	/**
-	 * SMPT compatible data format.
+	 * SMTP compatible data format.
 	 *
-	 * @see	#getSmtpDate
+	 * @see    #getSmtpDate
 	 */
-	private static final SimpleDateFormat SMTP_DATE_FORMAT =
-		new SimpleDateFormat( "dd  yy hh:mm " );
+	private final SimpleDateFormat _smtpDateFormat =
+	new SimpleDateFormat( "dd  yy hh:mm " );
 
 	/**
 	 * Names of months. Use in combination with SMTP_DATA_FORMAT.
@@ -223,25 +219,25 @@ public final class EMail
 	public final String getMsgId()
 	{
 		final Calendar calendar = Calendar.getInstance();
-		return "SODA_" + MSGID_DATE_FORMAT.format( calendar.getTime() ) + "@" + smtpMyAddress;
+		return "SODA_" + _msgidDateFormat.format( calendar.getTime() ) + "@" + smtpMyAddress;
 	}
 
 	/**
 	 * Get current date/time in SMTP format.
 	 *
-	 * @return  Current data/time in SMTP format.
+	 * @return Current data/time in SMTP format.
 	 */
-	public static String getSmtpDate()
+	private String getSmtpDate()
 	{
 		final Calendar calendar = Calendar.getInstance();
-		final String   smtpDate = SMTP_DATE_FORMAT.format( calendar.getTime() );
+		final String smtpDate = _smtpDateFormat.format( calendar.getTime() );
 		final TimeZone timeZone = TimeZone.getDefault();
 
 		return
-			smtpDate.substring( 0 , 3 ) +
-			MONTH_NAMES[ calendar.get( Calendar.MONTH ) ] +
-			smtpDate.substring( 3 ) +
-			timeZone.getDisplayName( false , TimeZone.SHORT );
+		smtpDate.substring( 0, 3 ) +
+		MONTH_NAMES[ calendar.get( Calendar.MONTH ) ] +
+		smtpDate.substring( 3 ) +
+		timeZone.getDisplayName( false, TimeZone.SHORT );
 	}
 
 	/**

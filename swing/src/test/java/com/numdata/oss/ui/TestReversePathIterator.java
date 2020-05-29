@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ import java.text.*;
 import java.util.*;
 
 import com.numdata.oss.*;
+import static java.awt.geom.PathIterator.*;
 import static org.junit.Assert.*;
 import org.junit.*;
 
@@ -46,74 +47,58 @@ public class TestReversePathIterator
 	 */
 	private static final String CLASS_NAME = TestReversePathIterator.class.getName();
 
-	/** {@link PathIterator#SEG_MOVETO} constant. */
-	public static final double MOVE = (double)PathIterator.SEG_MOVETO;
-
-	/** {@link PathIterator#SEG_LINETO} constant. */
-	public static final double LINE = (double)PathIterator.SEG_LINETO;
-
-	/** {@link PathIterator#SEG_QUADTO} constant. */
-	public static final double QUAD = (double)PathIterator.SEG_QUADTO;
-
-	/** {@link PathIterator#SEG_CUBICTO} constant. */
-	public static final double CUBIC = (double)PathIterator.SEG_CUBICTO;
-
-	/** {@link PathIterator#SEG_CLOSE} constant. */
-	public static final double CLOSE = (double)PathIterator.SEG_CLOSE;
-
-	/** Pseudo segment-type used for end of path. */
-	public static final int END_OF_PATH = -1;
+	/**
+	 * Pseudo segment-type used for end of path.
+	 */
+	private static final int END_OF_PATH = -1;
 
 	/**
 	 * Format used for numbers.
 	 */
-	private static final NumberFormat NUMBER_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 1, false );
+	private final NumberFormat _numberFormat = TextTools.getNumberFormat( Locale.US, 1, 1, false );
 
 	/**
 	 * Test reversal of several open line paths.
-	 *
-	 * @throws Exception if the test fails.
 	 */
 	@Test
 	public void testOpenLinePaths()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testOpenLinePaths" );
 
 		final Path2D[][] tests =
 		{
-			/* sinle line */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0 ),
-			  constructPath( MOVE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0 ) },
+		/* sinle line */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0 ),
+		  constructPath( SEG_MOVETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0 ) },
 
-			/* polygon without close segment */
-			{ constructPath( MOVE, -350.0, -10.0,
-			                 LINE, 768.0, -10.0,
-			                 LINE, 768.0, 400.0,
-			                 LINE, -350.0, 400.0,
-			                 LINE, -350.0, -10.0 ),
-			  constructPath( MOVE, -350.0, -10.0,
-			                 LINE, -350.0, 400.0,
-			                 LINE, 768.0, 400.0,
-			                 LINE, 768.0, -10.0,
-			                 LINE, -350.0, -10.0 ) },
+		/* polygon without close segment */
+		{ constructPath( SEG_MOVETO, -350.0, -10.0,
+		                 SEG_LINETO, 768.0, -10.0,
+		                 SEG_LINETO, 768.0, 400.0,
+		                 SEG_LINETO, -350.0, 400.0,
+		                 SEG_LINETO, -350.0, -10.0 ),
+		  constructPath( SEG_MOVETO, -350.0, -10.0,
+		                 SEG_LINETO, -350.0, 400.0,
+		                 SEG_LINETO, 768.0, 400.0,
+		                 SEG_LINETO, 768.0, -10.0,
+		                 SEG_LINETO, -350.0, -10.0 ) },
 
 
-			/* two closed sub-paths */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 MOVE, 0.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 700.0, 400.0 ),
-			  constructPath( MOVE, 700.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 0.0, 400.0,
-			                 MOVE, 700.0, 400.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0 ) },
+		/* two closed sub-paths */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_MOVETO, 0.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0 ),
+		  constructPath( SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 0.0, 400.0,
+		                 SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0 ) },
 			};
 
 		for ( int testIndex = 0; testIndex < tests.length; testIndex++ )
@@ -123,50 +108,47 @@ public class TestReversePathIterator
 			final Path2D originalPath = test[ 0 ];
 			final Path2D expectedResult = test[ 1 ];
 
-			asserEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
+			assertEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
 		}
 	}
 
 	/**
 	 * Test reversal of several closed line paths.
-	 *
-	 * @throws Exception if the test fails.
 	 */
 	@Test
 	public void testClosedLinePaths()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testClosedLinePaths" );
 
 		final Path2D[][] tests =
 		{
-			/* closed triangle */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 CLOSE ),
-			  constructPath( MOVE, 700.0, 400.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0,
-			                 CLOSE ) },
+		/* closed triangle */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_CLOSE ),
+		  constructPath( SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_CLOSE ) },
 
-			/* two closed sub-paths */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 CLOSE,
-			                 MOVE, 0.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 CLOSE ),
-			  constructPath( MOVE, 700.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 0.0, 400.0,
-			                 CLOSE,
-			                 MOVE, 700.0, 400.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0,
-			                 CLOSE ) },
+		/* two closed sub-paths */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_CLOSE,
+		                 SEG_MOVETO, 0.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_CLOSE ),
+		  constructPath( SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 0.0, 400.0,
+		                 SEG_CLOSE,
+		                 SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_CLOSE ) },
 			};
 
 		for ( int testIndex = 0; testIndex < tests.length; testIndex++ )
@@ -176,55 +158,52 @@ public class TestReversePathIterator
 			final Path2D originalPath = test[ 0 ];
 			final Path2D expectedResult = test[ 1 ];
 
-			asserEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
+			assertEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
 		}
 	}
 
 	/**
 	 * Test reversal of several complex paths.
-	 *
-	 * @throws Exception if the test fails.
 	 */
 	@Test
 	public void testComplexPaths()
-	throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testComplexPaths" );
 
 		final Path2D[][] tests =
 		{
-			/* open sub-path followed by closed sub-path */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 MOVE, 0.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 CLOSE ),
-			  constructPath( MOVE, 700.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 0.0, 400.0,
-			                 CLOSE,
-			                 MOVE, 700.0, 400.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0 ) },
+		/* open sub-path followed by closed sub-path */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_MOVETO, 0.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_CLOSE ),
+		  constructPath( SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 0.0, 400.0,
+		                 SEG_CLOSE,
+		                 SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0 ) },
 
-			/* closed sub-path followed by  open sub-path */
-			{ constructPath( MOVE, 0.0, 0.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 700.0, 400.0,
-			                 CLOSE,
-			                 MOVE, 0.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 700.0, 400.0 ),
+		/* closed sub-path followed by  open sub-path */
+		{ constructPath( SEG_MOVETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0,
+		                 SEG_CLOSE,
+		                 SEG_MOVETO, 0.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 700.0, 400.0 ),
 
-			  constructPath( MOVE, 700.0, 400.0,
-			                 LINE, 0.0, 0.0,
-			                 LINE, 0.0, 400.0,
-			                 MOVE, 700.0, 400.0,
-			                 LINE, 700.0, 0.0,
-			                 LINE, 0.0, 0.0,
-			                 CLOSE ) },
+		  constructPath( SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_LINETO, 0.0, 400.0,
+		                 SEG_MOVETO, 700.0, 400.0,
+		                 SEG_LINETO, 700.0, 0.0,
+		                 SEG_LINETO, 0.0, 0.0,
+		                 SEG_CLOSE ) },
 			};
 
 		for ( int testIndex = 0; testIndex < tests.length; testIndex++ )
@@ -234,7 +213,7 @@ public class TestReversePathIterator
 			final Path2D originalPath = test[ 0 ];
 			final Path2D expectedResult = test[ 1 ];
 
-			asserEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
+			assertEquals( testName, expectedResult.getPathIterator( null ), new ReversePathIterator( originalPath ) );
 		}
 	}
 
@@ -246,7 +225,7 @@ public class TestReversePathIterator
 	 *
 	 * @return {@link Path2D} that was constructed.
 	 */
-	public static Path2D constructPath( final double... data )
+	private static Path2D constructPath( final double... data )
 	{
 		final Path2D.Double result = new Path2D.Double();
 
@@ -256,23 +235,23 @@ public class TestReversePathIterator
 			final int segmentType = (int)data[ pos++ ];
 			switch ( segmentType )
 			{
-				case PathIterator.SEG_MOVETO:
+				case SEG_MOVETO:
 					result.moveTo( data[ pos++ ], data[ pos++ ] );
 					break;
 
-				case PathIterator.SEG_LINETO:
+				case SEG_LINETO:
 					result.lineTo( data[ pos++ ], data[ pos++ ] );
 					break;
 
-				case PathIterator.SEG_QUADTO:
+				case SEG_QUADTO:
 					result.quadTo( data[ pos++ ], data[ pos++ ], data[ pos++ ], data[ pos++ ] );
 					break;
 
-				case PathIterator.SEG_CUBICTO:
+				case SEG_CUBICTO:
 					result.curveTo( data[ pos++ ], data[ pos++ ], data[ pos++ ], data[ pos++ ], data[ pos++ ], data[ pos++ ] );
 					break;
 
-				case PathIterator.SEG_CLOSE:
+				case SEG_CLOSE:
 					result.closePath();
 					break;
 
@@ -291,9 +270,9 @@ public class TestReversePathIterator
 	 * @param expected Expected iteration.
 	 * @param actual   Atual iteration.
 	 */
-	public static void asserEquals( final String message, final PathIterator expected, final PathIterator actual )
+	private void assertEquals( final String message, final PathIterator expected, final PathIterator actual )
 	{
-		final StringBuilder seenSofar = new StringBuilder();
+		final StringBuilder seenSoFar = new StringBuilder();
 
 		final double[] expectedCoords = new double[ 6 ];
 		final double[] actualCoords = new double[ 6 ];
@@ -310,11 +289,11 @@ public class TestReversePathIterator
 
 			if ( !equals( expectedType, expectedCoords, actualType, actualCoords ) )
 			{
-				fail( message + " expected " + getSegmentDescription( expectedType, expectedCoords ) + ", but got " + getSegmentDescription( actualType, actualCoords ) + ( ( seenSofar.length() > 0 ) ? " after " + seenSofar : " at first segment" ) );
+				fail( message + " expected " + getSegmentDescription( expectedType, expectedCoords ) + ", but got " + getSegmentDescription( actualType, actualCoords ) + ( ( seenSoFar.length() > 0 ) ? " after " + seenSoFar : " at first segment" ) );
 			}
 
-			seenSofar.append( "\n    " );
-			seenSofar.append( getSegmentDescription( expectedType, expectedCoords ) );
+			seenSoFar.append( "\n    " );
+			seenSoFar.append( getSegmentDescription( expectedType, expectedCoords ) );
 
 			expected.next();
 			actual.next();
@@ -340,24 +319,24 @@ public class TestReversePathIterator
 		{
 			switch ( segmentType1 )
 			{
-				case PathIterator.SEG_MOVETO:
-				case PathIterator.SEG_LINETO:
+				case SEG_MOVETO:
+				case SEG_LINETO:
 					result = ( coords1[ 0 ] == coords2[ 0 ] ) && ( coords1[ 1 ] == coords2[ 1 ] );
 					break;
 
-				case PathIterator.SEG_QUADTO:
+				case SEG_QUADTO:
 					result = ( coords1[ 0 ] == coords2[ 0 ] ) && ( coords1[ 1 ] == coords2[ 1 ] ) &&
 					         ( coords1[ 2 ] == coords2[ 2 ] ) && ( coords1[ 3 ] == coords2[ 3 ] );
 					break;
 
-				case PathIterator.SEG_CUBICTO:
+				case SEG_CUBICTO:
 					result = ( coords1[ 0 ] == coords2[ 0 ] ) && ( coords1[ 1 ] == coords2[ 1 ] ) &&
 					         ( coords1[ 2 ] == coords2[ 2 ] ) && ( coords1[ 3 ] == coords2[ 3 ] ) &&
 					         ( coords1[ 4 ] == coords2[ 4 ] ) && ( coords1[ 5 ] == coords2[ 5 ] );
 					break;
 
 				case END_OF_PATH:
-				case PathIterator.SEG_CLOSE:
+				case SEG_CLOSE:
 					result = true;
 					break;
 
@@ -381,11 +360,11 @@ public class TestReversePathIterator
 	 *
 	 * @return Description of segment.
 	 */
-	public static String getSegmentDescription( final int segmentType, final double[] coords )
+	private String getSegmentDescription( final int segmentType, final double[] coords )
 	{
 		final String result;
 
-		final NumberFormat nf = NUMBER_FORMAT;
+		final NumberFormat nf = _numberFormat;
 
 		switch ( segmentType )
 		{
@@ -393,26 +372,26 @@ public class TestReversePathIterator
 				result = "END_OF_PATH";
 				break;
 
-			case PathIterator.SEG_MOVETO:
+			case SEG_MOVETO:
 				result = "SEG_MOVETO( " + nf.format( coords[ 0 ] ) + " , " + nf.format( coords[ 1 ] ) + " )";
 				break;
 
-			case PathIterator.SEG_LINETO:
+			case SEG_LINETO:
 				result = "SEG_LINETO( " + nf.format( coords[ 0 ] ) + " , " + nf.format( coords[ 1 ] ) + " )";
 				break;
 
-			case PathIterator.SEG_QUADTO:
+			case SEG_QUADTO:
 				result = "SEG_QUADTO( " + nf.format( coords[ 0 ] ) + " , " + nf.format( coords[ 1 ] ) + "  ,  " +
 				         nf.format( coords[ 2 ] ) + " , " + nf.format( coords[ 3 ] ) + " )";
 				break;
 
-			case PathIterator.SEG_CUBICTO:
+			case SEG_CUBICTO:
 				result = "SEG_CUBICTO( " + nf.format( coords[ 0 ] ) + " , " + nf.format( coords[ 1 ] ) + "  ,  " +
 				         nf.format( coords[ 2 ] ) + " , " + nf.format( coords[ 3 ] ) + "  ,  " +
 				         nf.format( coords[ 4 ] ) + " , " + nf.format( coords[ 5 ] ) + " )";
 				break;
 
-			case PathIterator.SEG_CLOSE:
+			case SEG_CLOSE:
 				result = "SEG_CLOSE";
 				break;
 

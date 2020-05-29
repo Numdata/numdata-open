@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ extends AbstractStreamTarget
 	/**
 	 * Format use to generate timestamp in path.
 	 */
-	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat( "yyyyMMdd'T'HHmmss", Locale.US );
+	private final SimpleDateFormat _logFileTimestampFormat = new SimpleDateFormat( "yyyyMMdd'T'HHmmss", Locale.US );
 
 	/**
 	 * Path for log files.
@@ -278,7 +278,7 @@ extends AbstractStreamTarget
 	private File getLogFile()
 	{
 		String path = _path;
-		final String timestamp = TIMESTAMP_FORMAT.format( new Date() );
+		final String timestamp = _logFileTimestampFormat.format( new Date() );
 
 		final int dot = path.lastIndexOf( (int)'.' );
 		if ( dot > Math.max( path.lastIndexOf( (int)'/' ), path.lastIndexOf( (int)'\\' ) ) )

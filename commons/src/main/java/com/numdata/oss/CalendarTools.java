@@ -48,49 +48,49 @@ public class CalendarTools
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date
 	 * format.
 	 */
-	public static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd", Locale.US );
+	private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date
 	 * format.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATE_FORMAT = createDateFormat( "yyyy-MM-dd", Locale.US, UTC );
+	private static final SimpleDateFormat ISO8601_UTC_DATE_FORMAT = createDateFormat( "yyyy-MM-dd", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to minutes.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mmZ", Locale.US );
+	private static final SimpleDateFormat ISO8601_DATETIME_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mmZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to minutes.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm'Z'", Locale.US, UTC );
+	private static final SimpleDateFormat ISO8601_UTC_DATETIME_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm'Z'", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to seconds.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_SECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ", Locale.US );
+	private static final SimpleDateFormat ISO8601_DATETIME_SECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to seconds.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_SECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US, UTC );
+	private static final SimpleDateFormat ISO8601_UTC_DATETIME_SECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US, UTC );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to milliseconds.
 	 */
-	public static final SimpleDateFormat ISO8601_DATETIME_MILLISECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US );
+	private static final SimpleDateFormat ISO8601_DATETIME_MILLISECONDS_FORMAT = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US );
 
 	/**
 	 * <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date/time
 	 * format with precision set to milliseconds.
 	 */
-	public static final SimpleDateFormat ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US, UTC );
+	private static final SimpleDateFormat ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT = createDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US, UTC );
 
 	/**
 	 * Utility method to create {@link SimpleDateFormat} for a specific time zone.
@@ -107,6 +107,96 @@ public class CalendarTools
 		final SimpleDateFormat result = new SimpleDateFormat( pattern, locale );
 		result.setTimeZone( timeZone );
 		return result;
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601DateFormat()
+	{
+		return (SimpleDateFormat)ISO8601_DATE_FORMAT.clone();
+	}
+
+	/**
+	 * Formats the given date using {@link #getISO8601DateFormat()}.
+	 *
+	 * @param date Date to format.
+	 *
+	 * @return Formatted date.
+	 */
+	@NotNull
+	public static String formatISO8601Date( @NotNull final Date date )
+	{
+		return getISO8601DateFormat().format( date );
+	}
+
+	/**
+	 * Parses the given string using {@link #getISO8601DateFormat()}.
+	 *
+	 * @param string String to parse.
+	 *
+	 * @return Parsed date.
+	 *
+	 * @throws ParseException if the date can't be parsed.
+	 */
+	@NotNull
+	public static Date parseISO8601Date( @NotNull final String string )
+	throws ParseException
+	{
+		return getISO8601DateFormat().parse( string );
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601UTCDateFormat()
+	{
+		return (SimpleDateFormat)ISO8601_UTC_DATE_FORMAT.clone();
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601DateTimeFormat()
+	{
+		return (SimpleDateFormat)ISO8601_DATETIME_FORMAT.clone();
+	}
+
+	/**
+	 * Formats the given date using {@link #getISO8601DateTimeFormat()}.
+	 *
+	 * @param date Date to format.
+	 *
+	 * @return Formatted date.
+	 */
+	@NotNull
+	public static String formatISO8601DateTime( @NotNull final Date date )
+	{
+		return getISO8601DateTimeFormat().format( date );
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601UTCDateTimeFormat()
+	{
+		return (SimpleDateFormat)ISO8601_UTC_DATETIME_FORMAT.clone();
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601DateTimeSecondsFormat()
+	{
+		return (SimpleDateFormat)ISO8601_DATETIME_SECONDS_FORMAT.clone();
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601UTCDateTimeSecondsFormat()
+	{
+		return (SimpleDateFormat)ISO8601_UTC_DATETIME_SECONDS_FORMAT.clone();
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601DateTimeMillisecondsFormat()
+	{
+		return (SimpleDateFormat)ISO8601_DATETIME_MILLISECONDS_FORMAT.clone();
+	}
+
+	@NotNull
+	public static SimpleDateFormat getISO8601UTCDateTimeMillisecondsFormat()
+	{
+		return (SimpleDateFormat)ISO8601_UTC_DATETIME_MILLISECONDS_FORMAT.clone();
 	}
 
 	/**
@@ -177,6 +267,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the given date, with time fields set to zero.
 	 */
+	@NotNull
 	public static Calendar getDateInstance( @NotNull final Date date )
 	{
 		final Calendar calendar = getInstance( date );
@@ -349,6 +440,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the given date, with time fields set to zero.
 	 */
+	@NotNull
 	public static Calendar getTimeInstance( @NotNull final Date date )
 	{
 		final Calendar calendar = getInstance( date );
@@ -367,6 +459,7 @@ public class CalendarTools
 	 *
 	 * @return Calendar for the current date, with time fields set to zero.
 	 */
+	@NotNull
 	public static Calendar getTimeInstance( final int hour, final int minute, final int second, final int millisecond )
 	{
 		final Calendar calendar = Calendar.getInstance();
@@ -426,7 +519,7 @@ public class CalendarTools
 	 *
 	 * @param calendar Calendar to adjust.
 	 */
-	public static void resetTimeFields( final Calendar calendar )
+	public static void resetTimeFields( @NotNull final Calendar calendar )
 	{
 		calendar.set( Calendar.HOUR_OF_DAY, 0 );
 		calendar.set( Calendar.MINUTE, 0 );
@@ -445,6 +538,7 @@ public class CalendarTools
 	 * algorithm only works on the Gregorian calendar).
 	 * @see #getEasterSundayCalendar(int)
 	 */
+	@NotNull
 	public static Date getEasterSunday( final int year )
 	{
 		final Calendar calendar = getEasterSundayCalendar( year );
@@ -474,6 +568,7 @@ public class CalendarTools
 	 * @throws IllegalArgumentException if the year is before 1583 (since the
 	 * algorithm only works on the Gregorian calendar).
 	 */
+	@NotNull
 	public static GregorianCalendar getEasterSundayCalendar( final int year )
 	{
 		if ( year < 1583 )
@@ -511,6 +606,7 @@ public class CalendarTools
 		final int month = Calendar.MARCH + sunday / 31;
 		final int day = sunday % 31;
 
+		//noinspection MagicConstant
 		return new GregorianCalendar( year, month, day );
 	}
 
@@ -522,6 +618,7 @@ public class CalendarTools
 	 *
 	 * @return Date of Ascension day.
 	 */
+	@NotNull
 	public static Date getAscensionDay( final int year )
 	{
 		final Calendar calendar = getEasterSundayCalendar( year );
@@ -541,6 +638,7 @@ public class CalendarTools
 	 * algorithm only works on the Gregorian calendar).
 	 * @see #getPentecostSundayCalendar(int)
 	 */
+	@NotNull
 	public static Date getPentecostSunday( final int year )
 	{
 		final Calendar calendar = getPentecostSundayCalendar( year );
@@ -559,6 +657,7 @@ public class CalendarTools
 	 * algorithm only works on the Gregorian calendar).
 	 * @see #getEasterSundayCalendar(int)
 	 */
+	@NotNull
 	public static GregorianCalendar getPentecostSundayCalendar( final int year )
 	{
 		final GregorianCalendar calendar = getEasterSundayCalendar( year );
@@ -575,6 +674,7 @@ public class CalendarTools
 	 *
 	 * @return Specified date.
 	 */
+	@NotNull
 	public static Date gregorianDate( final int year, final int month, final int day )
 	{
 		if ( month > Calendar.DECEMBER )
@@ -597,6 +697,7 @@ public class CalendarTools
 	 *
 	 * @return Specified date and time.
 	 */
+	@NotNull
 	public static Date gregorianDate( final int year, final int month, final int day, final int hour, final int minute, final int second )
 	{
 		if ( month > Calendar.DECEMBER )
