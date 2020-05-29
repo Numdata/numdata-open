@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ public class EMailPart
 	/**
 	 * Data format used for boundary dates.
 	 */
-	private static final SimpleDateFormat BOUNDARY_DATE_FORMAT = new SimpleDateFormat( "ss_SSS" );
+	private final SimpleDateFormat _boundaryDateFormat = new SimpleDateFormat( "ss_SSS" );
 
 	/**
 	 * Content type.
@@ -279,7 +279,7 @@ public class EMailPart
 			if ( parts.size() > 1 )
 			{
 				final Calendar calendar = Calendar.getInstance();
-				boundary = "--=SODA_" + BOUNDARY_DATE_FORMAT.format( calendar.getTime() );
+				boundary = "--=SODA_" + _boundaryDateFormat.format( calendar.getTime() );
 
 				for ( long startTime = System.currentTimeMillis();
 				      startTime == System.currentTimeMillis(); )

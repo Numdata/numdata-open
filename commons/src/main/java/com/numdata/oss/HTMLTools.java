@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,6 @@ import org.jetbrains.annotations.*;
  */
 public class HTMLTools
 {
-	/**
-	 * Floating point number format used for CSS values.
-	 */
-	public static final NumberFormat CSS_FLOAT_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 3, false );
-
 	/**
 	 * Utility class is not supposed to be instantiated.
 	 */
@@ -1236,6 +1231,7 @@ public class HTMLTools
 	 */
 	public static String rgbToCssColor( final int red, final int green, final int blue, final int alpha )
 	{
-		return "rgba(" + red + ',' + green + ',' + blue + ',' + CSS_FLOAT_FORMAT.format( alpha / 255.0 ) + ')';
+		final NumberFormat cssFloatFormat = TextTools.getNumberFormat( Locale.US, 1, 3, false );
+		return "rgba(" + red + ',' + green + ',' + blue + ',' + cssFloatFormat.format( alpha / 255.0 ) + ')';
 	}
 }

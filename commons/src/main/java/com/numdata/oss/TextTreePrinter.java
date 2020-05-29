@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2012-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -264,7 +264,7 @@ public abstract class TextTreePrinter<T>
 	 *
 	 * @param string String to print.
 	 */
-	protected void print( final String string )
+	protected void print( @Nullable final String string )
 	{
 		final Appendable out = _out;
 		if ( out instanceof PrintWriter )
