@@ -120,12 +120,13 @@ public class CalendarTools
 	 *
 	 * @param date Date to format.
 	 *
-	 * @return Formatted date.
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
 	 */
-	@NotNull
-	public static String formatISO8601Date( @NotNull final Date date )
+	@Contract( "!null -> !null; null -> null" )
+	@Nullable
+	public static String formatISO8601Date( @Nullable final Date date )
 	{
-		return getISO8601DateFormat().format( date );
+		return ( date == null ) ? null : getISO8601DateFormat().format( date );
 	}
 
 	/**
@@ -161,12 +162,13 @@ public class CalendarTools
 	 *
 	 * @param date Date to format.
 	 *
-	 * @return Formatted date.
+	 * @return Formatted date; {@code null} if {@code date} is {@code null}.
 	 */
-	@NotNull
-	public static String formatISO8601DateTime( @NotNull final Date date )
+	@Contract( "!null -> !null; null -> null" )
+	@Nullable
+	public static String formatISO8601DateTime( @Nullable final Date date )
 	{
-		return getISO8601DateTimeFormat().format( date );
+		return ( date == null ) ? null : getISO8601DateTimeFormat().format( date );
 	}
 
 	@NotNull
