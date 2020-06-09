@@ -20,7 +20,8 @@
   },
   "devDependencies": {
     "@numdata/common-build-gulp": "^1.0.0",
-    "chai": "^4.2.0"
+    "chai": "^4.2.0",
+    "webpack-dev-server": "^3.8.2"
   },
   "sideEffects": false
 }
