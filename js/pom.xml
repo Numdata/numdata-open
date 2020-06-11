@@ -58,7 +58,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>gulp</executable>
+							<executable>node_modules/.bin/gulp</executable>
 							<arguments>
 								<argument>build</argument>
 							</arguments>
@@ -73,7 +73,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>jest</executable>
+							<executable>node_modules/.bin/jest</executable>
 							<arguments>
 								<argument>src</argument>
 							</arguments>
