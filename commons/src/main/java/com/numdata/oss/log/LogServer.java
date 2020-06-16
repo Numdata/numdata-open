@@ -36,10 +36,10 @@ import org.jetbrains.annotations.*;
 /**
  * Log target that allows network clients to view logs of a running application.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class LogServer
-	implements LogTarget
+implements LogTarget
 {
 	/**
 	 * Log used for messages related to this class.
@@ -75,7 +75,15 @@ public class LogServer
 		 * Should be followed by log level written using
 		 * {@link DataOutputStream#writeInt(int)}.
 		 */
-		SWITCH_LOG_LEVEL
+		SWITCH_LOG_LEVEL,
+
+		/**
+		 * Switch {@link AbstractLeveledLogTarget#setLevels(String) log levels}.
+		 *
+		 * Should be followed by log levels string written using
+		 * {@link ObjectOutputStream#writeUTF(String)}.
+		 */
+		SWITCH_LOG_LEVELS
 	}
 
 	/**
@@ -96,9 +104,11 @@ public class LogServer
 	/**
 	 * Get default {@link LogServer} if the {@link #PORT_SYSTEM_PROPERTY} is set.
 	 *
-	 * @return  Default {@link LogServer} instance;
-	 *          {@code null} if no default instance is available.
+	 * @return Default {@link LogServer} instance;
+	 * {@code null} if no default instance is available.
 	 */
+	@SuppressWarnings( "AccessOfSystemProperties" )
+	@Nullable
 	static LogServer getDefaultInstance()
 	{
 		LogServer result = null;
@@ -111,11 +121,11 @@ public class LogServer
 				result = new LogServer( ( TextTools.isNonEmpty( port ) && !"default".equals( port ) ) ? Integer.parseInt( port ) : DEFAULT_PORT );
 			}
 		}
-		catch ( SecurityException e )
+		catch ( final SecurityException e )
 		{
 			/* ignore no access to system property */
 		}
-		catch ( Throwable t )
+		catch ( final Throwable t )
 		{
 			/* ignore all other problems, but do print them on the console */
 			t.printStackTrace();
@@ -127,8 +137,9 @@ public class LogServer
 	/**
 	 * Construct server.
 	 *
-	 * @param   port    TCP/IP port to listen to.
+	 * @param port TCP/IP port to listen to.
 	 */
+	@SuppressWarnings( { "CallToThreadStartDuringObjectConstruction", "SocketOpenedButNotSafelyClosed", "IOResourceOpenedButNotSafelyClosed" } )
 	public LogServer( final int port )
 	{
 		ServerSocket serverSocket = null;
@@ -136,7 +147,7 @@ public class LogServer
 		{
 			serverSocket = new ServerSocket( port );
 		}
-		catch ( IOException e )
+		catch ( final IOException e )
 		{
 			LOG.warn( "Failed to open log server socket: " + e.getMessage(), e );
 		}
@@ -158,12 +169,15 @@ public class LogServer
 	{
 		boolean result = false;
 
-		for ( final ConnectionHandler connectionHandler : new ArrayList<ConnectionHandler>( _connectionHandlers ) )
+		synchronized ( _connectionHandlers )
 		{
-			if ( connectionHandler.isLevelEnabled( level ) )
+			for ( final LogTarget connectionHandler : _connectionHandlers )
 			{
-				result = true;
-				break;
+				if ( connectionHandler.isLevelEnabled( name, level ) )
+				{
+					result = true;
+					break;
+				}
 			}
 		}
 
@@ -177,25 +191,35 @@ public class LogServer
 
 		bufferMessage( logMessage );
 
-		for ( final ConnectionHandler connectionHandler : new ArrayList<ConnectionHandler>( _connectionHandlers ) )
+		final List<ConnectionHandler> connectionHandlers;
+		synchronized ( _connectionHandlers )
 		{
-			if ( connectionHandler.isLevelEnabled( level ) )
+			connectionHandlers = new ArrayList<ConnectionHandler>( _connectionHandlers.size() );
+			for ( final ConnectionHandler connectionHandler : _connectionHandlers )
 			{
-				connectionHandler.send( logMessage );
+				if ( connectionHandler.isLevelEnabled( name, level ) )
+				{
+					connectionHandlers.add( connectionHandler );
+				}
 			}
+		}
+
+		for ( final ConnectionHandler connectionHandler : connectionHandlers )
+		{
+			connectionHandler.send( logMessage );
 		}
 	}
 
 	/**
 	 * Place log message in buffer.
 	 *
-	 * @param   logMessage  Log message to
+	 * @param logMessage Log message to
 	 */
 	protected void bufferMessage( final LogMessage logMessage )
 	{
-		final LinkedList<LogMessage> messageBuffer = _messageBuffer;
-		synchronized ( messageBuffer )
+		synchronized ( _messageBuffer )
 		{
+			final LinkedList<LogMessage> messageBuffer = _messageBuffer;
 			int bufferSize = _bufferSize + getMessageSize( logMessage );
 
 			while ( bufferSize > 100000 )
@@ -218,18 +242,17 @@ public class LogServer
 	/**
 	 * Get log messages from buffer.
 	 *
-	 * @param   logLevel    Only get log messages upto this level.
+	 * @param logLevel Only get log messages upto this level.
 	 *
-	 * @return  Buffered log messages.
+	 * @return Buffered log messages.
 	 */
 	protected List<LogMessage> getBufferedMessages( final int logLevel )
 	{
-		final LinkedList<LogMessage> result = new LinkedList<LogMessage>();
+		final List<LogMessage> result = new ArrayList<LogMessage>();
 
-		final LinkedList<LogMessage> messageBuffer = _messageBuffer;
-		synchronized ( messageBuffer )
+		synchronized ( _messageBuffer )
 		{
-			for ( final LogMessage logMessage : messageBuffer )
+			for ( final LogMessage logMessage : _messageBuffer )
 			{
 				if ( ( logMessage.level <= logLevel ) )
 				{
@@ -246,9 +269,9 @@ public class LogServer
 	 * estimate the size based on the total number of characters in the message.
 	 * The actual number of bytes is always more than the result of this method.
 	 *
-	 * @param   logMessage  Log message to get size of.
+	 * @param logMessage Log message to get size of.
 	 *
-	 * @return  Log message size in bytes.
+	 * @return Log message size in bytes.
 	 */
 	public static int getMessageSize( @NotNull final LogMessage logMessage )
 	{
@@ -266,7 +289,7 @@ public class LogServer
 			stringLength += message.length();
 		}
 
-		for ( RemoteException exception = logMessage.throwable ; exception != null; exception = exception.getCause() )
+		for ( RemoteException exception = logMessage.throwable; exception != null; exception = exception.getCause() )
 		{
 			final String exceptionMessage = exception.getMessage();
 			if ( exceptionMessage != null )
@@ -297,7 +320,7 @@ public class LogServer
 	 * Listens to incoming connections.
 	 */
 	private class SocketMonitor
-		implements Runnable
+	implements Runnable
 	{
 		/**
 		 * Server socket to accept connections from.
@@ -307,7 +330,7 @@ public class LogServer
 		/**
 		 * Construct socket connection listener.
 		 *
-		 * @param   serverSocket    Server socket to accept connections from.
+		 * @param serverSocket Server socket to accept connections from.
 		 */
 		private SocketMonitor( final ServerSocket serverSocket )
 		{
@@ -327,18 +350,28 @@ public class LogServer
 					try
 					{
 						final Socket clientSocket = serverSocket.accept();
-
 						try
 						{
-							_connectionHandlers.add( new ConnectionHandler( clientSocket ) );
+							LOG.debug( "Log client connected from " + clientSocket.getInetAddress() );
+							final ConnectionHandler connectionHandler = new ConnectionHandler( clientSocket );
+							synchronized ( _connectionHandlers )
+							{
+								_connectionHandlers.add( connectionHandler );
+							}
+
+							final Thread thread = new Thread( connectionHandler );
+							thread.setDaemon( true );
+							//noinspection CallToThreadSetPriority
+							thread.setPriority( Thread.MIN_PRIORITY );
+							thread.start();
 						}
-						catch ( Exception e )
+						catch ( final Exception e )
 						{
 							e.printStackTrace();
 							clientSocket.close();
 						}
 					}
-					catch ( IOException e )
+					catch ( final IOException e )
 					{
 						if ( !serverSocket.isClosed() )
 						{
@@ -349,16 +382,13 @@ public class LogServer
 			}
 			finally
 			{
-				if ( serverSocket != null )
+				try
 				{
-					try
-					{
-						serverSocket.close();
-					}
-					catch ( IOException e )
-					{
-						/* ignore socket closing problems */
-					}
+					serverSocket.close();
+				}
+				catch ( final IOException e )
+				{
+					/* ignore socket closing problems */
 				}
 			}
 
@@ -370,13 +400,9 @@ public class LogServer
 	 * Handles a client connection.
 	 */
 	private class ConnectionHandler
-		implements Runnable
+	extends AbstractLeveledLogTarget
+	implements Runnable
 	{
-		/**
-		 * Log level.
-		 */
-		private int _logLevel = ClassLogger.INFO;
-
 		/**
 		 * Socket connected to client.
 		 */
@@ -385,46 +411,49 @@ public class LogServer
 		/**
 		 * Output stream to connected client.
 		 */
+		@SuppressWarnings( "FieldAccessedSynchronizedAndUnsynchronized" )
 		private ObjectOutput _out;
 
 		/**
 		 * Thread on which the client is handled.
 		 */
-		private Thread _thread;
+		@SuppressWarnings( "FieldAccessedSynchronizedAndUnsynchronized" )
+		private Thread _thread = null;
 
 		/**
 		 * Constructs a new handler for the given socket.
 		 *
-		 * @param   socket  Socket connected to a client.
+		 * @param socket Socket connected to a client.
 		 */
-		ConnectionHandler( final Socket socket )
+		ConnectionHandler( @NotNull final Socket socket )
 		{
+			super( ClassLogger.INFO, null );
 			_socket = socket;
 			_out = null;
-
-			LOG.debug( "Log client connected from " + socket.getInetAddress() );
-			final Thread thread = new Thread( this );
-			thread.setDaemon( true );
-			thread.setPriority( Thread.MIN_PRIORITY );
-			_thread = thread;
-			thread.start();
 		}
 
+		@SuppressWarnings( "IOResourceOpenedButNotSafelyClosed" )
 		@Override
 		public void run()
 		{
+			_thread = Thread.currentThread();
 			final Socket socket = _socket;
 			try
 			{
-				final ObjectOutputStream out = new ObjectOutputStream( socket.getOutputStream() );
+				final ObjectOutput out = new ObjectOutputStream( socket.getOutputStream() );
 				_out = out;
 
-				final ObjectInput in  = new ObjectInputStream( socket.getInputStream() );
+				final ObjectInput in = new ObjectInputStream( socket.getInputStream() );
 				final int initialLogLevel = in.readInt();
-				_logLevel = initialLogLevel;
+				final String initialLogLevels = in.readUTF();
+				setLevel( initialLogLevel );
+				setLevels( initialLogLevels );
 				for ( final LogMessage logMessage : getBufferedMessages( initialLogLevel ) )
 				{
-					out.writeObject( logMessage );
+					if ( isLevelEnabled( logMessage.name, logMessage.level ) )
+					{
+						out.writeObject( logMessage );
+					}
 				}
 				out.flush();
 
@@ -445,15 +474,19 @@ public class LogServer
 							break;
 						}
 
-						_logLevel = level;
+						setLevel( level );
+					}
+					else if ( request == LogServer.Request.SWITCH_LOG_LEVELS )
+					{
+						setLevels( in.readUTF() );
 					}
 				}
 			}
-			catch ( IOException e )
+			catch ( final IOException e )
 			{
 				LOG.debug( "Unexpected client disconnect: " + e, e );
 			}
-			catch ( ClassNotFoundException e )
+			catch ( final ClassNotFoundException e )
 			{
 				LOG.warn( "Bad object received from client: " + e, e );
 			}
@@ -463,26 +496,20 @@ public class LogServer
 				{
 					socket.close();
 				}
-				catch ( IOException e )
+				catch ( final IOException e )
 				{
 					LOG.debug( "Failed to close socket: " + e, e );
 				}
 			}
 
 			LOG.debug( "Log client " + socket.getInetAddress() + " disconnected" );
+			_thread = null;
 		}
 
-		/**
-		 * Test if the specified log level is enabled for this client.
-		 *
-		 * @param   level   Log level.
-		 *
-		 * @return  {@code true} if the log level is enabled;
-		 *          {@code false} if the log level is disabled.
-		 */
-		private boolean isLevelEnabled( final int level )
+		@Override
+		public void log( final String name, final int level, final String message, final Throwable throwable, final String threadName )
 		{
-			return ( level <= _logLevel );
+			send( new LogMessage( name, level, message, throwable, threadName ) );
 		}
 
 		/**
@@ -492,18 +519,19 @@ public class LogServer
 		 */
 		public void send( final Object object )
 		{
-			synchronized ( this )
+			final Thread thread = _thread;
+			final ObjectOutput out = _out;
+			if ( ( thread != null ) && ( out != null ) )
 			{
-				final Thread thread = _thread;
-				final ObjectOutput out = _out;
-				if ( ( thread != null ) && ( out != null ) )
+				//noinspection SynchronizationOnLocalVariableOrMethodParameter
+				synchronized ( out )
 				{
 					try
 					{
 						out.writeObject( object );
 						out.flush();
 					}
-					catch ( Throwable t )
+					catch ( final Throwable t )
 					{
 						_out = null;
 						t.printStackTrace();
