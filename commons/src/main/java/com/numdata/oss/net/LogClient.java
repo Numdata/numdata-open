@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,12 @@ import java.util.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.log.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Client for {@link LogServer}.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class LogClient
 {
@@ -50,12 +51,13 @@ public class LogClient
 	 *
 	 * @param args Command-line arguments.
 	 *
-	 * @throws  Exception if the application crashes.
+	 * @throws Exception if the application crashes.
 	 */
 	public static void main( final String[] args )
-		throws Exception
+	throws Exception
 	{
 		int logLevel = ClassLogger.INFO;
+		String logLevels = "";
 		String host = null;
 		int port = LogServer.DEFAULT_PORT;
 
@@ -74,6 +76,15 @@ public class LogClient
 
 				logLevel = ClassLogger.parseLevel( argIterator.next() );
 			}
+			else if ( "-levels".equals( arg ) )
+			{
+				if ( !argIterator.hasNext() )
+				{
+					throw new RuntimeException( "No arguments after '" + arg + '\'' );
+				}
+
+				logLevels = argIterator.next();
+			}
 			else if ( TextTools.startsWith( arg, '-' ) )
 			{
 				throw new RuntimeException( "Unrecognized option: " + arg );
@@ -85,7 +96,7 @@ public class LogClient
 					throw new RuntimeException( "Can't connect to multiple servers" );
 				}
 
-				final int colon = arg.indexOf( (int)':' );
+				final int colon = arg.indexOf( ':' );
 				host = ( colon < 0 ) ? arg : arg.substring( 0, colon );
 				if ( colon >= 0 )
 				{
@@ -97,10 +108,14 @@ public class LogClient
 		/*
 		 * Connect to client and show any incoming messages.
 		 */
-		final ConsoleTarget consoleTarget = new ConsoleTarget( ClassLogger.TRACE, System.out );
+		final LogTarget consoleTarget = new ConsoleTarget( ClassLogger.TRACE, System.out );
 
 		LOG.info( "Connecting to log server" );
-		final LogClient logClient = new LogClient( host, port, logLevel );
+		final LogClient logClient = new LogClient();
+		logClient.setHost( host );
+		logClient.setPort( port );
+		logClient.setLogLevel( logLevel );
+		logClient.setLogLevels( logLevels );
 
 		LOG.debug( "Start listening for incoming messages" );
 		logClient.addListener( new LogClientListener()
@@ -112,28 +127,32 @@ public class LogClient
 			}
 		} );
 
-		logClient._thread.join();
+		logClient.connect().run();
 	}
 
 	/**
-	 * Log level.
+	 * Host name or address of server to connect to (default: localhost).
+	 */
+	@NotNull
+	private String _host = "localhost";
+
+	/**
+	 * TCP port to connect to (default: {@link LogServer#DEFAULT_PORT 7709}).
+	 */
+	private int _port = LogServer.DEFAULT_PORT;
+
+	/**
+	 * Log level (default: {@link ClassLogger#INFO}).
 	 */
 	private int _logLevel = ClassLogger.INFO;
 
 	/**
-	 * Socket connected to server.
+	 * Log levels string (default: none).
+	 *
+	 * @see AbstractLeveledLogTarget#setLevels(String)
 	 */
-	private final Socket _socket;
-
-	/**
-	 * Output stream to connected server.
-	 */
-	private ObjectOutput _out;
-
-	/**
-	 * Thread that receives messages from the server.
-	 */
-	private Thread _thread;
+	@NotNull
+	private String _logLevels = "";
 
 	/**
 	 * Registered listeners.
@@ -141,37 +160,16 @@ public class LogClient
 	private final List<LogClientListener> _listeners = new ArrayList<LogClientListener>();
 
 	/**
-	 * Construct client.
+	 * Open connection to server.
 	 *
-	 * @param host     Host name or address of server to connect to.
-	 * @param port     TCP port to connect to.
-	 * @param logLevel Initial log level.
+	 * @return Connection to server.
 	 *
-	 * @throws  IOException if the client could not connect to a log server.
+	 * @throws IOException if a connection could not be established.
 	 */
-	public LogClient( final String host, final int port, final int logLevel )
-		throws IOException
+	public Connection connect()
+	throws IOException
 	{
-		LOG.debug( "Connecting to log server " + host + ':' + port );
-
-		final Socket socket = new Socket();
-		socket.connect( new InetSocketAddress( host, port ), 10000 );
-		LOG.debug( "Connected to log server." );
-
-		final ObjectOutput out = new ObjectOutputStream( new BufferedOutputStream( socket.getOutputStream() ) );
-		out.writeInt( logLevel );
-		out.flush();
-		final ObjectInput in = new ObjectInputStream( new BufferedInputStream( socket.getInputStream() ) );
-
-		_logLevel = logLevel;
-		_socket = socket;
-		_out = out;
-
-		final Thread thread = new Thread( new LogMessageReceiver( in ) );
-		thread.setDaemon( true );
-		thread.setPriority( Thread.MIN_PRIORITY );
-		_thread = thread;
-		thread.start();
+		return new Connection();
 	}
 
 	/**
@@ -194,6 +192,27 @@ public class LogClient
 		_listeners.remove( listener );
 	}
 
+	@NotNull
+	public String getHost()
+	{
+		return _host;
+	}
+
+	public void setHost( @NotNull final String host )
+	{
+		_host = host;
+	}
+
+	public int getPort()
+	{
+		return _port;
+	}
+
+	public void setPort( final int port )
+	{
+		_port = port;
+	}
+
 	public int getLogLevel()
 	{
 		return _logLevel;
@@ -206,64 +225,23 @@ public class LogClient
 	 */
 	public void setLogLevel( final int logLevel )
 	{
-		LOG.trace( "setLogLevel( " + logLevel + " )" );
+		_logLevel = logLevel;
+	}
 
-		if ( logLevel != _logLevel )
-		{
-			_logLevel = logLevel;
-
-			final Thread thread = _thread;
-			final ObjectOutput out = _out;
-			if ( ( thread != null ) && ( out != null ) )
-			{
-				LOG.debug( "Switching to log level: " + logLevel );
-				synchronized ( out )
-				{
-					try
-					{
-						out.writeObject( LogServer.Request.SWITCH_LOG_LEVEL );
-						out.writeInt( logLevel );
-						out.flush();
-					}
-					catch ( final Throwable t )
-					{
-						t.printStackTrace();
-						quit();
-					}
-				}
-			}
-		}
+	@NotNull
+	public String getLogLevels()
+	{
+		return _logLevels;
 	}
 
 	/**
-	 * Quit client session. This has no effect if the client was already
-	 * disconnected.
+	 * Set current log levels.
+	 *
+	 * @param logLevels Log levels to set.
 	 */
-	public void quit()
+	public void setLogLevels( @NotNull final String logLevels )
 	{
-		final ObjectOutput out = _out;
-		_out = null;
-		if ( out != null )
-		{
-			synchronized ( out )
-			{
-				try
-				{
-					out.writeObject( LogServer.Request.QUIT );
-				}
-				catch ( final Throwable t )
-				{
-					/* ignore */
-				}
-			}
-		}
-
-		final Thread thread = _thread;
-		_thread = null;
-		if ( thread != null )
-		{
-			thread.interrupt();
-		}
+		_logLevels = logLevels;
 	}
 
 	/**
@@ -271,92 +249,192 @@ public class LogClient
 	 *
 	 * @param logMessage Log message that was received.
 	 */
-	protected void messageReceived( final LogMessage logMessage )
+	protected void messageReceived( @NotNull final LogMessage logMessage )
 	{
-		if ( logMessage == null )
-		{
-			throw new NullPointerException( "logMessage" );
-		}
-
 		for ( final LogClientListener listener : _listeners )
 		{
 			listener.logMessageReceived( logMessage );
 		}
 	}
 
-	@Override
-	protected void finalize()
-		throws Throwable
-	{
-		super.finalize();
-		quit();
-	}
-
 	/**
 	 * This receives incoming log messages from the server.
 	 */
-	private class LogMessageReceiver
-		implements Runnable
+	public class Connection
+	implements Runnable
 	{
 		/**
-		 * Input stream from connected server.
+		 * Socket connected to server.
 		 */
+		@NotNull
+		private final Socket _socket;
+
+		/**
+		 * Input stream to connected server.
+		 */
+		@NotNull
 		private final ObjectInput _in;
 
 		/**
-		 * Construct receiver.
-		 *
-		 * @param in  Input stream from connected server.
+		 * Output stream to connected server.
 		 */
-		private LogMessageReceiver( final ObjectInput in )
-		{
-			if ( in == null )
-			{
-				throw new NullPointerException( "in" );
-			}
+		@NotNull
+		private final ObjectOutput _out;
 
+		/**
+		 * Thread on which the connection is handled.
+		 *
+		 * @see #run()
+		 */
+		@Nullable
+		private Thread _thread = null;
+
+		/**
+		 * Open connection to server.
+		 *
+		 * @throws IOException if a connection could not be established.
+		 */
+		public Connection()
+		throws IOException
+		{
+			LOG.debug( "Connecting to log server " + getHost() + ':' + getPort() );
+
+			final Socket socket = new Socket();
+			socket.connect( new InetSocketAddress( getHost(), getPort() ), 10000 );
+			LOG.debug( "Connected to log server." );
+
+			final ObjectOutput out = new ObjectOutputStream( new BufferedOutputStream( socket.getOutputStream() ) );
+			out.writeInt( getLogLevel() );
+			out.writeUTF( getLogLevels() );
+			out.flush();
+			final ObjectInput in = new ObjectInputStream( new BufferedInputStream( socket.getInputStream() ) );
+
+			_socket = socket;
+			_out = out;
 			_in = in;
 		}
 
 		@Override
 		public void run()
 		{
-			final Socket socket = _socket;
-			final ObjectInput in = _in;
+			_thread = Thread.currentThread();
 
-			if ( socket != null )
+			try
+			{
+				while ( !Thread.interrupted() )
+				{
+					LOG.trace( "Waiting for message" );
+					final LogMessage logMessage = (LogMessage)_in.readObject();
+					messageReceived( logMessage );
+				}
+			}
+			catch ( final InterruptedIOException e )
+			{
+				LOG.info( "Log client connection was interrupted: " + e, e );
+			}
+			catch ( final IOException e )
+			{
+				LOG.info( "Unexpected log server disconnect: " + e, e );
+			}
+			catch ( final ClassNotFoundException e )
+			{
+				LOG.warn( "Bad object received from log server: " + e, e );
+			}
+			finally
 			{
 				try
 				{
-					while ( !Thread.interrupted() )
-					{
-						LOG.trace( "Waiting for message" );
-						final LogMessage logMessage = (LogMessage)in.readObject();
-						messageReceived( logMessage );
-					}
+					_socket.close();
 				}
 				catch ( final IOException e )
 				{
-					LOG.debug( "Unexpected server disconnect: " + e, e );
+					LOG.debug( "Failed to close socket: " + e, e );
 				}
-				catch ( final ClassNotFoundException e )
-				{
-					LOG.warn( "Bad object received from server: " + e, e );
-				}
-				finally
-				{
-					try
-					{
-						socket.close();
-					}
-					catch ( final IOException e )
-					{
-						LOG.debug( "Failed to close socket: " + e, e );
-					}
-				}
-
-				LOG.debug( "Log server " + socket.getInetAddress() + " disconnected" );
 			}
+
+			LOG.debug( "Log server " + _socket.getInetAddress() + " disconnected" );
+			_thread = null;
+		}
+
+		/**
+		 * Set current log level.
+		 *
+		 * @param logLevel Log level to set.
+		 */
+		public void setLogLevel( final int logLevel )
+		{
+			LOG.debug( "setLogLevel( " + logLevel + " )" );
+			synchronized ( _out )
+			{
+				try
+				{
+					_out.writeObject( LogServer.Request.SWITCH_LOG_LEVEL );
+					_out.writeInt( logLevel );
+					_out.flush();
+				}
+				catch ( final Throwable t )
+				{
+					t.printStackTrace();
+					quit();
+				}
+			}
+		}
+
+		/**
+		 * Set current log levels.
+		 *
+		 * @param logLevels Log levels to set.
+		 */
+		public void setLogLevels( @NotNull final String logLevels )
+		{
+			LOG.debug( "setLogLevels( " + logLevels + " )" );
+			synchronized ( _out )
+			{
+				try
+				{
+					_out.writeObject( LogServer.Request.SWITCH_LOG_LEVELS );
+					_out.writeUTF( logLevels );
+					_out.flush();
+				}
+				catch ( final Throwable t )
+				{
+					t.printStackTrace();
+					quit();
+				}
+			}
+		}
+
+		/**
+		 * Quit client session. This has no effect if the client was already
+		 * disconnected.
+		 */
+		public void quit()
+		{
+			synchronized ( _out )
+			{
+				try
+				{
+					_out.writeObject( LogServer.Request.QUIT );
+				}
+				catch ( final Throwable t )
+				{
+					/* ignore */
+				}
+			}
+
+			final Thread thread = _thread;
+			if ( thread != null )
+			{
+				thread.interrupt();
+			}
+		}
+
+		@Override
+		protected void finalize()
+		throws Throwable
+		{
+			super.finalize();
+			quit();
 		}
 	}
 

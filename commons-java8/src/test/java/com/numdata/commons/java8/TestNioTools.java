@@ -29,22 +29,61 @@ package com.numdata.commons.java8;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.zip.*;
 
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
  * Unit test for {@link NioTools}.
+ *
+ * @author G. Meinders
  */
 public class TestNioTools
 {
-	/**
-	 * Tests {@link NioTools#copyFilesRecursively}.
-	 *
-	 * @throws IOException if the test fails.
-	 */
 	@Test
-	public void copyFilesRecursively()
+	public void testUnzip()
+	throws Exception
+	{
+		final Path dir = Files.createTempDirectory( "root" );
+		try
+		{
+			System.out.println( "Temporary directory: " + dir );
+
+			System.out.println( "Create 'test.zip'" );
+			final Path zipFile = dir.resolve( "test.zip" );
+			try ( final ZipOutputStream zip = new ZipOutputStream( Files.newOutputStream( zipFile ) ) )
+			{
+				final ZipEntry subdir = new ZipEntry( "subdir/" );
+				zip.putNextEntry( subdir );
+
+				zip.putNextEntry( new ZipEntry( "subdir/test.txt" ) );
+				zip.write( "Hello".getBytes() );
+			}
+
+			System.out.println( "Unzip 'test.zip'" );
+			NioTools.unzip( dir, zipFile );
+
+			System.out.println( "Check contents directory" );
+			final Collection<Object> expectedFiles = new TreeSet<>();
+			expectedFiles.add( "" );
+			expectedFiles.add( "test.zip" );
+			expectedFiles.add( "subdir" );
+			expectedFiles.add( "subdir/test.txt" );
+
+			final Collection<String> actualFiles = Files.walk( dir ).map( dir::relativize ).map( Object::toString ).collect( toCollection( TreeSet::new ) );
+			assertEquals( "Unexpected list of files after unzip", expectedFiles, actualFiles );
+		}
+		finally
+		{
+			System.out.println( "Delete " + dir + " directory" );
+			NioTools.deleteRecursively( dir );
+		}
+	}
+
+	@Test
+	public void testCopyFilesRecursively()
 	throws IOException
 	{
 		final Path root = Files.createTempDirectory( "root" );
