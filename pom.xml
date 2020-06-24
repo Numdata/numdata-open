@@ -278,11 +278,6 @@
 					<artifactId>maven-shade-plugin</artifactId>
 					<version>3.2.2</version>
 				</plugin>
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.4</version>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -368,6 +363,31 @@
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
+					<execution>
+						<id>check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${coverage.minimum}</minimum>
+										</limit>
+										<limit>
+											<counter>CLASS</counter>
+											<value>MISSEDCOUNT</value>
+											<maximum>${coverage.maximumMissedClasses}</maximum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -439,5 +459,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<coverage.minimum>0.8</coverage.minimum>
+		<coverage.maximumMissedClasses>150</coverage.maximumMissedClasses>
 	</properties>
 </project>
