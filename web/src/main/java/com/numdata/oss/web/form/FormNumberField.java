@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,11 +58,13 @@ extends FormField
 	/**
 	 * Minimum value ({@code null} =&gt; don't care, 0 =&gt; positive only).
 	 */
+	@Nullable
 	private BigDecimal _minValue;
 
 	/**
 	 * Maximum value ({@code null} =&gt; don't care).
 	 */
+	@Nullable
 	private BigDecimal _maxValue;
 
 	/**
@@ -77,6 +79,12 @@ extends FormField
 	 */
 	@Nullable
 	private String _placeholder = null;
+
+	/**
+	 * Link function, used when the field is not editable.
+	 */
+	@Nullable
+	private LinkFunction<BigDecimal> _linkFunction = null;
 
 	/**
 	 * Construct text field.
@@ -103,6 +111,7 @@ extends FormField
 	 * @return Minimum value; {@code null} =&gt; don't care; {@code 0.0} =&gt; positive
 	 * only.
 	 */
+	@Nullable
 	public BigDecimal getMinValue()
 	{
 		return _minValue;
@@ -114,7 +123,7 @@ extends FormField
 	 * @param minValue Minimum value ({@code null} =&gt; don't care; {@code 0.0} =&gt;
 	 *                 positive only).
 	 */
-	public void setMinValue( final BigDecimal minValue )
+	public void setMinValue( @Nullable final BigDecimal minValue )
 	{
 		_minValue = minValue;
 	}
@@ -124,6 +133,7 @@ extends FormField
 	 *
 	 * @return Maximum value; {@code null} =&gt; don't care.
 	 */
+	@Nullable
 	public BigDecimal getMaxValue()
 	{
 		return _maxValue;
@@ -134,7 +144,7 @@ extends FormField
 	 *
 	 * @param maxValue Maximum value ({@code null} =&gt; don't care).
 	 */
-	public void setMaxValue( final BigDecimal maxValue )
+	public void setMaxValue( @Nullable final BigDecimal maxValue )
 	{
 		_maxValue = maxValue;
 	}
@@ -221,6 +231,17 @@ extends FormField
 		_placeholder = placeholder;
 	}
 
+	@Nullable
+	public LinkFunction<BigDecimal> getLinkFunction()
+	{
+		return _linkFunction;
+	}
+
+	public void setLinkFunction( @Nullable final LinkFunction<BigDecimal> linkFunction )
+	{
+		_linkFunction = linkFunction;
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
@@ -232,7 +253,24 @@ extends FormField
 
 		@SuppressWarnings( "ThrowableResultOfMethodCallIgnored" ) final boolean invalid = getException() != null;
 
+		final BigDecimal numberValue = getNumberValue();
+		final boolean editable = isEditable();
+
+		final LinkFunction<BigDecimal> linkFunction = !editable && ( numberValue != null ) ? getLinkFunction() : null;
+		final String link = ( linkFunction != null ) ? linkFunction.getLink( contextPath, numberValue ) : null;
+		if ( link != null )
+		{
+			iw.write( "<a href=\"" );
+			HTMLTools.escapeAttributeValue( iw, link );
+			iw.write( "\">" );
+		}
+
 		formFactory.writeTextField( iw, isEditable(), name, name, getValue(), 10, 20, false, false, invalid, attributes );
+
+		if ( link != null )
+		{
+			iw.write( "</a>" );
+		}
 	}
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,12 @@ extends FormField
 	 */
 	@Nullable
 	private String _placeholder = null;
+
+	/**
+	 * Link function, used when the field is not editable.
+	 */
+	@Nullable
+	private LinkFunction<String> _linkFunction = null;
 
 	/**
 	 * Construct text field.
@@ -307,6 +313,17 @@ extends FormField
 		_placeholder = placeholder;
 	}
 
+	@Nullable
+	public LinkFunction<String> getLinkFunction()
+	{
+		return _linkFunction;
+	}
+
+	public void setLinkFunction( @Nullable final LinkFunction<String> linkFunction )
+	{
+		_linkFunction = linkFunction;
+	}
+
 	@Override
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
@@ -314,8 +331,24 @@ extends FormField
 		final String placeholder = getPlaceholder();
 		final Map<String, String> attributes = TextTools.isEmpty( placeholder ) ? null : Collections.singletonMap( "placeholder", placeholder );
 
-		//noinspection ThrowableResultOfMethodCallIgnored
-		formFactory.writeTextField( iw, isEditable(), getName(), getName(), getValue(), getSize(), getMaxLength(), isPassword(), isDisableAutocomplete(), getException() != null, attributes );
+		final String value = getValue();
+		final boolean editable = isEditable();
+
+		final LinkFunction<String> linkFunction = !editable && !TextTools.isEmpty( value ) ? getLinkFunction() : null;
+		final String link = ( linkFunction != null ) ? linkFunction.getLink( contextPath, value ) : null;
+		if ( link != null )
+		{
+			iw.write( "<a href=\"" );
+			HTMLTools.escapeAttributeValue( iw, link );
+			iw.write( "\">" );
+		}
+
+		formFactory.writeTextField( iw, editable, getName(), getName(), value, getSize(), getMaxLength(), isPassword(), isDisableAutocomplete(), getException() != null, attributes );
+
+		if ( link != null )
+		{
+			iw.write( "</a>" );
+		}
 	}
 
 	@NotNull
