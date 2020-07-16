@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ extends FormField
 	/**
 	 * If set, automatically submit the form if a selection is made.
 	 */
-	private boolean _autoSubmit;
+	private boolean _autoSubmit = false;
 
 	/**
 	 * Set value to {@code null} if it is empty.
@@ -72,10 +72,10 @@ extends FormField
 	private boolean _nullIfEmpty = false;
 
 	/**
-	 * Link function. Called by get a link for a option value.
+	 * Link function, used when the field is not editable.
 	 */
 	@Nullable
-	private LinkFunction _linkFunction = null;
+	private LinkFunction<String> _linkFunction = null;
 
 	/**
 	 * Constructor.
@@ -89,9 +89,8 @@ extends FormField
 	{
 		super( target );
 
-		_optionValues = new ArrayList<String>();
-		_optionLabels = new ArrayList<String>();
-		_autoSubmit = false;
+		_optionValues = new ArrayList<>();
+		_optionLabels = new ArrayList<>();
 	}
 
 	/**
@@ -110,9 +109,8 @@ extends FormField
 			throw new IllegalArgumentException( getName() + ": " + optionValues.length + " != " + optionLabels.length );
 		}
 
-		_optionValues = new ArrayList<String>( Arrays.asList( optionValues ) );
-		_optionLabels = new ArrayList<String>( Arrays.asList( optionLabels ) );
-		_autoSubmit = false;
+		_optionValues = new ArrayList<>( Arrays.asList( optionValues ) );
+		_optionLabels = new ArrayList<>( Arrays.asList( optionLabels ) );
 	}
 
 	/**
@@ -131,9 +129,8 @@ extends FormField
 			throw new IllegalArgumentException( getName() + ": " + optionValues.size() + " != " + optionLabels.size() );
 		}
 
-		_optionValues = new ArrayList<String>( optionValues );
-		_optionLabels = new ArrayList<String>( optionLabels );
-		_autoSubmit = false;
+		_optionValues = new ArrayList<>( optionValues );
+		_optionLabels = new ArrayList<>( optionLabels );
 	}
 
 	/**
@@ -146,8 +143,8 @@ extends FormField
 	{
 		super( target );
 
-		final List<String> optionValues = new ArrayList<String>( optionMap.size() );
-		final List<String> optionLabels = new ArrayList<String>( optionMap.size() );
+		final List<String> optionValues = new ArrayList<>( optionMap.size() );
+		final List<String> optionLabels = new ArrayList<>( optionMap.size() );
 
 		for ( final Map.Entry<String, String> entry : optionMap.entrySet() )
 		{
@@ -186,7 +183,7 @@ extends FormField
 
 	public void setOptionValues( final Collection<String> optionValues )
 	{
-		_optionValues = new ArrayList<String>( optionValues );
+		_optionValues = new ArrayList<>( optionValues );
 	}
 
 	public List<String> getOptionLabels()
@@ -196,7 +193,7 @@ extends FormField
 
 	public void setOptionLabels( final Collection<String> optionLabels )
 	{
-		_optionLabels = new ArrayList<String>( optionLabels );
+		_optionLabels = new ArrayList<>( optionLabels );
 	}
 
 	/**
@@ -212,12 +209,12 @@ extends FormField
 	}
 
 	@Nullable
-	public LinkFunction getLinkFunction()
+	public LinkFunction<String> getLinkFunction()
 	{
 		return _linkFunction;
 	}
 
-	public void setLinkFunction( @Nullable final LinkFunction linkFunction )
+	public void setLinkFunction( @Nullable final LinkFunction<String> linkFunction )
 	{
 		_linkFunction = linkFunction;
 	}
@@ -242,7 +239,7 @@ extends FormField
 
 		final String selected = getValue();
 
-		final LinkFunction linkFunction = !editable && ( selected != null ) ? getLinkFunction() : null;
+		final LinkFunction<String> linkFunction = !editable && ( selected != null ) ? getLinkFunction() : null;
 		final String link = ( linkFunction != null ) ? linkFunction.getLink( contextPath, selected ) : null;
 		if ( link != null )
 		{
@@ -302,23 +299,5 @@ extends FormField
 		{
 			out.append( " (unknown value!) " );
 		}
-	}
-
-	/**
-	 * Function to get link for a selected value.
-	 */
-	public interface LinkFunction
-	{
-		/**
-		 * Returns link for selected value.
-		 *
-		 * @param contextPath Web application context path.
-		 * @param value       Selected value.
-		 *
-		 * @return Link for selected value; {@code null} if no link is
-		 * available.
-		 */
-		@Nullable
-		String getLink( @NotNull final String contextPath, @Nullable final String value );
 	}
 }
