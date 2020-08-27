@@ -45,5 +45,5 @@ public interface TriConsumer<A, B, C>
 	 * @param b Second argument.
 	 * @param c Third argument.
 	 */
-	void consume( A a, B b, C c );
+	void accept( A a, B b, C c );
 }
