@@ -29,23 +29,22 @@ package com.numdata.commons.java8;
 import java.util.function.*;
 
 /**
- * {@link Supplier} that throws a checked exception.
+ * {@link IntSupplier} that throws a checked exception.
  *
  * @param <EX> Exception type.
- * @param <T>  Result type.
  *
- * @author Gerrit Meinders
+ * @author Peter S. Heijnen
  */
 @FunctionalInterface
-public interface CheckedSupplier<T, EX extends Exception>
+public interface CheckedIntSupplier<EX extends Exception>
 {
 	/**
-	 * Gets a result.
+	 * Get a result.
 	 *
 	 * @return Result.
 	 *
 	 * @throws EX Checked exception.
 	 */
-	T get()
+	int get()
 	throws EX;
 }

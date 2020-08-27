@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2020-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,10 @@ import java.util.function.*;
 import org.jetbrains.annotations.*;
 
 /**
- * {@link Function} that throws a checked exception.
+ * {@link BiFunction} that throws a checked exception.
  *
- * @param <T>  Function input type.
+ * @param <A>  First argument type.
+ * @param <B>  Second argument type.
  * @param <R>  Function result type.
  * @param <EX> Exception type.
  *
@@ -41,46 +42,33 @@ import org.jetbrains.annotations.*;
  */
 @SuppressWarnings( "unused" )
 @FunctionalInterface
-public interface CheckedFunction<T, R, EX extends Exception>
+public interface CheckedBiFunction<A, B, R, EX extends Exception>
 {
 	/**
 	 * Applies this function to the given argument.
 	 *
-	 * @param t Function argument.
+	 * @param a First argument.
+	 * @param b Second argument.
 	 *
 	 * @return Function result
 	 *
 	 * @throws EX Checked exception.
 	 */
-	R apply( T t )
+	R apply( A a, B b )
 	throws EX;
 
 	/**
-	 * Equivalent of {@link Function#compose}.
+	 * Equivalent of {@link Function#andThen(Function)}.
 	 *
-	 * @param <V>    Input type of {@code before}.
-	 * @param before Function to apply before this function.
-	 *
-	 * @return Composed function.
-	 */
-	@NotNull
-	default <V> CheckedFunction<V, R, EX> compose( @NotNull final Function<? super V, ? extends T> before )
-	{
-		return v -> apply( before.apply( v ) );
-	}
-
-	/**
-	 * Equivalent of {@link Function#compose}.
-	 *
-	 * @param <V>    Input type of {@code before}.
-	 * @param before Function to apply before this function.
+	 * @param <V>   Result type of {@code after}.
+	 * @param after Function to apply after this function.
 	 *
 	 * @return Composed function.
 	 */
 	@NotNull
-	default <V> CheckedFunction<V, R, EX> composeChecked( @NotNull final CheckedFunction<? super V, ? extends T, ? extends EX> before )
+	default <V> CheckedBiFunction<A, B, V, EX> andThen( @NotNull final Function<? super R, ? extends V> after )
 	{
-		return v -> apply( before.apply( v ) );
+		return ( a, b ) -> after.apply( apply( a, b ) );
 	}
 
 	/**
@@ -92,22 +80,8 @@ public interface CheckedFunction<T, R, EX extends Exception>
 	 * @return Composed function.
 	 */
 	@NotNull
-	default <V> CheckedFunction<T, V, EX> andThen( @NotNull final Function<? super R, ? extends V> after )
+	default <V> CheckedBiFunction<A, B, V, EX> andThenChecked( @NotNull final CheckedFunction<? super R, ? extends V, ? extends EX> after )
 	{
-		return t -> after.apply( apply( t ) );
-	}
-
-	/**
-	 * Equivalent of {@link Function#andThen(Function)}.
-	 *
-	 * @param <V>   Result type of {@code after}.
-	 * @param after Function to apply after this function.
-	 *
-	 * @return Composed function.
-	 */
-	@NotNull
-	default <V> CheckedFunction<T, V, EX> andThenChecked( @NotNull final CheckedFunction<? super R, ? extends V, ? extends EX> after )
-	{
-		return t -> after.apply( apply( t ) );
+		return ( a, b ) -> after.apply( apply( a, b ) );
 	}
 }

@@ -64,10 +64,10 @@ public final class FunctionTools
 	@Contract( pure = true )
 	public static <T, R> Function<T, R> wrapFunctionException( @NotNull final CheckedFunction<T, R, ?> checkedFunction )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				return checkedFunction.apply( element );
+				return checkedFunction.apply( t );
 			}
 			catch ( final RuntimeException | Error e )
 			{
@@ -128,10 +128,107 @@ public final class FunctionTools
 	@Contract( pure = true )
 	private static <T, R, EX extends Exception> Function<T, R> hideFunctionException( @NotNull final CheckedFunction<T, R, EX> checkedFunction )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				return checkedFunction.apply( element );
+				return checkedFunction.apply( t );
+			}
+			catch ( final Exception ex )
+			{
+				return sneakyThrow( ex );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedBiFunction} with an unchecked {@link BiFunction}. Any
+	 * checked exception thrown by the {@link CheckedBiFunction} will be wrapped
+	 * by a {@link RuntimeException}.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedBiFunction {@link CheckedBiFunction} to wrap.
+	 * @param <A>               First input type of the biFunction.
+	 * @param <B>               Second input type of the biFunction.
+	 * @param <R>               Result type of the biFunction.
+	 *
+	 * @return {@link BiFunction}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	public static <A, B, R> BiFunction<A, B, R> wrapBiFunctionException( @NotNull final CheckedBiFunction<A, B, R, ?> checkedBiFunction )
+	{
+		return ( a, b ) -> {
+			try
+			{
+				return checkedBiFunction.apply( a, b );
+			}
+			catch ( final RuntimeException | Error e )
+			{
+				throw e;
+			}
+			catch ( final Exception e )
+			{
+				throw new RuntimeException( e );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedBiFunction} with an unchecked {@link BiFunction}, but
+	 * still declare the checked exception that might abort the stream and be
+	 * thrown.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedBiFunction {@link CheckedBiFunction} to wrap.
+	 * @param <EX>              Checked exception type.
+	 * @param <A>               First input type of the biFunction.
+	 * @param <B>               Second input type of the biFunction.
+	 * @param <R>               Result type of the biFunction.
+	 *
+	 * @return {@link BiFunction}.
+	 *
+	 * @throws EX checked exception from {@code checkedBiFunction}.
+	 */
+	@SuppressWarnings( "RedundantThrows" )
+	@NotNull
+	@Contract( pure = true )
+	public static <A, B, R, EX extends Exception> BiFunction<A, B, R> liftBiFunctionException( @NotNull final CheckedBiFunction<A, B, R, EX> checkedBiFunction )
+	throws EX
+	{
+		return hideBiFunctionException( checkedBiFunction );
+	}
+
+	/**
+	 * Wrap a {@link CheckedBiFunction} with an unchecked {@link BiFunction}.
+	 *
+	 * IMPORTANT: Never use this method directly, because it will cause checked
+	 * exceptions to appear where they are not declared. Please use the {@link
+	 * #liftBiFunctionException(CheckedBiFunction)} method instead to declare the
+	 * checked exception.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedBiFunction {@link CheckedBiFunction} to wrap.
+	 * @param <EX>              Checked exception type.
+	 * @param <A>               First input type of the biFunction.
+	 * @param <B>               Second input type of the biFunction.
+	 * @param <R>               Result type of the biFunction.
+	 *
+	 * @return {@link BiFunction}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	private static <A, B, R, EX extends Exception> BiFunction<A, B, R> hideBiFunctionException( @NotNull final CheckedBiFunction<A, B, R, EX> checkedBiFunction )
+	{
+		return ( a, b ) -> {
+			try
+			{
+				return checkedBiFunction.apply( a, b );
 			}
 			catch ( final Exception ex )
 			{
@@ -157,10 +254,10 @@ public final class FunctionTools
 	@Contract( pure = true )
 	public static <T> Consumer<T> wrapConsumerException( @NotNull final CheckedConsumer<T, ?> checkedConsumer )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				checkedConsumer.apply( element );
+				checkedConsumer.apply( t );
 			}
 			catch ( final RuntimeException | Error e )
 			{
@@ -219,10 +316,10 @@ public final class FunctionTools
 	@Contract( pure = true )
 	private static <T, EX extends Exception> Consumer<T> hideConsumerException( @NotNull final CheckedConsumer<T, EX> checkedConsumer )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				checkedConsumer.apply( element );
+				checkedConsumer.apply( t );
 			}
 			catch ( final Exception ex )
 			{
@@ -247,10 +344,10 @@ public final class FunctionTools
 	@Contract( pure = true )
 	public static IntConsumer wrapIntConsumerException( @NotNull final CheckedIntConsumer<?> checkedIntConsumer )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				checkedIntConsumer.apply( element );
+				checkedIntConsumer.apply( t );
 			}
 			catch ( final RuntimeException | Error e )
 			{
@@ -307,14 +404,193 @@ public final class FunctionTools
 	@Contract( pure = true )
 	private static <EX extends Exception> IntConsumer hideIntConsumerException( @NotNull final CheckedIntConsumer<EX> checkedIntConsumer )
 	{
-		return element -> {
+		return t -> {
 			try
 			{
-				checkedIntConsumer.apply( element );
+				checkedIntConsumer.apply( t );
 			}
 			catch ( final Exception ex )
 			{
 				sneakyThrow( ex );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedSupplier} with an unchecked {@link Supplier}. Any
+	 * checked exception thrown by the {@link CheckedSupplier} will be wrapped
+	 * by a {@link RuntimeException}.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedSupplier {@link CheckedSupplier} to wrap.
+	 * @param <T>             Result type of supplier.
+	 *
+	 * @return {@link Supplier}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	public static <T> Supplier<T> wrapSupplierException( @NotNull final CheckedSupplier<T, ?> checkedSupplier )
+	{
+		return () -> {
+			try
+			{
+				return checkedSupplier.get();
+			}
+			catch ( final RuntimeException | Error e )
+			{
+				throw e;
+			}
+			catch ( final Exception e )
+			{
+				throw new RuntimeException( e );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedSupplier} with an unchecked {@link Supplier}, but
+	 * still declare the checked exception that might abort the stream and be
+	 * thrown.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedSupplier {@link CheckedSupplier} to wrap.
+	 * @param <EX>            Checked exception type.
+	 * @param <T>             Result type of supplier.
+	 *
+	 * @return {@link Supplier}.
+	 *
+	 * @throws EX checked exception from {@code checkedSupplier}.
+	 */
+	@SuppressWarnings( "RedundantThrows" )
+	@NotNull
+	@Contract( pure = true )
+	public static <T, EX extends Exception> Supplier<T> liftSupplierException( @NotNull final CheckedSupplier<T, EX> checkedSupplier )
+	throws EX
+	{
+		return hideSupplierException( checkedSupplier );
+	}
+
+	/**
+	 * Wrap a {@link CheckedSupplier} with an unchecked {@link Supplier}.
+	 *
+	 * IMPORTANT: Never use this method directly, because it will cause checked
+	 * exceptions to appear where they are not declared. Please use the {@link
+	 * #liftSupplierException(CheckedSupplier)} method instead to declare the
+	 * checked exception.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedSupplier {@link CheckedSupplier} to wrap.
+	 * @param <EX>            Checked exception type.
+	 * @param <T>             Result type of supplier.
+	 *
+	 * @return {@link Supplier}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	private static <T, EX extends Exception> Supplier<T> hideSupplierException( @NotNull final CheckedSupplier<T, EX> checkedSupplier )
+	{
+		return () -> {
+			try
+			{
+				return checkedSupplier.get();
+			}
+			catch ( final Exception ex )
+			{
+				return sneakyThrow( ex );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntSupplier} with an unchecked {@link IntSupplier}.
+	 * Any checked exception thrown by the {@link CheckedIntSupplier} will be
+	 * wrapped by a {@link RuntimeException}.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntSupplier {@link CheckedIntSupplier} to wrap.
+	 *
+	 * @return {@link IntSupplier}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	public static IntSupplier wrapIntSupplierException( @NotNull final CheckedIntSupplier<?> checkedIntSupplier )
+	{
+		return () -> {
+			try
+			{
+				return checkedIntSupplier.get();
+			}
+			catch ( final RuntimeException | Error e )
+			{
+				throw e;
+			}
+			catch ( final Exception e )
+			{
+				throw new RuntimeException( e );
+			}
+		};
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntSupplier} with an unchecked {@link IntSupplier},
+	 * but still declare the checked exception that might abort the stream and
+	 * be thrown.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntSupplier {@link CheckedIntSupplier} to wrap.
+	 * @param <EX>               Checked exception type.
+	 *
+	 * @return {@link IntSupplier}.
+	 *
+	 * @throws EX checked exception from {@code checkedIntSupplier}.
+	 */
+	@SuppressWarnings( "RedundantThrows" )
+	@NotNull
+	@Contract( pure = true )
+	public static <EX extends Exception> IntSupplier liftIntSupplierException( @NotNull final CheckedIntSupplier<EX> checkedIntSupplier )
+	throws EX
+	{
+		return hideIntSupplierException( checkedIntSupplier );
+	}
+
+	/**
+	 * Wrap a {@link CheckedIntSupplier} with an unchecked {@link IntSupplier}.
+	 *
+	 * IMPORTANT: Never use this method directly, because it will cause checked
+	 * exceptions to appear where they are not declared. Please use the {@link
+	 * #liftIntSupplierException(CheckedIntSupplier)} method instead to declare
+	 * the checked exception.
+	 *
+	 * See: <a href='https://blog.codefx.org/java/repackaging-exceptions-streams/'>Repackaging
+	 * Exceptions In Streams</a>.
+	 *
+	 * @param checkedIntSupplier {@link CheckedIntSupplier} to wrap.
+	 * @param <EX>               Checked exception type.
+	 *
+	 * @return {@link IntSupplier}.
+	 */
+	@NotNull
+	@Contract( pure = true )
+	private static <EX extends Exception> IntSupplier hideIntSupplierException( @NotNull final CheckedIntSupplier<EX> checkedIntSupplier )
+	{
+		return () -> {
+			try
+			{
+				return checkedIntSupplier.get();
+			}
+			catch ( final Exception ex )
+			{
+				return sneakyThrow( ex );
 			}
 		};
 	}
