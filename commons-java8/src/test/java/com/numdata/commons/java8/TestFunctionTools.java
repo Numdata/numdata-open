@@ -124,6 +124,92 @@ public class TestFunctionTools
 	}
 
 	@Test
+	public void testWrapBiFunctionException()
+	{
+		final BiFunction<Integer, Integer, Integer> wrappedBiFunction = FunctionTools.wrapBiFunctionException( TestFunctionTools::throwingBiFunction );
+
+		System.out.println( " - Test #1: no exception" );
+		assertEquals( "Test #1 result", Integer.valueOf( 1 ), wrappedBiFunction.apply( 0, 1 ) );
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			wrappedBiFunction.apply( 1, 0 );
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			wrappedBiFunction.apply( 2, 0 );
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			wrappedBiFunction.apply( 3, 0 );
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertNotNull( "Expect wrapped exception with original cause", e.getCause() );
+			assertEquals( "Unexpected cause type", Exception.class, e.getCause().getClass() );
+		}
+	}
+
+	@Test
+	public void testLiftBiFunctionException()
+	throws Exception
+	{
+		final BiFunction<Integer, Integer, Integer> wrappedBiFunction = FunctionTools.liftBiFunctionException( TestFunctionTools::throwingBiFunction );
+
+		System.out.println( " - Test #1: no exception" );
+		assertEquals( "Test #1 result", Integer.valueOf( 1 ), wrappedBiFunction.apply( 0, 1 ) );
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			wrappedBiFunction.apply( 1, 0 );
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			wrappedBiFunction.apply( 2, 0 );
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			wrappedBiFunction.apply( 3, 0 );
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final Exception e )
+		{
+			assertEquals( "Unexpected exception message", "3", e.getMessage() );
+		}
+	}
+
+	@Test
 	public void testWrapConsumerException()
 	{
 		final Consumer<Integer> wrappedConsumer = FunctionTools.wrapConsumerException( TestFunctionTools::throwingFunction );
@@ -295,6 +381,192 @@ public class TestFunctionTools
 		}
 	}
 
+	@Test
+	public void testWrapSupplierException()
+	{
+		System.out.println( " - Test #1: no exception" );
+		FunctionTools.wrapSupplierException( () -> 0 ).get();
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			FunctionTools.wrapSupplierException( () -> {
+				throw new RuntimeException( "1" );
+			} ).get();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			FunctionTools.wrapSupplierException( () -> {
+				throw new Error( "2" );
+			} ).get();
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			FunctionTools.wrapSupplierException( () -> {
+				throw new Exception( "3" );
+			} ).get();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertNotNull( "Expect wrapped exception with original cause", e.getCause() );
+			assertEquals( "Unexpected cause type", Exception.class, e.getCause().getClass() );
+		}
+	}
+
+	@Test
+	public void testLiftSupplierException()
+	{
+		System.out.println( " - Test #1: no exception" );
+		FunctionTools.liftSupplierException( () -> 0 ).get();
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			FunctionTools.liftSupplierException( () -> {
+				throw new RuntimeException( "1" );
+			} ).get();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			FunctionTools.liftSupplierException( () -> {
+				throw new Error( "2" );
+			} ).get();
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			FunctionTools.liftSupplierException( () -> {
+				throw new Exception( "3" );
+			} ).get();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final Exception e )
+		{
+			assertEquals( "Unexpected exception message", "3", e.getMessage() );
+		}
+	}
+
+	@Test
+	public void testWrapIntSupplierException()
+	{
+		System.out.println( " - Test #1: no exception" );
+		FunctionTools.wrapIntSupplierException( () -> 0 ).getAsInt();
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			FunctionTools.wrapIntSupplierException( () -> {
+				throw new RuntimeException( "1" );
+			} ).getAsInt();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			FunctionTools.wrapIntSupplierException( () -> {
+				throw new Error( "2" );
+			} ).getAsInt();
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			FunctionTools.wrapIntSupplierException( () -> {
+				throw new Exception( "3" );
+			} ).getAsInt();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertNotNull( "Expect wrapped exception with original cause", e.getCause() );
+			assertEquals( "Unexpected cause type", Exception.class, e.getCause().getClass() );
+		}
+	}
+
+	@Test
+	public void testLiftIntSupplierException()
+	{
+		System.out.println( " - Test #1: no exception" );
+		FunctionTools.liftIntSupplierException( () -> 0 ).getAsInt();
+
+		System.out.println( " - Test #2: RuntimeException" );
+		try
+		{
+			FunctionTools.liftIntSupplierException( () -> {
+				throw new RuntimeException( "1" );
+			} ).getAsInt();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final RuntimeException e )
+		{
+			assertEquals( "Unexpected exception message", "1", e.getMessage() );
+		}
+
+		System.out.println( " - Test #3: Error" );
+		try
+		{
+			FunctionTools.liftIntSupplierException( () -> {
+				throw new Error( "2" );
+			} ).getAsInt();
+			fail( "Should have thrown Error" );
+		}
+		catch ( final Error e )
+		{
+			assertEquals( "Unexpected exception message", "2", e.getMessage() );
+		}
+
+		System.out.println( " - Test #4: Exception" );
+		try
+		{
+			FunctionTools.liftIntSupplierException( () -> {
+				throw new Exception( "3" );
+			} ).getAsInt();
+			fail( "Should have thrown RuntimeException" );
+		}
+		catch ( final Exception e )
+		{
+			assertEquals( "Unexpected exception message", "3", e.getMessage() );
+		}
+	}
+
 	public static int throwingFunction( final int input )
 	throws Exception
 	{
@@ -311,6 +583,25 @@ public class TestFunctionTools
 
 			default:
 				return input;
+		}
+	}
+
+	public static int throwingBiFunction( final int input1, final int input2 )
+	throws Exception
+	{
+		switch ( input1 )
+		{
+			case 1:
+				throw new RuntimeException( "1" );
+
+			case 2:
+				throw new Error( "2" );
+
+			case 3:
+				throw new Exception( "3" );
+
+			default:
+				return input2;
 		}
 	}
 }
