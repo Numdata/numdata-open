@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.numdata</groupId>
 		<artifactId>numdata-open</artifactId>
-		<version>1.15-SNAPSHOT</version>
+		<version>1.16-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>numdata-serial</artifactId>
