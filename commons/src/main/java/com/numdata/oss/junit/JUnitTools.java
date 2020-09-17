@@ -64,6 +64,7 @@ public class JUnitTools
 		{
 			if ( !expectedExceptionType.isInstance( e ) )
 			{
+				e.printStackTrace();
 				fail( message + ": Expected " + expectedExceptionType + ", but was " + e );
 			}
 		}
@@ -87,6 +88,7 @@ public class JUnitTools
 		{
 			if ( !expectedExceptionType.isInstance( e ) )
 			{
+				e.printStackTrace();
 				fail( message + ": Expected " + expectedExceptionType + ", but was " + e );
 			}
 		}
@@ -110,8 +112,9 @@ public class JUnitTools
 		{
 			assertEquals( message, expectedException.getClass(), e.getClass() );
 			final String expectedMessage = expectedException.getMessage();
-			if ( expectedMessage != null )
+			if ( ( expectedMessage != null ) && !expectedMessage.equals( e.getMessage() ) )
 			{
+				e.printStackTrace();
 				assertEquals( message + ", unexpected message", expectedMessage, e.getMessage() );
 			}
 		}
@@ -135,8 +138,9 @@ public class JUnitTools
 		{
 			assertEquals( message, expectedException.getClass(), e.getClass() );
 			final String expectedMessage = expectedException.getMessage();
-			if ( expectedMessage != null )
+			if ( ( expectedMessage != null ) && !expectedMessage.equals( e.getMessage() ) )
 			{
+				e.printStackTrace();
 				assertEquals( message + ", unexpected message", expectedMessage, e.getMessage() );
 			}
 		}
