@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2006-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,21 +43,59 @@ extends ResourceBundle
 	/**
 	 * Locale for which the bundle is created.
 	 */
+	@NotNull
 	private final Locale _locale;
 
 	/**
 	 * Resources in this bundle.
 	 */
-	private final Map<String, Object> _contents = new HashMap<String, Object>();
+	@NotNull
+	private final Map<String, Object> _contents = new HashMap<>();
+
+	/**
+	 * Base name of this bundle, if known, or {@code null} to use {@link ResourceBundle#getBaseBundleName()}.
+	 */
+	@Nullable
+	private final String _baseBundleName;
+
+	/**
+	 * Create merged bundle.
+	 *
+	 * @param baseBundleName Base name of this bundle (optional).
+	 * @param locale         Locale for which the bundle is created.
+	 */
+	public MergedResourceBundle( @Nullable final String baseBundleName, @NotNull final Locale locale )
+	{
+		_baseBundleName = baseBundleName;
+		_locale = locale;
+	}
 
 	/**
 	 * Create merged bundle.
 	 *
 	 * @param locale Locale for which the bundle is created.
 	 */
-	public MergedResourceBundle( final Locale locale )
+	public MergedResourceBundle( @NotNull final Locale locale )
 	{
-		_locale = locale;
+		this( null, locale );
+	}
+
+	/**
+	 * Create merged bundle.
+	 *
+	 * @param baseBundleName Base name of this bundle (optional).
+	 * @param locale         Locale for which the bundle is created.
+	 * @param bundles        Source bundles.
+	 */
+	@SuppressWarnings( "OverridableMethodCallDuringObjectConstruction" )
+	public MergedResourceBundle( @Nullable final String baseBundleName, @NotNull final Locale locale, @NotNull final ResourceBundle... bundles )
+	{
+		this( baseBundleName, locale );
+
+		for ( final ResourceBundle bundle : bundles )
+		{
+			addBundle( bundle );
+		}
 	}
 
 	/**
@@ -67,14 +105,16 @@ extends ResourceBundle
 	 * @param bundles Source bundles.
 	 */
 	@SuppressWarnings( "OverridableMethodCallDuringObjectConstruction" )
-	public MergedResourceBundle( final Locale locale, @NotNull final ResourceBundle... bundles )
+	public MergedResourceBundle( @NotNull final Locale locale, @NotNull final ResourceBundle... bundles )
 	{
-		this( locale );
+		this( null, locale, bundles );
+	}
 
-		for ( final ResourceBundle bundle : bundles )
-		{
-			addBundle( bundle );
-		}
+	@Override
+	@Nullable
+	public String getBaseBundleName()
+	{
+		return ( _baseBundleName != null ) ? _baseBundleName : super.getBaseBundleName();
 	}
 
 	/**
@@ -82,7 +122,7 @@ extends ResourceBundle
 	 *
 	 * @param bundle Bundle to add.
 	 */
-	public void addBundle( final ResourceBundle bundle )
+	public void addBundle( @NotNull final ResourceBundle bundle )
 	{
 		final Map<String, Object> contents = _contents;
 
@@ -107,7 +147,7 @@ extends ResourceBundle
 	}
 
 	@Override
-	public Locale getLocale()
+	public @NotNull Locale getLocale()
 	{
 		return _locale;
 	}

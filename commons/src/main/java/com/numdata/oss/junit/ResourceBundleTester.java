@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ public class ResourceBundleTester
 	 * Class to test resource bundles for.
 	 */
 	@Nullable
-	private final Class<?> _forClass;
+	private Class<?> _forClass;
 
 	/**
 	 * {@code true} to include resource bundles for super-classes.
@@ -70,13 +70,13 @@ public class ResourceBundleTester
 	 * Base name of resource bundles to test.
 	 */
 	@Nullable
-	private final String _baseName;
+	private String _baseName;
 
 	/**
 	 * Locales to test bundles for.
 	 */
 	@NotNull
-	private final Set<Locale> _locales = new LinkedHashSet<Locale>( LOCALES );
+	private final Set<Locale> _locales = new LinkedHashSet<>( LOCALES );
 
 	/**
 	 * Allow differences between locales.
@@ -87,7 +87,7 @@ public class ResourceBundleTester
 	 * List of keys that are required in all bundles.
 	 */
 	@NotNull
-	private final Set<String> _expectedKeys = new LinkedHashSet<String>();
+	private final Set<String> _expectedKeys = new LinkedHashSet<>();
 
 	/**
 	 * Allow unknown keys (not in expectedKeys) in bundles.
@@ -103,6 +103,12 @@ public class ResourceBundleTester
 	 * Allow HTML tags in values.
 	 */
 	private boolean _allowHTML = false;
+
+	/**
+	 * Whether to allow duplicate resource entries (resource entries that are
+	 * defined in parent bundles).
+	 */
+	private boolean _allowDuplicates = false;
 
 	/**
 	 * Constructs a new instance.
@@ -185,7 +191,28 @@ public class ResourceBundleTester
 	public static ResourceBundleTester forLocalStrings( @NotNull final Class<?> clazzInPackage )
 	{
 		final ResourceBundleTester tester = new ResourceBundleTester( clazzInPackage.getPackage().getName() + ".LocalStrings" );
+		tester.setForClass( clazzInPackage );
 		return tester;
+	}
+
+	public @Nullable Class<?> getForClass()
+	{
+		return _forClass;
+	}
+
+	public void setForClass( final @Nullable Class<?> forClass )
+	{
+		_forClass = forClass;
+	}
+
+	public @Nullable String getBaseName()
+	{
+		return _baseName;
+	}
+
+	public void setBaseName( final @Nullable String baseName )
+	{
+		_baseName = baseName;
 	}
 
 	public void addDeclaredEnums( @NotNull final Class<?> clazz )
@@ -258,7 +285,7 @@ public class ResourceBundleTester
 
 	public void addExpectedKeysWithSuffix( @NotNull final String suffix )
 	{
-		for ( final String expectedKey : new ArrayList<String>( _expectedKeys ) )
+		for ( final String expectedKey : new ArrayList<>( _expectedKeys ) )
 		{
 			addExpectedKey( expectedKey + suffix );
 		}
@@ -373,6 +400,16 @@ public class ResourceBundleTester
 		_allowHTML = allowHTML;
 	}
 
+	public boolean isAllowDuplicates()
+	{
+		return _allowDuplicates;
+	}
+
+	public void setAllowDuplicates( final boolean allowDuplicates )
+	{
+		_allowDuplicates = allowDuplicates;
+	}
+
 	/**
 	 * Tests the resource bundles.
 	 *
@@ -409,16 +446,17 @@ public class ResourceBundleTester
 		}
 
 		final StringBuilder errors = new StringBuilder();
-		final Map<Locale, ResourceBundle> bundlesByLocale = new LinkedHashMap<Locale, ResourceBundle>();
-		final Map<Locale, ResourceBundle> localBundleByLocale = new HashMap<Locale, ResourceBundle>();
+		final Map<Locale, ResourceBundle> bundlesByLocale = new LinkedHashMap<>();
+		final Map<Locale, ResourceBundle> localBundleByLocale = new HashMap<>();
 
 		for ( final Locale locale : tryLocales )
 		{
 			try
 			{
 				final ResourceBundle bundle;
-				if ( forClass != null )
+				if ( baseName == null )
 				{
+					assert forClass != null;
 					if ( includeHierarchy )
 					{
 						bundle = ResourceBundleTools.getBundleHierarchy( forClass, locale );
@@ -438,14 +476,13 @@ public class ResourceBundleTester
 				}
 				else
 				{
-					assert baseName != null;
 					bundle = ResourceBundleTools.getBundle( baseName, locale, null );
 				}
 				bundlesByLocale.put( bundle.getLocale(), bundle );
 			}
 			catch ( final MissingResourceException ignored )
 			{
-				errors.append( "\nBundle '" ).append( forClass != null ? forClass.getName() : baseName ).append( "' not found for locale '" ).append( locale ).append( '\'' );
+				errors.append( "\nBundle '" ).append( baseName == null ? forClass.getName() : baseName ).append( "' not found for locale '" ).append( locale ).append( '\'' );
 			}
 		}
 
@@ -457,13 +494,13 @@ public class ResourceBundleTester
 		System.out.println( " - found locales : " + bundlesByLocale.keySet() );
 		if ( bundlesByLocale.isEmpty() )
 		{
-			throw new AssertionError( "Found no " + ( ( forClass != null ) ? forClass.getName() : baseName ) + " bundle(s) to test" );
+			throw new AssertionError( "Found no " + ( ( baseName == null ) ? forClass.getName() : baseName ) + " bundle(s) to test" );
 		}
 
 		final Collection<ResourceBundle> bundles = bundlesByLocale.values();
 
-		final Collection<Locale> seenLocales = new ArrayList<Locale>( bundles.size() );
-		final Collection<String> unknownKeys = new ArrayList<String>();
+		final Collection<Locale> seenLocales = new ArrayList<>( bundles.size() );
+		final Collection<String> unknownKeys = new ArrayList<>();
 
 		for ( final Map.Entry<Locale, ResourceBundle> bundleEntry : bundlesByLocale.entrySet() )
 		{
@@ -505,7 +542,7 @@ public class ResourceBundleTester
 			 * Check for presence of unknown keys.
 			 */
 			final ResourceBundle localBundle = localBundleByLocale.get( bundleEntry.getKey() );
-			final Set<String> keysToTest = ( localBundle != null ) ? localBundle.keySet() : allowUnknown ? bundle.keySet() : Collections.<String>emptySet();
+			final Set<String> keysToTest = ( localBundle != null ) ? localBundle.keySet() : allowUnknown ? bundle.keySet() : Collections.emptySet();
 			for ( final String key : keysToTest )
 			{
 				final String keyDesc = "bundle '" + locale + ", key";
@@ -552,6 +589,11 @@ public class ResourceBundleTester
 			throw new Error( "error in test: no expected keys and no unknown keys allowed!?" );
 		}
 
+		if ( !isAllowDuplicates() )
+		{
+			testDuplicates( bundlesByLocale.keySet() );
+		}
+
 		return bundlesByLocale;
 	}
 
@@ -573,6 +615,7 @@ public class ResourceBundleTester
 			for ( int i = 0; i < s.length(); i++ )
 			{
 				final char c = s.charAt( i );
+				//noinspection OverlyComplexBooleanExpression
 				if ( ( ( c < '\040' ) && ( c != '\b' ) && ( c != '\t' ) && ( c != '\n' ) && ( c != '\f' ) && ( c != '\r' ) && ( c != '\033' ) ) || ( c > '\177' ) )
 				{
 					errors.append( '\n' ).append( what ).append( " '" ).append( s ).append( "' contains non-ASCII character '" ).append( c ).append( "' (" ).append( (int)c ).append( ')' );
@@ -618,6 +661,101 @@ public class ResourceBundleTester
 	}
 
 	/**
+	 * Test for duplicate entries in resource bundles.
+	 *
+	 * @param locales Locales to test.
+	 */
+	private void testDuplicates( @NotNull final Collection<Locale> locales )
+	{
+		final Class<?> clazz = _forClass;
+		if ( clazz != null )
+		{
+			for ( final Locale locale : getLocales() )
+			{
+				System.out.println( "Test for duplicates resource entries in '" + clazz.getName() + "' bundles for " + ( Locale.ROOT.equals( locale ) ? "ROOT" : "'" + locale + '\'' ) + " locale" );
+
+				final List<ResourceBundle> bundles = new ArrayList<>( ResourceBundleTools.getHierarchyBundles( clazz, locale ) );
+
+				// reverse order, recursively traverse hierarchy tree, and de-dupe bundles
+				Collections.reverse( bundles );
+//				bundles.forEach( bundle -> System.out.println( " - Initial: " + bundle.getBaseBundleName() + " bundle for locale " + bundle.getLocale() ) );
+				int i = 0;
+				while ( i < bundles.size() )
+				{
+					final ResourceBundle bundle = bundles.get( i );
+					if ( bundles.indexOf( bundle ) < i )
+					{
+						// remove duplicate bundle
+						bundles.remove( i );
+					}
+					else if ( bundle instanceof MergedResourceBundle )
+					{
+						// merged bundle is always for a super/containing class, so we can get that now
+						final Class<?> bundleClass;
+						try
+						{
+							bundleClass = Class.forName( bundle.getBaseBundleName() );
+						}
+						catch ( final ClassNotFoundException e )
+						{
+							throw new AssertionError( "Merged resource bundle '" + bundle.getBaseBundleName() + "' should be for class", e );
+						}
+
+						// replace the merged bundle with bundles further down from hierarchy
+						bundles.remove( i );
+						final List<ResourceBundle> replacements = ResourceBundleTools.getHierarchyBundles( bundleClass, locale );
+						for ( int j = replacements.size(); --j >= 0; )
+						{
+							bundles.add( i, replacements.get( j ) );
+						}
+					}
+					else
+					{
+						System.out.println( " - Bundle: " + bundle.getBaseBundleName() + " bundle for " + ( Locale.ROOT.equals( bundle.getLocale() ) ? "ROOT" : "'" + bundle.getLocale() + '\'' ) + " locale" );
+						i++;
+					}
+				}
+
+				if ( bundles.size() < 2 )
+				{
+					System.out.println( " - Can't have any duplicates with only " + bundles.size() + " bundle(s)" );
+					continue;
+				}
+
+				final Map<String, ResourceBundle> bundleByKey = new HashMap<>();
+				final List<List<?>> duplicates = new ArrayList<>();
+				for ( final ResourceBundle previousBundle : bundles )
+				{
+					for ( final String key : previousBundle.keySet() )
+					{
+						final String previousValue = previousBundle.getString( key );
+						final ResourceBundle bundle = bundleByKey.put( key, previousBundle );
+						if ( bundle != null )
+						{
+							final String value = bundle.getString( key );
+							if ( Objects.equals( previousValue, value ) )
+							{
+								duplicates.add( Arrays.asList( key, bundle.getBaseBundleName(), bundle.getLocale(), previousBundle.getBaseBundleName(), previousBundle.getLocale() ) );
+							}
+							else
+							{
+								System.err.println( "NOTE: Resource '" + key + "' value is overridden by " + bundle.getBaseBundleName() + " bundle for locale " + bundle.getLocale() + " with value '" + value + "', existing entry was in " + previousBundle.getBaseBundleName() + " bundle for locale " + previousBundle.getLocale() + " with value '" + previousValue + '\'' );
+							}
+						}
+					}
+				}
+
+				if ( !duplicates.isEmpty() )
+				{
+					duplicates.sort( Comparator.comparing( row -> ( (String)row.get( 0 ) ) ) );
+					TextTable.write( System.err, Arrays.asList( "Key", "Bundle", "Locale", "Bundle", "Locale" ), duplicates, "", "\n", "" );
+					fail( "Found " + duplicates.size() + " duplicate resource entries for " + locale + " locale in " + bundles.get( bundles.size() - 1 ) );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get bean property names.
 	 *
 	 * @param beanClass         Bean class.
@@ -632,12 +770,12 @@ public class ResourceBundleTester
 	@Deprecated
 	public static Set<String> getBeanPropertyNames( @NotNull final Class<?> beanClass, final boolean setterRequired, @NotNull final String... excludeProperties )
 	{
-		final Set<String> result = new HashSet<String>();
+		final Set<String> result = new HashSet<>();
 
-		final Collection<String> excludeSet = new HashSet<String>( Arrays.asList( excludeProperties ) );
+		final Collection<String> excludeSet = new HashSet<>( Arrays.asList( excludeProperties ) );
 
 		final Method[] methods = beanClass.getMethods();
-		final Collection<String> methodNames = new HashSet<String>();
+		final Collection<String> methodNames = new HashSet<>();
 
 		for ( final Method method : methods )
 		{

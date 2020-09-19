@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2003-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ public class ResourceBundleTools
 	 * Recursive bundle cache.
 	 */
 	@SuppressWarnings( "ConstantNamingConvention" )
-	private static final Map<Locale, Map<String, ResourceBundle>> _recursiveBundleCache = new HashMap<Locale, Map<String, ResourceBundle>>();
+	private static final Map<Locale, Map<String, ResourceBundle>> _recursiveBundleCache = new HashMap<>();
 
 	/*
 	 * Try to load resource data from 'res.dat' resource. This should be as
@@ -69,19 +69,11 @@ public class ResourceBundleTools
 		{
 			final ClassLoader classLoader = ResourceBundleTools.class.getClassLoader();
 
-			final InputStream is = classLoader.getResourceAsStream( "res.dat" );
-			try
+			try ( final InputStream is = classLoader.getResourceAsStream( "res.dat" ) )
 			{
 				if ( is != null )
 				{
 					result = new ResourcePack( new DataInputStream( new GZIPInputStream( is ) ) );
-				}
-			}
-			finally
-			{
-				if ( is != null )
-				{
-					is.close();
 				}
 			}
 		}
@@ -128,15 +120,9 @@ public class ResourceBundleTools
 	 * class can be found.
 	 */
 	@NotNull
-	@SuppressWarnings( { "CallToNativeMethodWhileLocked", "ObjectEquality" } )
 	public static ResourceBundle getBundleHierarchy( @NotNull final Class<?> clazz, @Nullable final Locale locale )
 	{
-		final boolean trace = LOG.isTraceEnabled();
-		final boolean debug = trace || LOG.isDebugEnabled();
-		if ( debug )
-		{
-			LOG.debug( "getBundleHierarchy( " + clazz + ", " + locale + " )" );
-		}
+		LOG.debug( () -> "getBundleHierarchy( " + clazz + ", " + locale + " )" );
 		final ResourceBundle result;
 
 		final String className = clazz.getName();
@@ -147,131 +133,17 @@ public class ResourceBundleTools
 		//noinspection SynchronizationOnLocalVariableOrMethodParameter
 		synchronized ( recursiveBundleCache )
 		{
-			Map<String, ResourceBundle> localeCache = recursiveBundleCache.get( usedLocale );
-			if ( localeCache == null )
-			{
-				recursiveBundleCache.put( usedLocale, localeCache = new HashMap<String, ResourceBundle>( 1 ) );
-			}
-
+			final Map<String, ResourceBundle> localeCache = recursiveBundleCache.computeIfAbsent( usedLocale, k -> new HashMap<>( 1 ) );
 			if ( localeCache.containsKey( className ) )
 			{
 				result = localeCache.get( className );
 			}
 			else
 			{
-				final List<ResourceBundle> bundles = new ArrayList<ResourceBundle>();
-
-				final Class<?> superclass = clazz.getSuperclass();
-				ResourceBundle superBundle = null;
-				if ( ( superclass != null ) && ( superclass != Object.class ) && !superclass.getName().startsWith( "java." ) )
-				{
-					try
-					{
-						superBundle = getBundleHierarchy( superclass, usedLocale );
-						if ( trace )
-						{
-							LOG.trace( "getBundleHierarchy() got super-bundle for super-class " + superclass.getName() + " with keys " + new TreeSet<String>( superBundle.keySet() ) );
-						}
-						bundles.add( superBundle );
-					}
-					catch ( final MissingResourceException ignored )
-					{
-					}
-				}
-
-				final Package localPackage = clazz.getPackage();
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchy() localPackage=" + localPackage );
-				}
-				if ( ( localPackage != null ) && ( ( superBundle == null ) || !localPackage.equals( superclass.getPackage() ) ) )
-				{
-					final int packageBundleIndex = bundles.size();
-					String packageName = localPackage.getName();
-					do
-					{
-						final String packageBundleName = packageName + ".LocalStrings";
-						if ( trace )
-						{
-							LOG.trace( "getBundleHierarchy() packageBundleName=" + packageBundleName );
-						}
-						try
-						{
-							final ResourceBundle bundle = getBundle( packageBundleName, usedLocale, clazz.getClassLoader() );
-							bundles.add( packageBundleIndex, bundle );
-							if ( trace )
-							{
-								LOG.trace( "getBundleHierarchy() got bundle for package " + packageName + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-							}
-						}
-						catch ( final MissingResourceException ignored )
-						{
-						}
-
-						final int dot = packageName.lastIndexOf( '.' );
-						packageName = ( dot > 0 ) ? packageName.substring( 0, dot ) : null;
-					}
-					while ( packageName != null );
-				}
-
-				final Class<?> declaringClass = getDeclaringClass( clazz );
-				if ( declaringClass != null )
-				{
-					try
-					{
-						final ResourceBundle bundle = getBundleHierarchy( declaringClass, usedLocale );
-						bundles.add( bundle );
-						if ( trace )
-						{
-							LOG.trace( "getBundleHierarchy() got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-						}
-					}
-					catch ( final MissingResourceException ignored )
-					{
-					}
-				}
-
-				try
-				{
-					final ResourceBundle bundle = getBundle( clazz, usedLocale );
-					bundles.add( bundle );
-					if ( trace )
-					{
-						LOG.trace( "getBundleHierarchy() got bundle for requested class " + clazz.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-					}
-				}
-				catch ( final MissingResourceException ignored )
-				{
-				}
-
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchy() combine " + bundles.size() + " bundle(s) for class  " + clazz.getName() );
-				}
-
-				if ( bundles.isEmpty() )
-				{
-					result = null;
-				}
-				else if ( bundles.size() == 1 )
-				{
-					result = bundles.get( 0 );
-				}
-				else // bundles.size() > 1
-				{
-					final MergedResourceBundle mergedBundle = new MergedResourceBundle( usedLocale );
-					for ( final ResourceBundle bundle : bundles )
-					{
-						mergedBundle.addBundle( bundle );
-
-					}
-					result = mergedBundle;
-				}
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchy() result for " + clazz.getName() + " => " + ( ( result != null ) ? "bundle with keys " + new TreeSet<String>( result.keySet() ) : "null" ) );
-				}
-
+				final List<ResourceBundle> bundles = getHierarchyBundles( clazz, usedLocale );
+				LOG.trace( () -> "getBundleHierarchy() combine " + bundles.size() + " bundle(s) for class  " + clazz.getName() );
+				result = bundles.isEmpty() ? null : bundles.size() == 1 ? bundles.get( 0 ) : new MergedResourceBundle( className, usedLocale, bundles.toArray( new ResourceBundle[ 0 ] ) );
+				LOG.trace( () -> "getBundleHierarchy() result for " + clazz.getName() + " => " + ( ( result != null ) ? "bundle with keys " + new TreeSet<>( result.keySet() ) : "null" ) );
 				localeCache.put( className, result );
 			}
 		}
@@ -285,54 +157,35 @@ public class ResourceBundleTools
 	}
 
 	/**
-	 * Returns which bundles would be included by {@link #getBundleHierarchy}.
+	 * Get resource bundles for the specified class hierarchy and locale. If no
+	 * locale is specified, the default locale is used.
 	 *
-	 * @param clazz Class to get the bundle hierarchy for.
+	 * <p>This method gets a bundle that contains resources for the specified
+	 * class and all its parent classes (if any of them have bundles).
 	 *
-	 * @return Bundle names included in the bundle hierarchy.
+	 * <p>If a key exists in multiple returned bundles the entry from the last
+	 * bundle must be used.
+	 *
+	 * @param clazz  Class to get the bundle for.
+	 * @param locale Locale to get the bundle for.
+	 *
+	 * @return Resource bundles for the specified class hierarchy.
 	 */
 	@NotNull
-	@SuppressWarnings( { "ObjectEquality", "unused", "WeakerAccess" } )
-	public static List<String> getBundleHierarchyNames( @NotNull final Class<?> clazz )
+	public static List<ResourceBundle> getHierarchyBundles( final @NotNull Class<?> clazz, @NotNull final Locale locale )
 	{
-		final boolean trace = LOG.isTraceEnabled();
-		final boolean debug = trace || LOG.isDebugEnabled();
-		if ( debug )
-		{
-			LOG.debug( "getBundleHierarchyElements( " + clazz + " )" );
-		}
-
-		final List<String> result = new ArrayList<String>();
+		final List<ResourceBundle> bundles = new ArrayList<>();
 
 		final Class<?> superclass = clazz.getSuperclass();
 		ResourceBundle superBundle = null;
-		if ( ( superclass != null ) && ( superclass != Object.class ) )
+		if ( ( superclass != null ) && ( superclass != Object.class ) && !superclass.getName().startsWith( "java." ) )
 		{
 			try
 			{
-				superBundle = getBundleHierarchy( superclass, null );
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchyElements() got super-bundle for super-class " + superclass.getName() + " with keys " + new TreeSet<String>( superBundle.keySet() ) );
-				}
-				result.addAll( getBundleHierarchyNames( superclass ) );
-			}
-			catch ( final MissingResourceException ignored )
-			{
-			}
-		}
-
-		final Class<?> declaringClass = getDeclaringClass( clazz );
-		if ( declaringClass != null )
-		{
-			try
-			{
-				final ResourceBundle bundle = getBundleHierarchy( declaringClass, null );
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchyElements() got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-				}
-				result.addAll( getBundleHierarchyNames( declaringClass ) );
+				final ResourceBundle bundle = getBundleHierarchy( superclass, locale );
+				superBundle = bundle;
+				LOG.trace( () -> "getHierarchyBundles: got super-bundle for super-class " + superclass.getName() + " with keys " + new TreeSet<>( bundle.keySet() ) );
+				bundles.add( superBundle );
 			}
 			catch ( final MissingResourceException ignored )
 			{
@@ -340,28 +193,20 @@ public class ResourceBundleTools
 		}
 
 		final Package localPackage = clazz.getPackage();
-		if ( trace )
-		{
-			LOG.trace( "getBundleHierarchyElements() localPackage=" + localPackage );
-		}
+		LOG.trace( () -> "getHierarchyBundles: localPackage=" + localPackage );
 		if ( ( localPackage != null ) && ( ( superBundle == null ) || !localPackage.equals( superclass.getPackage() ) ) )
 		{
+			final int packageBundleIndex = bundles.size();
 			String packageName = localPackage.getName();
 			do
 			{
 				final String packageBundleName = packageName + ".LocalStrings";
-				if ( trace )
-				{
-					LOG.trace( "getBundleHierarchyElements() packageBundleName=" + packageBundleName );
-				}
+				LOG.trace( () -> "getHierarchyBundles: packageBundleName=" + packageBundleName );
 				try
 				{
-					final ResourceBundle bundle = getBundle( packageBundleName, null, clazz.getClassLoader() );
-					result.add( packageBundleName );
-					if ( trace )
-					{
-						LOG.trace( "getBundleHierarchyElements() got bundle for package " + packageName + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-					}
+					final ResourceBundle bundle = getBundle( packageBundleName, locale, clazz.getClassLoader() );
+					bundles.add( packageBundleIndex, bundle );
+					LOG.trace( () -> "getHierarchyBundles: got " + packageBundleName + " bundle with keys " + new TreeSet<>( bundle.keySet() ) );
 				}
 				catch ( final MissingResourceException ignored )
 				{
@@ -373,25 +218,30 @@ public class ResourceBundleTools
 			while ( packageName != null );
 		}
 
+		final Class<?> declaringClass = getDeclaringClass( clazz );
+		if ( declaringClass != null )
+		{
+			try
+			{
+				final ResourceBundle bundle = getBundleHierarchy( declaringClass, locale );
+				bundles.add( bundle );
+				LOG.trace( () -> "getHierarchyBundles: got bundle for declaring class " + declaringClass.getName() + " with keys " + new TreeSet<>( bundle.keySet() ) );
+			}
+			catch ( final MissingResourceException ignored )
+			{
+			}
+		}
+
 		try
 		{
-			final ResourceBundle bundle = getBundle( clazz, null );
-			result.add( clazz.getName() );
-			if ( trace )
-			{
-				LOG.trace( "getBundleHierarchyElements() got bundle for requested class " + clazz.getName() + " with keys " + new TreeSet<String>( bundle.keySet() ) );
-			}
+			final ResourceBundle bundle = getBundle( clazz, locale );
+			bundles.add( bundle );
+			LOG.trace( () -> "getHierarchyBundles: got bundle for requested class " + clazz.getName() + " with keys " + new TreeSet<>( bundle.keySet() ) );
 		}
 		catch ( final MissingResourceException ignored )
 		{
 		}
-
-		if ( trace )
-		{
-			LOG.trace( "getBundleHierarchyElements() are " + result + " for class  " + clazz.getName() );
-		}
-
-		return result;
+		return bundles;
 	}
 
 	@SuppressWarnings( "JavaDoc" )
@@ -538,7 +388,7 @@ public class ResourceBundleTools
 
 		if ( properties != null )
 		{
-			map = new HashMap<String, String>( properties.size() );
+			map = new HashMap<>( properties.size() );
 			for ( final Enumeration<String> e = (Enumeration<String>)properties.propertyNames(); e.hasMoreElements(); )
 			{
 				final String key = e.nextElement();
@@ -549,7 +399,7 @@ public class ResourceBundleTools
 		}
 		else
 		{
-			map = new HashMap<String, String>( 0 );
+			map = new HashMap<>( 0 );
 		}
 
 		return new ResourceBundle()
