@@ -29,6 +29,7 @@ package com.numdata.oss.db;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.*;
 import javax.sql.*;
 
 import com.numdata.oss.*;
@@ -716,6 +717,33 @@ public class JdbcTools
 			}
 
 			return collection;
+		};
+	}
+
+	/**
+	 * Returns a {@link ResultProcessor result processor} to wrap the given
+	 * {@link ResultProcessor result processor} so that it will be invoked for
+	 * each row in the result set and its result objects collected.
+	 *
+	 * @param processor  Processor for row in {@link ResultSet} to produce
+	 *                   element to collect.
+	 * @param collector  Collector that produces the result.
+	 * @param <E>        Element type.
+	 * @param <A>        Mutable accumulation type.
+	 * @param <R>        Result type.
+	 *
+	 * @return {@link ResultProcessor}.
+	 */
+	@NotNull
+	public static <E, A, R> ResultProcessor<R> collect( @NotNull final ResultProcessor<E> processor, @NotNull final Collector<E, A, R> collector )
+	{
+		return resultSet -> {
+			final A result = collector.supplier().get();
+			while ( resultSet.next() )
+			{
+				collector.accumulator().accept( result, processor.process( resultSet ) );
+			}
+			return collector.finisher().apply( result );
 		};
 	}
 
