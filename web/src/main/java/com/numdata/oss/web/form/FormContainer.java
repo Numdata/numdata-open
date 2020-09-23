@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -308,7 +308,7 @@ extends FormComponent
 	 *
 	 * @return Choice field that was created.
 	 *
-	 * @see ResourceBundleTools#getChoices
+	 * @see ResourceBundleTools#getChoices                                                    0
 	 */
 	@NotNull
 	public <T extends Enum<T>> FormChoice createChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
@@ -320,12 +320,7 @@ extends FormComponent
 
 		for ( final T constant : constants )
 		{
-			String label = ResourceBundleTools.getString( bundle, resourceKey + '.' + constant.name(), null );
-			if ( label == null )
-			{
-				label = ResourceBundleTools.getString( locale, constant );
-			}
-
+			final String label = ResourceBundleTools.getStringOr( bundle, resourceKey + '.' + constant.name(), () -> ResourceBundleTools.getStringOr( bundle, constant, () -> ResourceBundleTools.getString( locale, constant ) ) );
 			optionValues.add( constant.name() );
 			optionLabels.add( label );
 		}
