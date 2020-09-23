@@ -29,6 +29,7 @@ package com.numdata.oss;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.zip.*;
 
 import com.numdata.oss.log.*;
@@ -643,6 +644,45 @@ public class ResourceBundleTools
 	}
 
 	/**
+	 * Get string from resource for an enumerate type.
+	 *
+	 * @param bundle    Bundle to get string from.
+	 * @param enumerate Enumerate value.
+	 * @param fallback  Supplier for fallback if resource entry is not found.
+	 *
+	 * @return String from resource bundle, or default value if undefined.
+	 */
+	@NotNull
+	public static String getStringOr( @Nullable final ResourceBundle bundle, @NotNull final Enum<?> enumerate, @NotNull final Supplier<String> fallback )
+	{
+		String result;
+
+		final String name = enumerate.name();
+
+		if ( bundle != null )
+		{
+			try
+			{
+				final Class<?> enumClass = enumerate.getClass();
+				String enumName = enumClass.getSimpleName();
+				enumName = enumName.substring( enumName.lastIndexOf( '$' ) + 1 );
+
+				result = bundle.getString( enumName + '.' + name );
+			}
+			catch ( final MissingResourceException ignored )
+			{
+				result = getStringOr( bundle, name, fallback );
+			}
+		}
+		else
+		{
+			result = fallback.get();
+		}
+
+		return result;
+	}
+
+	/**
 	 * Get string from resource bundle for the specified class and locale. If no
 	 * locale is specified, the default locale is used.
 	 *
@@ -707,6 +747,40 @@ public class ResourceBundleTools
 			{
 				/* ignored, will return default value */
 			}
+		}
+		return result;
+	}
+
+	/**
+	 * Get string from resource bundle. If the requested string is not defined
+	 * in the bundle (or if {@code null} is specified for the bundle or key),
+	 * the specified default value is returned.
+	 *
+	 * @param bundle   Bundle to get string from.
+	 * @param key      Key of string to get from bundle.
+	 * @param fallback Supplier for fallback if resource entry is not found.
+	 *
+	 * @return String from resource bundle, or default value if undefined.
+	 */
+	@Nullable
+	public static String getStringOr( @Nullable final ResourceBundle bundle, @NotNull final String key, @NotNull final Supplier<@Nullable String> fallback )
+	{
+		String result = null;
+		if ( bundle != null )
+		{
+			try
+			{
+				result = bundle.getString( key );
+			}
+			catch ( final MissingResourceException e )
+			{
+				/* ignored, will return default value */
+			}
+		}
+
+		if ( result == null )
+		{
+			result = fallback.get();
 		}
 		return result;
 	}
