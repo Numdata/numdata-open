@@ -29,6 +29,7 @@ package com.numdata.oss.db;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.*;
 import javax.sql.*;
 
@@ -739,9 +740,10 @@ public class JdbcTools
 	{
 		return resultSet -> {
 			final A result = collector.supplier().get();
+			final BiConsumer<A, E> accumulator = collector.accumulator();
 			while ( resultSet.next() )
 			{
-				collector.accumulator().accept( result, processor.process( resultSet ) );
+				accumulator.accept( result, processor.process( resultSet ) );
 			}
 			return collector.finisher().apply( result );
 		};
