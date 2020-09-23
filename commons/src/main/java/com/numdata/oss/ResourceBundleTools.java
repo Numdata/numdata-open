@@ -738,24 +738,7 @@ public class ResourceBundleTools
 	@Nullable
 	public static String getStringOr( @Nullable final ResourceBundle bundle, @NotNull final String key, @NotNull final Supplier<@Nullable String> fallback )
 	{
-		String result = null;
-		if ( bundle != null )
-		{
-			try
-			{
-				result = bundle.getString( key );
-			}
-			catch ( final MissingResourceException e )
-			{
-				/* ignored, will return default value */
-			}
-		}
-
-		if ( result == null )
-		{
-			result = fallback.get();
-		}
-		return result;
+		return ( bundle != null ) && bundle.containsKey( key ) ? bundle.getString( key ) : fallback.get();
 	}
 
 	/**
