@@ -616,31 +616,7 @@ public class ResourceBundleTools
 	@NotNull
 	public static String getString( @Nullable final ResourceBundle bundle, @NotNull final Enum<?> enumerate )
 	{
-		String result;
-
-		final String name = enumerate.name();
-
-		if ( bundle != null )
-		{
-			try
-			{
-				final Class<?> enumClass = enumerate.getClass();
-				String enumName = enumClass.getSimpleName();
-				enumName = enumName.substring( enumName.lastIndexOf( '$' ) + 1 );
-
-				result = bundle.getString( enumName + '.' + name );
-			}
-			catch ( final MissingResourceException ignored )
-			{
-				result = getString( bundle, name, enumerate.toString() );
-			}
-		}
-		else
-		{
-			result = enumerate.toString();
-		}
-
-		return result;
+		return getStringOr( bundle, enumerate, enumerate::toString );
 	}
 
 	/**
@@ -652,27 +628,24 @@ public class ResourceBundleTools
 	 *
 	 * @return String from resource bundle, or default value if undefined.
 	 */
-	@NotNull
 	public static String getStringOr( @Nullable final ResourceBundle bundle, @NotNull final Enum<?> enumerate, @NotNull final Supplier<String> fallback )
 	{
-		String result;
-
-		final String name = enumerate.name();
+		final String result;
 
 		if ( bundle != null )
 		{
-			try
-			{
-				final Class<?> enumClass = enumerate.getClass();
-				String enumName = enumClass.getSimpleName();
-				enumName = enumName.substring( enumName.lastIndexOf( '$' ) + 1 );
+			final Class<?> enumClass = enumerate.getClass();
+			final String simpleName = enumClass.getSimpleName();
+			final String enumName = simpleName.substring( simpleName.lastIndexOf( '$' ) + 1 );
+			final String name = enumerate.name();
 
-				result = bundle.getString( enumName + '.' + name );
-			}
-			catch ( final MissingResourceException ignored )
-			{
-				result = getStringOr( bundle, name, fallback );
-			}
+			result = getStringOr( bundle, enumName + '.' + name,
+			                      () -> getStringOr( bundle, name, () -> {
+				                      final String camelCaseName = TextTools.upperToCamelCase( name );
+				                      return camelCaseName.equals( name ) ? fallback.get() :
+				                             getStringOr( bundle, enumName + '.' + camelCaseName,
+				                                          () -> getStringOr( bundle, camelCaseName, fallback ) );
+			                      } ) );
 		}
 		else
 		{
