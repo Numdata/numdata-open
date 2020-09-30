@@ -314,10 +314,10 @@ public class TestHsqlDbServices
 
 			for ( int pos = -1; pos <= nrRows; pos++ )
 			{
-				assertEquals( what + '(' + pos + ") isBeforeFirst()", ( pos < 0 ), clone.isBeforeFirst() );
+				assertEquals( what + '(' + pos + ") isBeforeFirst()", !isEmpty && ( pos < 0 ), clone.isBeforeFirst() );
 				assertEquals( what + '(' + pos + ") isFirst()", !isEmpty && ( pos == 0 ), clone.isFirst() );
 				assertEquals( what + '(' + pos + ") isLast()", !isEmpty && ( pos == last ), clone.isLast() );
-				assertEquals( what + '(' + pos + ") isAfterLast()", ( pos > last ), clone.isAfterLast() );
+				assertEquals( what + '(' + pos + ") isAfterLast()", !isEmpty && ( pos > last ), clone.isAfterLast() );
 				assertEquals( what + '(' + pos + ") next()", ( pos < last ), clone.next() );
 			}
 		}
