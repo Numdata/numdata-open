@@ -28,6 +28,7 @@ package com.numdata.oss.junit;
 
 import java.util.concurrent.*;
 
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 import static org.junit.Assert.*;
 
@@ -53,7 +54,7 @@ public class JUnitTools
 	 * @param expectedExceptionType Exception type.
 	 * @param runnable              Runnable to run.
 	 */
-	public static void assertException( @NotNull final String message, @NotNull final Class<? extends Exception> expectedExceptionType, @NotNull final Runnable runnable )
+	public static void assertException( @NotNull final String message, @NotNull final Class<? extends Exception> expectedExceptionType, @NotNull final CheckedRunnable<?> runnable )
 	{
 		try
 		{
@@ -101,7 +102,7 @@ public class JUnitTools
 	 * @param expectedException Expected exception.
 	 * @param runnable          Runnable to run.
 	 */
-	public static void assertException( @NotNull final String message, @NotNull final Exception expectedException, @NotNull final Runnable runnable )
+	public static void assertException( @NotNull final String message, @NotNull final Exception expectedException, @NotNull final CheckedRunnable<?> runnable )
 	{
 		try
 		{
