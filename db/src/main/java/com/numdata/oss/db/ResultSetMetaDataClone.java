@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@ package com.numdata.oss.db;
 import java.sql.*;
 
 /**
- * Implements {@code ResultSetMetaData} interface based on the contents of an
- * existing {@code ResultSetMetaData} instance. All data within that instance is
+ * Implements {@link ResultSetMetaData} interface based on the contents of an
+ * existing {@link ResultSetMetaData} instance. All data within that instance is
  * copied, so the old instance can be discarded.
  *
  * @author Peter S. Heijnen
@@ -38,67 +38,109 @@ import java.sql.*;
 public class ResultSetMetaDataClone
 implements ResultSetMetaData
 {
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int _columnCount;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isAutoIncrement;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isCaseSensitive;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isSearchable;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isCurrency;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int[] _isNullable;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isSigned;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int[] _columnDisplaySize;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _columnLabel;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _columnName;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _sSchemaName;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int[] _precision;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int[] _scale;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _tableName;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _catalogName;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final int[] _columnType;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _columnTypeName;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isReadOnly;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isWritable;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final boolean[] _isDefinitelyWritable;
 
-	/** Cloned data. */
+	/**
+	 * Cloned data.
+	 */
 	private final String[] _columnClassName;
 
 	/**
@@ -174,14 +216,13 @@ implements ResultSetMetaData
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> iface )
-	throws SQLException
+	public boolean isWrapperFor( final Class<?> c )
 	{
 		return false;
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> iface )
+	public <T> T unwrap( final Class<T> c )
 	throws SQLException
 	{
 		throw new SQLException( "not a wrapper" );

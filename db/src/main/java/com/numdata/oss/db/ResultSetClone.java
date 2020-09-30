@@ -43,7 +43,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( { "ReturnOfCollectionOrArrayField", "WeakerAccess", "FinalClass", "override" } )
+@SuppressWarnings( { "ReturnOfCollectionOrArrayField", "FinalClass", "override" } )
 public final class ResultSetClone
 implements ResultSet
 {
@@ -225,7 +225,7 @@ implements ResultSet
 	public String getCursorName()
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -336,13 +336,13 @@ implements ResultSet
 	}
 
 	@Override
-	public boolean isWrapperFor( final Class<?> iface )
+	public boolean isWrapperFor( final Class<?> c )
 	{
 		return false;
 	}
 
 	@Override
-	public <T> T unwrap( final Class<T> iface )
+	public <T> T unwrap( final Class<T> c )
 	throws SQLException
 	{
 		throw new SQLException( NOT_A_WRAPPER );
@@ -373,7 +373,7 @@ implements ResultSet
 			throw new SQLException( RESULT_CLOSED );
 		}
 
-		return ( _rowIndex < 0 );
+		return ( _rowIndex < 0 ) && ( _data.length > 0 );
 	}
 
 	@Override
@@ -385,7 +385,7 @@ implements ResultSet
 			throw new SQLException( RESULT_CLOSED );
 		}
 
-		return ( _rowIndex >= _data.length );
+		return ( _data.length > 0 ) && ( _rowIndex >= _data.length );
 	}
 
 	@Override
@@ -461,7 +461,6 @@ implements ResultSet
 
 		final int index = _rowIndex;
 		return ( ( index < 0 ) || ( index >= _data.length ) ) ? 0 : index + 1;
-
 	}
 
 	@Override
@@ -574,7 +573,7 @@ implements ResultSet
 	public Array getArray( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -685,7 +684,7 @@ implements ResultSet
 	public Blob getBlob( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -840,7 +839,7 @@ implements ResultSet
 	public Clob getClob( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1028,7 +1027,7 @@ implements ResultSet
 	public Reader getNCharacterStream( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1042,7 +1041,7 @@ implements ResultSet
 	public NClob getNClob( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1056,7 +1055,7 @@ implements ResultSet
 	public String getNString( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1108,7 +1107,7 @@ implements ResultSet
 	public Object getObject( final int columnIndex, final Map<String, Class<?>> map )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Nullable
@@ -1136,7 +1135,7 @@ implements ResultSet
 	public Ref getRef( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1150,7 +1149,7 @@ implements ResultSet
 	public RowId getRowId( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1194,7 +1193,7 @@ implements ResultSet
 	public SQLXML getSQLXML( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1335,21 +1334,21 @@ implements ResultSet
 	public InputStream getUnicodeStream( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
 	public InputStream getUnicodeStream( final String columnName )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
 	public URL getURL( final int columnIndex )
 	throws SQLException
 	{
-		throw new SQLException( NOT_IMPLEMENTED );
+		throw new SQLFeatureNotSupportedException( NOT_IMPLEMENTED );
 	}
 
 	@Override
@@ -1370,7 +1369,7 @@ implements ResultSet
 	public void updateArray( final String columnName, final Array x )
 	throws SQLException
 	{
-		updateArray( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1398,21 +1397,21 @@ implements ResultSet
 	public void updateAsciiStream( final String columnName, final InputStream is )
 	throws SQLException
 	{
-		updateAsciiStream( findColumn( columnName ), is );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateAsciiStream( final String columnName, final InputStream is, final int length )
 	throws SQLException
 	{
-		updateAsciiStream( findColumn( columnName ), is, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateAsciiStream( final String columnName, final InputStream is, final long length )
 	throws SQLException
 	{
-		updateAsciiStream( findColumn( columnName ), is, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1426,7 +1425,7 @@ implements ResultSet
 	public void updateBigDecimal( final String columnName, final BigDecimal x )
 	throws SQLException
 	{
-		updateBigDecimal( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1454,21 +1453,21 @@ implements ResultSet
 	public void updateBinaryStream( final String columnName, final InputStream is )
 	throws SQLException
 	{
-		updateBinaryStream( findColumn( columnName ), is );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateBinaryStream( final String columnName, final InputStream is, final int length )
 	throws SQLException
 	{
-		updateBinaryStream( findColumn( columnName ), is, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateBinaryStream( final String columnName, final InputStream is, final long length )
 	throws SQLException
 	{
-		updateBinaryStream( findColumn( columnName ), is, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1496,21 +1495,21 @@ implements ResultSet
 	public void updateBlob( final String columnName, final Blob x )
 	throws SQLException
 	{
-		updateBlob( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateBlob( final String columnName, final InputStream is )
 	throws SQLException
 	{
-		updateBlob( findColumn( columnName ), is );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateBlob( final String columnName, final InputStream is, final long length )
 	throws SQLException
 	{
-		updateBlob( findColumn( columnName ), is, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1524,7 +1523,7 @@ implements ResultSet
 	public void updateBoolean( final String columnName, final boolean x )
 	throws SQLException
 	{
-		updateBoolean( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1538,7 +1537,7 @@ implements ResultSet
 	public void updateByte( final String columnName, final byte x )
 	throws SQLException
 	{
-		updateByte( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1552,7 +1551,7 @@ implements ResultSet
 	public void updateBytes( final String columnName, final byte[] x )
 	throws SQLException
 	{
-		updateBytes( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1580,21 +1579,21 @@ implements ResultSet
 	public void updateCharacterStream( final String columnName, final Reader reader )
 	throws SQLException
 	{
-		updateCharacterStream( findColumn( columnName ), reader );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateCharacterStream( final String columnName, final Reader reader, final int length )
 	throws SQLException
 	{
-		updateCharacterStream( findColumn( columnName ), reader, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateCharacterStream( final String columnName, final Reader reader, final long length )
 	throws SQLException
 	{
-		updateCharacterStream( findColumn( columnName ), reader, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1622,21 +1621,21 @@ implements ResultSet
 	public void updateClob( final String columnName, final Clob x )
 	throws SQLException
 	{
-		updateClob( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateClob( final String columnName, final Reader reader )
 	throws SQLException
 	{
-		updateClob( findColumn( columnName ), reader );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateClob( final String columnName, final Reader reader, final long length )
 	throws SQLException
 	{
-		updateClob( findColumn( columnName ), reader, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1650,7 +1649,7 @@ implements ResultSet
 	public void updateDate( final String columnName, final Date x )
 	throws SQLException
 	{
-		updateDate( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1664,7 +1663,7 @@ implements ResultSet
 	public void updateDouble( final String columnName, final double x )
 	throws SQLException
 	{
-		updateDouble( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1678,7 +1677,7 @@ implements ResultSet
 	public void updateFloat( final String columnName, final float x )
 	throws SQLException
 	{
-		updateFloat( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1692,7 +1691,7 @@ implements ResultSet
 	public void updateInt( final String columnName, final int x )
 	throws SQLException
 	{
-		updateInt( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1706,7 +1705,7 @@ implements ResultSet
 	public void updateLong( final String columnName, final long x )
 	throws SQLException
 	{
-		updateLong( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1727,14 +1726,14 @@ implements ResultSet
 	public void updateNCharacterStream( final String columnName, final Reader reader )
 	throws SQLException
 	{
-		updateNCharacterStream( findColumn( columnName ), reader );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateNCharacterStream( final String columnName, final Reader reader, final long length )
 	throws SQLException
 	{
-		updateNCharacterStream( findColumn( columnName ), reader, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1748,7 +1747,7 @@ implements ResultSet
 	public void updateNClob( final String columnName, final NClob nClob )
 	throws SQLException
 	{
-		updateNClob( findColumn( columnName ), nClob );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1769,14 +1768,14 @@ implements ResultSet
 	public void updateNClob( final String columnName, final Reader reader )
 	throws SQLException
 	{
-		updateNClob( findColumn( columnName ), reader );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateNClob( final String columnName, final Reader reader, final long length )
 	throws SQLException
 	{
-		updateNClob( findColumn( columnName ), reader, length );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1790,21 +1789,21 @@ implements ResultSet
 	public void updateNString( final String columnName, final String nString )
 	throws SQLException
 	{
-		updateNString( findColumn( columnName ), nString );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateNull( final int columnIndex )
 	throws SQLException
 	{
-		updateObject( columnIndex, null );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateNull( final String columnName )
 	throws SQLException
 	{
-		updateNull( findColumn( columnName ) );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1827,14 +1826,14 @@ implements ResultSet
 
 	throws SQLException
 	{
-		updateObject( findColumn( columnName ), obj, scale );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateObject( final String columnName, final Object x )
 	throws SQLException
 	{
-		updateObject( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1848,7 +1847,7 @@ implements ResultSet
 	public void updateRef( final String columnName, final Ref x )
 	throws SQLException
 	{
-		updateRef( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1862,7 +1861,7 @@ implements ResultSet
 	public void updateRowId( final String columnName, final RowId x )
 	throws SQLException
 	{
-		updateRowId( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1876,7 +1875,7 @@ implements ResultSet
 	public void updateShort( final String columnName, final short x )
 	throws SQLException
 	{
-		updateShort( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1890,7 +1889,7 @@ implements ResultSet
 	public void updateSQLXML( final String columnName, final SQLXML x )
 	throws SQLException
 	{
-		updateSQLXML( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1904,7 +1903,7 @@ implements ResultSet
 	public void updateString( final String columnName, final String x )
 	throws SQLException
 	{
-		updateString( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
@@ -1918,12 +1917,11 @@ implements ResultSet
 	public void updateTime( final String columnName, final Time x )
 	throws SQLException
 	{
-		updateTime( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public void updateTimestamp( final int columnIndex, final Timestamp x )
-
 	throws SQLException
 	{
 		throw new SQLException( NOT_WRITABLE );
@@ -1933,12 +1931,18 @@ implements ResultSet
 	public void updateTimestamp( final String columnName, final Timestamp x )
 	throws SQLException
 	{
-		updateTimestamp( findColumn( columnName ), x );
+		throw new SQLException( NOT_WRITABLE );
 	}
 
 	@Override
 	public boolean wasNull()
+	throws SQLException
 	{
+		if ( _isClosed )
+		{
+			throw new SQLException( RESULT_CLOSED );
+		}
+
 		return _wasNull;
 	}
 
