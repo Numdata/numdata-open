@@ -202,7 +202,7 @@
 			<dependency>
 				<groupId>org.hsqldb</groupId>
 				<artifactId>hsqldb</artifactId>
-				<version>2.5.1</version>
+				<version>2.5.0</version> <!-- 2.5.1 ==> TestHsqlDbServices.testDateField => org.hsqldb.jdbc.JDBCResultSet.getTimestamp => IllegalArgumentException: nanos > 999999999 or < 0 -->
 				<scope>test</scope>
 			</dependency>
 			<dependency>
