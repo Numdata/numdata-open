@@ -137,7 +137,11 @@ public class JUnitTools
 		}
 		catch ( final Exception e )
 		{
-			assertEquals( message, expectedException.getClass(), e.getClass() );
+			if ( !expectedException.getClass().equals( e.getClass() ) )
+			{
+				e.printStackTrace();
+				assertEquals( message, expectedException.toString(), e.toString() );
+			}
 			final String expectedMessage = expectedException.getMessage();
 			if ( ( expectedMessage != null ) && !expectedMessage.equals( e.getMessage() ) )
 			{
