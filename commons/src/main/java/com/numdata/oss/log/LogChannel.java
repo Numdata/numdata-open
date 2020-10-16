@@ -42,6 +42,13 @@ public interface LogChannel
 	NullChannel NULL = new NullChannel();
 
 	/**
+	 * Whether this channel logs anything.
+	 *
+	 * @return {@code true} for real channels.
+	 */
+	boolean isEnabled();
+
+	/**
 	 * Send log message to this channel.
 	 *
 	 * @param message Log message.
@@ -77,6 +84,12 @@ public interface LogChannel
 	class NullChannel
 	implements LogChannel
 	{
+		@Override
+		public boolean isEnabled()
+		{
+			return false;
+		}
+
 		@Override
 		public void log( @Nullable final String message )
 		{
@@ -128,6 +141,12 @@ public interface LogChannel
 		}
 
 		@Override
+		public boolean isEnabled()
+		{
+			return true;
+		}
+
+		@Override
 		public void log( @Nullable final String message )
 		{
 			log( message, null );
@@ -148,8 +167,7 @@ public interface LogChannel
 		@Override
 		public void log( @Nullable final String message, @Nullable final Throwable throwable )
 		{
-			ClassLogger.logImpl( _name, _level, throwable, message );
+			ClassLogger.logImpl( _name, _level, throwable, String.valueOf( message ) );
 		}
 	}
-
 }
