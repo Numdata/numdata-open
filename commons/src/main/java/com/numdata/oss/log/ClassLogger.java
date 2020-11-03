@@ -497,6 +497,17 @@ public final class ClassLogger
 	}
 
 	/**
+	 * Get channel to send {@link #ERROR} messages to.
+	 *
+	 * @return {@link LogChannel} to send messages to.
+	 */
+	@NotNull
+	public LogChannel getErrorChannel()
+	{
+		return getChannel( ERROR );
+	}
+
+	/**
 	 * Get channel to send {@link #WARN} messages to.
 	 *
 	 * @return {@link LogChannel} to send messages to.
