@@ -167,7 +167,7 @@ public class HTMLTools
 			final String[] parts1 = trimmed1.split( "\\s+" );
 			final String[] parts2 = trimmed2.split( "\\s+" );
 
-			final Collection<String> combinedClasses = new LinkedHashSet<String>( parts1.length + parts2.length );
+			final Collection<String> combinedClasses = new LinkedHashSet<>( parts1.length + parts2.length );
 			combinedClasses.addAll( Arrays.asList( parts1 ) );
 			combinedClasses.addAll( Arrays.asList( parts2 ) );
 
@@ -763,7 +763,7 @@ public class HTMLTools
 	 *
 	 * @throws IOException if an I/O error occurred.
 	 */
-	public static void writeHeading( final Writer out, final int level, final String text )
+	public static void writeHeading( final @NotNull Writer out, final int level, final @NotNull String text )
 	throws IOException
 	{
 		if ( ( level < 1 ) || ( level > 6 ) )
@@ -771,32 +771,26 @@ public class HTMLTools
 			throw new IllegalArgumentException( "level=" + level );
 		}
 
-		out.append( "<h" );
-		out.append( String.valueOf( level ) );
-		out.append( '>' );
-		out.append( text );
-		out.append( "</h" );
-		out.append( String.valueOf( level ) );
-		out.append( ">\n" );
+		writeHeading( out, level, text, null );
 	}
 
 	/**
 	 * Write heading of the specified {@code level} with the specified {@code
-	 * text} as content to an HTML document, optionally with an anchor tag to
-	 * allow references to it. This will output the following code:
+	 * text} as content to an HTML document, optionally with an id to allow
+	 * references to it. For example, for level 3, text {@code "text"} and id
+	 * {@code "fragid"}:
 	 * <pre>
-	 *   &lt;h{@code level}&gt;&lt;a name='{@code name}'&gt;{@code
-	 * text}&lt;/a&gt;&lt;/h{@code level}&gt;
+	 *   &lt;h3 id='fragid'&gt;text&lt;/h3&gt;
 	 * </pre>
 	 *
 	 * @param out   Writer to use for output.
 	 * @param level Heading level (between 1 and 6, inclusive).
 	 * @param text  Text body to write.
-	 * @param name  Anchor name; {@code null} to write a heading only.
+	 * @param id    Element id; {@code null} to write no id attribute.
 	 *
 	 * @throws IOException if an I/O error occurred.
 	 */
-	public static void writeHeading( final Writer out, final int level, final String text, final String name )
+	public static void writeHeading( final @NotNull Writer out, final int level, final @NotNull String text, final @Nullable String id )
 	throws IOException
 	{
 		if ( ( level < 1 ) || ( level > 6 ) )
@@ -806,17 +800,13 @@ public class HTMLTools
 
 		out.append( "<h" );
 		out.append( String.valueOf( level ) );
+		if ( id != null )
+		{
+			writeAttribute( out, "id", id );
+		}
 		out.append( '>' );
 
-		if ( name != null )
-		{
-			out.append( "<a name='" );
-			out.append( name );
-			out.append( "'>" );
-			out.append( "</a>" );
-		}
-
-		out.append( text );
+		escapeCharacterData( out, text );
 
 		out.append( "</h" );
 		out.append( String.valueOf( level ) );
@@ -1084,15 +1074,30 @@ public class HTMLTools
 			for ( final String name : attributes.stringPropertyNames() )
 			{
 				final String value = attributes.getProperty( name );
-
-				out.append( ' ' );
-				out.append( name );
-				out.append( '=' );
-				out.append( '"' );
-				escapeAttributeValue( out, value );
-				out.append( '"' );
+				writeAttribute( out, name, value );
 			}
 		}
+	}
+
+	/**
+	 * Write single element attribute to the specified writer, including an
+	 * initial space before the name of the attribute.
+	 *
+	 * @param out   Destination for attributes.
+	 * @param name  Attribute name.
+	 * @param value Attribute value.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	public static void writeAttribute( final @NotNull Appendable out, final String name, final String value )
+	throws IOException
+	{
+		out.append( ' ' );
+		out.append( name );
+		out.append( '=' );
+		out.append( '"' );
+		escapeAttributeValue( out, value );
+		out.append( '"' );
 	}
 
 	/**
@@ -1120,8 +1125,7 @@ public class HTMLTools
 		}
 		else
 		{
-			result = new HashMap<String, String>();
-			result.putAll( attributes1 );
+			result = new HashMap<>( attributes1 );
 
 			for ( final Map.Entry<String, String> entry : attributes2.entrySet() )
 			{
@@ -1158,12 +1162,7 @@ public class HTMLTools
 	{
 		for ( final Map.Entry<String, String> entry : attributes.entrySet() )
 		{
-			out.append( ' ' );
-			out.append( entry.getKey() );
-			out.append( '=' );
-			out.append( '"' );
-			escapeAttributeValue( out, entry.getValue() );
-			out.append( '"' );
+			writeAttribute( out, entry.getKey(), entry.getValue() );
 		}
 	}
 
@@ -1337,12 +1336,8 @@ public class HTMLTools
 									inPreFormattedSection = false;
 									resultBuffer.append( tokenBuffer );
 									tokenBuffer.setLength( 0 );
-									state = ASCII_HTML_TEXT;
 								}
-								else
-								{
-									state = ASCII_HTML_TEXT;
-								}
+								state = ASCII_HTML_TEXT;
 							}
 							else
 							{
