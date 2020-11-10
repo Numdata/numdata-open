@@ -1089,7 +1089,7 @@ public class HTMLTools
 	 *
 	 * @throws IOException if an I/O error occurs.
 	 */
-	public static void writeAttribute( final @NotNull Appendable out, final String name, final String value )
+	public static void writeAttribute( final @NotNull Appendable out, final @NotNull String name, final @NotNull String value )
 	throws IOException
 	{
 		out.append( ' ' );
