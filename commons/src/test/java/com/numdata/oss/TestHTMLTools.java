@@ -26,6 +26,8 @@
  */
 package com.numdata.oss;
 
+import java.io.*;
+
 import com.numdata.oss.junit.*;
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -119,5 +121,23 @@ public class TestHTMLTools
 		ArrayTester.assertEquals( "Test #4", new int[] { 0x12, 0x34, 0x56, 0x78 }, HTMLTools.cssColorToRgb( "#12345678" ) );
 		ArrayTester.assertEquals( "Test #5", new int[] { 0x9a, 0xbc, 0xde, 0xf0 }, HTMLTools.cssColorToRgb( "#9abcdef0" ) );
 		ArrayTester.assertEquals( "Test #6", new int[] { 0xcb, 0xa9, 0x87, 0x65 }, HTMLTools.cssColorToRgb( "#cba98765" ) );
+	}
+
+	/**
+	 * Tests {@link HTMLTools#writeHeading} methods.
+	 */
+	@Test
+	public void testWriteHeading()
+	throws IOException
+	{
+		StringWriter out;
+
+		out = new StringWriter();
+		HTMLTools.writeHeading( out, 1, "Hello <HTML> world!" );
+		assertEquals( "Unexpected result.", "<h1>Hello &lt;HTML&gt; world!</h1>\n", out.toString() );
+
+		out = new StringWriter();
+		HTMLTools.writeHeading( out, 2, "Hello <HTML> world!", "This is \"my id\"" );
+		assertEquals( "Unexpected result.", "<h2 id=\"This is &quot;my id&quot;\">Hello &lt;HTML&gt; world!</h2>\n", out.toString() );
 	}
 }
