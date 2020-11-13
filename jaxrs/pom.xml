@@ -46,9 +46,14 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<properties>
-		<coverage.minimum>0.2</coverage.minimum>
+		<coverage.minimum>0.5</coverage.minimum>
 	</properties>
 </project>

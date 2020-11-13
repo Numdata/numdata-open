@@ -72,7 +72,7 @@ implements ContainerResponseFilter, Filter
 	 * allow any origin.
 	 */
 	@SuppressWarnings( "FieldAccessedSynchronizedAndUnsynchronized" )
-	private Set<String> _origins = Collections.singleton( "*" );
+	private Set<String> _origins = Collections.emptySet();
 
 	/**
 	 * Whether the set of origins contains a wildcard.
@@ -89,7 +89,7 @@ implements ContainerResponseFilter, Filter
 	 * Servlet config injected by Jersey.
 	 */
 	@Context
-	private ServletConfig _jerseyServletConfig;
+	ServletConfig _jerseyServletConfig;
 
 	/**
 	 * Whether the filter is initialized from Jersey.
@@ -111,15 +111,30 @@ implements ContainerResponseFilter, Filter
 	{
 		if ( origins != null )
 		{
-			final Set<String> originsSet = new HashSet<>( Arrays.asList( origins.split( "\\s+" ) ) );
+			final Set<String> originsSet = new LinkedHashSet<>( Arrays.asList( origins.split( "\\s+" ) ) );
+			_wildcard = originsSet.remove( "*" );
 			_origins = originsSet;
-			_wildcard = originsSet.contains( "*" );
 		}
 
 		if ( allowCredentials != null )
 		{
 			_allowCredentials = Boolean.parseBoolean( allowCredentials );
 		}
+	}
+
+	public Set<String> getOrigins()
+	{
+		return Collections.unmodifiableSet( _origins );
+	}
+
+	public boolean isWildcard()
+	{
+		return _wildcard;
+	}
+
+	public boolean isAllowCredentials()
+	{
+		return _allowCredentials;
 	}
 
 	/**
@@ -135,15 +150,14 @@ implements ContainerResponseFilter, Filter
 				final javax.naming.Context context = (javax.naming.Context)initialContext.lookup( "java:comp/env/" + getClass().getName() );
 				init( lookup( context, "origins" ),
 				      lookup( context, "allowCredentials" ) );
-				LOG.debug( () -> "Initialized from JNDI with origins " + _origins + ", Allow-Credentials=" + _allowCredentials );
+				LOG.debug( () -> "Initialized from JNDI with origins " + getOrigins() + ", Allow-Credentials=" + isAllowCredentials() );
 			}
 			finally
 			{
 				initialContext.close();
-
 			}
 		}
-		catch ( final NameNotFoundException ignored )
+		catch ( final NoInitialContextException | NameNotFoundException ignored )
 		{
 			LOG.debug( "Not running with JNDI context. This is no problem, just a notice." );
 		}
@@ -213,11 +227,16 @@ implements ContainerResponseFilter, Filter
 		final String origin = request.getRequestHeader( "Origin" );
 		if ( ( origin == null ) || "null".equals( origin ) || "*".equals( origin ) )
 		{
-			trace.log( " - Origin not specified by request. Cross-origin resource sharing is disabled." );
-		}
-		else if ( _wildcard )
-		{
-			trace.log( () -> " - Origin " + origin + " is allowed by wildcard in filter configuration." );
+			if ( _wildcard )
+			{
+				trace.log( () -> " - Origin no specified by request, but allowed by wildcard in filter configuration." );
+				request.setResponseHeader( "Access-Control-Allow-Origin", "*" );
+				trace.log( () -> " - Access-Control-Allow-Origin: " + origin );
+			}
+			else
+			{
+				trace.log( " - Origin not specified by request. Cross-origin resource sharing is disabled." );
+			}
 		}
 		else if ( !_origins.contains( origin ) )
 		{
