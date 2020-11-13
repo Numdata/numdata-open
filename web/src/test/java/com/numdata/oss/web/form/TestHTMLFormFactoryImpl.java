@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -130,7 +130,8 @@ public class TestHTMLFormFactoryImpl
 		_instance.writeFormPre( _contextPath, _out, attributes, TRICKY_STRING, null, Collections.<FormButton>emptyList() );
 		assertOutput( "<div class=\"form\">\n" +
 		              "  <form data-tricky=\"" + TRICKY_STRING_ATTRIBUTE + "\">\n" +
-		              "    <div class=\"title\">" + TRICKY_STRING_CHARACTER_DATA + "</div>\n" );
+		              "    <fieldset class=\"form\">\n" +
+		              "      <div class=\"title\">" + TRICKY_STRING_CHARACTER_DATA + "</div>\n" );
 	}
 
 	/**
@@ -152,14 +153,15 @@ public class TestHTMLFormFactoryImpl
 		new FormButton( FormButton.IMAGE, TRICKY_STRING )
 		);
 
-		_out.setIndentDepth( 2 );
+		_out.setIndentDepth( 3 );
 		_instance.writeFormPost( _contextPath, _out, null, buttons );
-		assertOutput( "    <div class=\"buttons\">\n" +
-		              "      <input type=\"submit\" value=\"" + TRICKY_STRING_ATTRIBUTE + "\" class=\"style1 style2\">\n" +
-		              "      <input type=\"button\" value=\"" + TRICKY_STRING_ATTRIBUTE + "\" onclick=\"history.back();\">\n" +
-		              "      <input type=\"file\" name=\"" + TRICKY_STRING_ATTRIBUTE + "\">\n" +
-		              "      <input type=\"image\" src=\"" + TRICKY_STRING_ATTRIBUTE + "\" alt=\"" + TRICKY_STRING_ATTRIBUTE + "\">\n" +
-		              "    </div>\n" +
+		assertOutput( "      <div class=\"buttons\">\n" +
+		              "        <input type=\"submit\" value=\"" + TRICKY_STRING_ATTRIBUTE + "\" class=\"style1 style2\">\n" +
+		              "        <input type=\"button\" value=\"" + TRICKY_STRING_ATTRIBUTE + "\" onclick=\"history.back();\">\n" +
+		              "        <input type=\"file\" name=\"" + TRICKY_STRING_ATTRIBUTE + "\">\n" +
+		              "        <input type=\"image\" src=\"" + TRICKY_STRING_ATTRIBUTE + "\" alt=\"" + TRICKY_STRING_ATTRIBUTE + "\">\n" +
+		              "      </div>\n" +
+		              "    </fieldset>\n" +
 		              "  </form>\n" +
 		              "</div>\n" );
 	}
