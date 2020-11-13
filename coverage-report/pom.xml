@@ -46,6 +46,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.numdata</groupId>
+			<artifactId>numdata-jaxrs</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.numdata</groupId>
 			<artifactId>numdata-jnlp</artifactId>
 			<version>${project.version}</version>
 		</dependency>
