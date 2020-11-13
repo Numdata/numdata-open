@@ -313,19 +313,14 @@ extends FormComponent
 	@NotNull
 	public <T extends Enum<T>> FormChoice createChoice( @Nullable final ResourceBundle bundle, @NotNull final String resourceKey, @NotNull final FieldTarget target, @NotNull final Locale locale, @NotNull final Class<T> enumType )
 	{
-		final T[] constants = enumType.getEnumConstants();
-
-		final List<String> optionValues = new ArrayList<>( constants.length );
-		final List<String> optionLabels = new ArrayList<>( constants.length );
-
-		for ( final T constant : constants )
+		final FormChoice result = new FormChoice( target );
+		for ( final T constant : enumType.getEnumConstants() )
 		{
 			final String label = ResourceBundleTools.getStringOr( bundle, resourceKey + '.' + constant.name(), () -> ResourceBundleTools.getStringOr( bundle, constant, () -> ResourceBundleTools.getString( locale, constant ) ) );
-			optionValues.add( constant.name() );
-			optionLabels.add( label );
+			assert label != null;
+			result.addOption( constant.name(), label );
 		}
-
-		return new FormChoice( target, optionValues, optionLabels );
+		return result;
 	}
 
 	/**

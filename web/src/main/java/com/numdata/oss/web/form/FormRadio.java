@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2015-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ extends FormField
 	/**
 	 * Whether this radio is checked or not.
 	 */
-	private boolean _checked = false;
+	private boolean _checked;
 
 	/**
 	 * Constructor for radio button.

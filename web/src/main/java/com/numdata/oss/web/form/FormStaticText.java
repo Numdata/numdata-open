@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,7 @@ extends FormComponent
 	throws IOException
 	{
 		final String text = getText();
-		iw.print( ( text != null ) && TextTools.isNonEmpty( text ) ? text : "&nbsp;" );
+		iw.print( TextTools.isNonEmpty( text ) ? text : "&nbsp;" );
 	}
 
 	@NotNull

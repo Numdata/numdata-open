@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,7 +88,7 @@ implements FieldTarget
 	@Override
 	public void setValue( @Nullable final String value )
 	{
-		if ( ( value != null ) && Boolean.parseBoolean( value ) )
+		if ( Boolean.parseBoolean( value ) )
 		{
 			_collection.add( _element );
 		}

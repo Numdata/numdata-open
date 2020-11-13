@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -207,7 +207,7 @@ public abstract class FormComponent
 	 *
 	 * @return Locale for localization of values shown on forms.
 	 */
-	public Locale getLocale()
+	public @NotNull Locale getLocale()
 	{
 		final FormContainer parent = getParent();
 		return ( parent == null ) ? Locale.getDefault() : parent.getLocale();

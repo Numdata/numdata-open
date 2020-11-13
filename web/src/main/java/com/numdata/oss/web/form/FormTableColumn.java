@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ extends FormComponent
 	/**
 	 * Start new row before starting column.
 	 */
-	private boolean _newRow = true;
+	private boolean _newRow;
 
 	/**
 	 * Extra attributes for HTML row element.

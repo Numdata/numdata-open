@@ -70,7 +70,7 @@ extends FormField
 	private boolean _disableAutocomplete = false;
 
 	/**
-	 * Allow or disallow empty values to be sumitted.
+	 * Allow or disallow empty values to be submitted.
 	 *
 	 * @see TextTools#isEmpty
 	 */
@@ -115,7 +115,7 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target Target object of field.
-	 * @param size   Visable size of field (-1 =&gt; unspecified).
+	 * @param size   Visible size of field (-1 =&gt; unspecified).
 	 */
 	public FormTextField( final FieldTarget target, final int size )
 	{
@@ -126,7 +126,7 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target    Target object of field.
-	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param size      Visible size of field (-1 =&gt; unspecified).
 	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 */
@@ -139,7 +139,7 @@ extends FormField
 	 * Construct text field.
 	 *
 	 * @param target    Target object of field.
-	 * @param size      Visable size of field (-1 =&gt; unspecified).
+	 * @param size      Visible size of field (-1 =&gt; unspecified).
 	 * @param maxLength Maximum number of characters in field (-1 =&gt;
 	 *                  unspecified).
 	 * @param password  Field is a password vs. regular text field.
@@ -248,7 +248,7 @@ extends FormField
 	}
 
 	/**
-	 * Allow empty value to be sumitted (this is allowed by default).
+	 * Allow empty value to be submitted (this is allowed by default).
 	 *
 	 * @param allowEmpty {@code true} to allow empty values (default); {@code
 	 *                   false} to disallow empty values.

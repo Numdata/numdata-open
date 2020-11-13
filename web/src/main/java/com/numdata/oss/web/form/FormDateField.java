@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,12 +63,12 @@ extends FormField
 	/**
 	 * Earliest date value allowed.
 	 */
-	private Date _earliestAllowedDate;
+	private @Nullable Date _earliestAllowedDate;
 
 	/**
 	 * Latest date value allowed.
 	 */
-	private Date _lastestAllowedDate;
+	private @Nullable Date _latestAllowedDate;
 
 	/**
 	 * Construct new form date field.
@@ -84,7 +84,7 @@ extends FormField
 		_locale = locale;
 		_dateFormat = dateFormat;
 		_earliestAllowedDate = null;
-		_lastestAllowedDate = null;
+		_latestAllowedDate = null;
 	}
 
 	/**
@@ -116,7 +116,7 @@ extends FormField
 	@Nullable
 	public Date getEarliestAllowedDate()
 	{
-		return _earliestAllowedDate;
+		return _earliestAllowedDate == null ? null : (Date)_earliestAllowedDate.clone();
 	}
 
 	/**
@@ -135,9 +135,9 @@ extends FormField
 	 * @return Latest date value allowed; {@code null} if no limit is set.
 	 */
 	@Nullable
-	public Date getLastestAllowedDate()
+	public Date getLatestAllowedDate()
 	{
-		return _lastestAllowedDate;
+		return _latestAllowedDate == null ? null : (Date)_latestAllowedDate.clone();
 	}
 
 	/**
@@ -145,9 +145,9 @@ extends FormField
 	 *
 	 * @param date Latest date value allowed ({@code null} to set no limit).
 	 */
-	public void setLastestAllowedDate( @Nullable final Date date )
+	public void setLatestAllowedDate( @Nullable final Date date )
 	{
-		_lastestAllowedDate = ( date != null ) ? (Date)date.clone() : null;
+		_latestAllowedDate = ( date != null ) ? (Date)date.clone() : null;
 	}
 
 	/**
@@ -235,11 +235,11 @@ extends FormField
 						throw new InvalidFormDataException( ResourceBundleTools.format( bundle, "beforeEarliestAllowedDate", value, dateFormat.format( earliestAllowedDate ) ), InvalidFormDataException.Type.INVALID_DATE );
 					}
 
-					final Date lastestAllowedDate = _lastestAllowedDate;
-					if ( ( lastestAllowedDate != null ) && date.after( lastestAllowedDate ) )
+					final Date latestAllowedDate = _latestAllowedDate;
+					if ( ( latestAllowedDate != null ) && date.after( latestAllowedDate ) )
 					{
 						final ResourceBundle bundle = ResourceBundleTools.getBundleHierarchy( getClass(), locale );
-						throw new InvalidFormDataException( ResourceBundleTools.format( bundle, "afterLatestAllowedDate", value, dateFormat.format( lastestAllowedDate ) ), InvalidFormDataException.Type.INVALID_DATE );
+						throw new InvalidFormDataException( ResourceBundleTools.format( bundle, "afterLatestAllowedDate", value, dateFormat.format( latestAllowedDate ) ), InvalidFormDataException.Type.INVALID_DATE );
 					}
 
 					setDateValue( date );

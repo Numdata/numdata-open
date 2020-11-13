@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,7 @@ extends FormField
 	 *
 	 * @param target Target object of field.
 	 */
-	public FormTextArea( final FieldTarget target )
+	public FormTextArea( final @NotNull FieldTarget target )
 	{
 		this( target, -1, -1 );
 	}
@@ -87,11 +87,10 @@ extends FormField
 	 * @param minimumRows Minimum number of rows (-1 =&gt; unbound).
 	 * @param columns     Number of columns (-1 =&gt; unspecified).
 	 */
-	public FormTextArea( final FieldTarget target, final int minimumRows, final int columns )
+	public FormTextArea( final @NotNull FieldTarget target, final int minimumRows, final int columns )
 	{
 		super( target );
 		_minimumRows = minimumRows;
-		_columns = columns;
 		_columns = columns;
 	}
 

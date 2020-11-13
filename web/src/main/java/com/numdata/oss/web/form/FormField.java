@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ extends FormComponent
 	/**
 	 * Checks to perform for this field (element = FormCheck).
 	 */
-	private final Collection<FormCheck> _checks = new ArrayList<FormCheck>();
+	private final Collection<FormCheck> _checks = new ArrayList<>();
 
 	/**
 	 * Constructor.

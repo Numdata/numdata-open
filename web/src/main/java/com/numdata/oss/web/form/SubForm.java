@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ extends FormContainer
 	/**
 	 * Title for inner table.
 	 */
-	private String _title = null;
+	private @Nullable String _title = null;
 
 	/**
 	 * Attributes for inner {@code <table>} element.

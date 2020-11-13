@@ -49,37 +49,37 @@ extends FormContainer
 	/**
 	 * Locale for localization of values shown on forms.
 	 */
-	private final Locale _locale;
+	private final @NotNull Locale _locale;
 
 	/**
 	 * Visible title of form (maybe null).
 	 */
-	private String _title;
+	private @Nullable String _title;
 
 	/**
 	 * Space-separated list of character encodings for input data that is
 	 * accepted by the server processing this form.
 	 */
-	private String _acceptCharset = "UTF-8";
+	private @Nullable String _acceptCharset = "UTF-8";
 
 	/**
 	 * Form buttons.
 	 */
-	private final List<FormButton> _buttons = new ArrayList<FormButton>();
+	private final List<FormButton> _buttons = new ArrayList<>();
 
 	/**
 	 * FormActions to execute before the submitValues() method starts to check
 	 * all form fields. This may be used to do add global tests to the form
 	 * before any fields are tested or submitted.
 	 */
-	private final List<FormAction> _preSubmitActions = new ArrayList<FormAction>();
+	private final List<FormAction> _preSubmitActions = new ArrayList<>();
 
 	/**
 	 * FormActions to execute after the submitValues() method has submitted all
 	 * fields successfully. This may be used to write field values to their
 	 * final destination if needed (e.g. user questionnaire or derived fields).
 	 */
-	private final List<FormAction> _postSubmitActions = new ArrayList<FormAction>();
+	private final List<FormAction> _postSubmitActions = new ArrayList<>();
 
 	/**
 	 * Construct form with title bar.
@@ -105,8 +105,7 @@ extends FormContainer
 	 * @param name           Name of form.
 	 * @param title          Title to display in the title bar
 	 * @param editable       Form is editable or not.
-	 * @param qualifiedNames {@code true} to use qualified names; {@code false}
-	 *                       otherwise.
+	 * @param qualifiedNames {@code true} to use qualified names; {@code false} otherwise.
 	 */
 	public Form( @NotNull final Locale locale, @Nullable final String name, @Nullable final String title, final boolean editable, final boolean qualifiedNames )
 	{
@@ -342,7 +341,7 @@ extends FormContainer
 	 * @return Locale for localization of values shown on forms.
 	 */
 	@Override
-	public Locale getLocale()
+	public @NotNull Locale getLocale()
 	{
 		return _locale;
 	}
@@ -385,7 +384,7 @@ extends FormContainer
 
 		if ( ( pageLink != null ) && ( editLabel != null ) )
 		{
-			editButton = new FormButton( pageLink + ( ( pageLink.indexOf( (int)'?' ) >= 0 ) ? "&edit=true" : "?edit=true" ), editLabel );
+			editButton = new FormButton( pageLink + ( ( pageLink.indexOf( '?' ) >= 0 ) ? "&edit=true" : "?edit=true" ), editLabel );
 		}
 		else
 		{
@@ -600,8 +599,8 @@ extends FormContainer
 		final Map<String, String[]> parameterMap = request.getParameterMap();
 		if ( !parameterMap.isEmpty() )
 		{
-			final Collection<String> parameterNames = new HashSet<String>( parameterMap.keySet() );
-			for ( final Deque<FormComponent> queue = new ArrayDeque<FormComponent>( getComponents() ); !queue.isEmpty() && !parameterNames.isEmpty(); )
+			final Collection<String> parameterNames = new HashSet<>( parameterMap.keySet() );
+			for ( final Deque<FormComponent> queue = new ArrayDeque<>( getComponents() ); !queue.isEmpty() && !parameterNames.isEmpty(); )
 			{
 				final FormComponent component = queue.removeLast();
 				if ( component instanceof FormContainer )

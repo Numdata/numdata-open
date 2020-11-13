@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2016-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,8 +107,11 @@ implements Iterator<FormComponent>
 			while ( ( ++childIndex >= container.getComponentCount() ) && ( container != _root ) )
 			{
 				final FormContainer parent = container.getParent();
-				childIndex = parent.getComponentIndex( container );
-				container = parent;
+				if ( parent != null )
+				{
+					childIndex = parent.getComponentIndex( container );
+					container = parent;
+				}
 			}
 		}
 

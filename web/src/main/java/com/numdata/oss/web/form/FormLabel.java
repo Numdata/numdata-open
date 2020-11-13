@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -132,20 +132,25 @@ extends FormStaticText
 	public void writeAsText( @NotNull final Appendable out, @NotNull final String indent )
 	throws IOException
 	{
-		int maxLength = 0;
-		for ( final FormComponent component : getParent().getComponents() )
+		final String text = getText();
+		int maxLength = text == null ? 0 : text.length();
+
+		final FormContainer parent = getParent();
+		if ( parent != null )
 		{
-			if ( component instanceof FormLabel )
+			for ( final FormComponent component : parent.getComponents() )
 			{
-				final String text = ( (FormLabel)component ).getText();
-				if ( text != null )
+				if ( component instanceof FormLabel )
 				{
-					maxLength = Math.max( maxLength, text.length() );
+					final String otherText = ( (FormLabel)component ).getText();
+					if ( otherText != null )
+					{
+						maxLength = Math.max( maxLength, otherText.length() );
+					}
 				}
 			}
 		}
 
-		final String text = getText();
 		out.append( "\n" ).append( indent );
 		TextTools.appendFixed( out, text, maxLength, false, '.' );
 		out.append( " : " );

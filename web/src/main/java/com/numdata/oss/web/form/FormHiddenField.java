@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,14 +76,16 @@ extends FormField
 	protected void generate( @NotNull final String contextPath, @NotNull final Form form, @Nullable final HTMLTable table, @NotNull final IndentingJspWriter iw, @NotNull final HTMLFormFactory formFactory )
 	throws IOException
 	{
-		formFactory.writeHiddenField( iw, getName(), getValue() );
+		final String value = getValue();
+		if ( value != null )
+		{
+			formFactory.writeHiddenField( iw, getName(), value );
+		}
 	}
-
 
 	@NotNull
 	@Override
 	public SubmitStatus submitData( @NotNull final HttpServletRequest request )
-	throws InvalidFormDataException
 	{
 		final SubmitStatus result;
 

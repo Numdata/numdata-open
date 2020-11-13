@@ -201,10 +201,20 @@ implements HTMLFormFactory
 		writeButtonImpl( out, "window.location='" + link + "';", text, attributes );
 	}
 
-	private static void writeButtonImpl( @NotNull final JspWriter out, final String onclick, @NotNull final String text, @Nullable final Map<String, String> attributes )
+	/**
+	 * Writes HTML for a button to the given writer.
+	 *
+	 * @param out        Writer used for output to JSP page.
+	 * @param onclick    Value of the onclick attribute.
+	 * @param text       Button text.
+	 * @param attributes Attributes to set for HTML element.
+	 *
+	 * @throws IOException if an I/O error occurred.
+	 */
+	private static void writeButtonImpl( @NotNull final JspWriter out, final @NotNull String onclick, @NotNull final String text, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
-		final Map<String, String> input = new LinkedHashMap<String, String>();
+		final Map<String, String> input = new LinkedHashMap<>();
 		input.put( "type", "button" );
 		input.put( "value", text );
 		input.put( "onclick", onclick );
@@ -224,7 +234,7 @@ implements HTMLFormFactory
 	public void writeCheckbox( @NotNull final String contextPath, @NotNull final JspWriter out, final boolean editable, @NotNull final String tag, final boolean value, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
-		final Map<String, String> input = new LinkedHashMap<String, String>();
+		final Map<String, String> input = new LinkedHashMap<>();
 		input.put( "type", "checkbox" );
 		input.put( "id", tag );
 		input.put( "name", tag );
@@ -255,7 +265,7 @@ implements HTMLFormFactory
 	public void writeRadioButton( @Nullable final String contextPath, @NotNull final JspWriter out, final boolean editable, @NotNull final String tag, @NotNull final String value, final boolean checked, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
-		final Map<String, String> input = new LinkedHashMap<String, String>();
+		final Map<String, String> input = new LinkedHashMap<>();
 		input.put( "type", "radio" );
 		input.put( "class", "radio" );
 		input.put( "id", tag );
@@ -292,7 +302,7 @@ implements HTMLFormFactory
 
 		if ( editable )
 		{
-			final Map<String, String> select = new LinkedHashMap<String, String>();
+			final Map<String, String> select = new LinkedHashMap<>();
 			select.put( "id", name );
 			select.put( "name", name );
 
@@ -371,7 +381,7 @@ implements HTMLFormFactory
 	public void writeSubmitButton( @NotNull final JspWriter out, @Nullable final String name, @NotNull final String text, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
-		final Map<String, String> input = new LinkedHashMap<String, String>();
+		final Map<String, String> input = new LinkedHashMap<>();
 		input.put( "type", "submit" );
 		if ( name != null )
 		{
@@ -393,14 +403,14 @@ implements HTMLFormFactory
 	public void writeSubmitImage( @NotNull final String contextPath, @NotNull final JspWriter out, @Nullable final String name, @NotNull final String image, @Nullable final Map<String, String> attributes )
 	throws IOException
 	{
-		final Map<String, String> input = new LinkedHashMap<String, String>();
+		final Map<String, String> input = new LinkedHashMap<>();
 		input.put( "type", "image" );
 		if ( ( name != null ) && !name.isEmpty() )
 		{
 			input.put( "name", name );
 		}
 		input.put( "src", TextTools.startsWith( image, '/' ) ? contextPath + image : image );
-		input.put( "alt", image.substring( image.lastIndexOf( (int)'/' ) + 1 ) );
+		input.put( "alt", image.substring( image.lastIndexOf( '/' ) + 1 ) );
 
 		if ( attributes != null )
 		{
@@ -418,7 +428,7 @@ implements HTMLFormFactory
 	{
 		if ( editable )
 		{
-			final Map<String, String> textarea = new LinkedHashMap<String, String>();
+			final Map<String, String> textarea = new LinkedHashMap<>();
 			textarea.put( "name", tag );
 			if ( cols > 0 )
 			{
@@ -475,7 +485,7 @@ implements HTMLFormFactory
 	{
 		if ( editable )
 		{
-			final Map<String, String> input = new LinkedHashMap<String, String>();
+			final Map<String, String> input = new LinkedHashMap<>();
 			input.put( "type", password ? "password" : "text" );
 			input.put( "name", tag );
 
@@ -496,7 +506,7 @@ implements HTMLFormFactory
 
 			if ( value != null )
 			{
-				input.put( "value", String.valueOf( value ) );
+				input.put( "value", value );
 			}
 
 			if ( disableAutoComplete )
