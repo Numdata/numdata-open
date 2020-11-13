@@ -235,7 +235,7 @@ extends FormField
 	throws IOException
 	{
 		final boolean editable = isEditable();
-		final Map<String, String> attributes = ( editable && isAutoSubmit() ) ? Collections.singletonMap( "onchange", "document.forms['" + form.getName() + "'].submit();" ) : null;
+		final Map<String, String> attributes = ( editable && isAutoSubmit() ) ? Collections.singletonMap( "onchange", form.getSubmitDisableScript( true, true ) ) : null;
 
 		final String selected = getValue();
 

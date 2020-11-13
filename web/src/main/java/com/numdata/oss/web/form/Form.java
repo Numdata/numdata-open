@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -317,6 +317,12 @@ extends FormContainer
 			actualFormAttributes.put( "accept-charset", _acceptCharset );
 		}
 
+		if ( !actualFormAttributes.containsKey( "onsubmit" ) )
+		{
+			// Use 'setTimeout' to disable the form *after* the submit occurs. Otherwise disabled fields (i.e. all fields) are excluded from the submitted data.
+			actualFormAttributes.put( "onsubmit", "setTimeout( function() {" + getSubmitDisableScript( false, true ) + "}, 1 );" );
+		}
+
 		final IndentingJspWriter iw = IndentingJspWriter.create( out, 2, 1 );
 		if ( isVisible() )
 		{
@@ -627,5 +633,37 @@ extends FormContainer
 		}
 		super.writeAsText( out, indent );
 		out.append( '\n' );
+	}
+
+	/**
+	 * Returns Javascript to submit and/or disable the form.
+	 *
+	 * @param submit  {@code true} to submit the form.
+	 * @param disable {@code true} to disable the form.
+	 *
+	 * @return Javascript to submit/disable the form.
+	 *
+	 * @throws IllegalArgumentException if both parameters are {@code false}.
+	 */
+	public @NotNull String getSubmitDisableScript( final boolean submit, final boolean disable )
+	{
+		if ( !submit && !disable )
+		{
+			throw new IllegalArgumentException( "At least one parameter must be true." );
+		}
+
+		final StringBuilder result = new StringBuilder();
+		result.append( "var form = document.forms['" );
+		result.append( getName() );
+		result.append( "'];" );
+		if ( submit )
+		{
+			result.append( "form.submit();" );
+		}
+		if ( disable )
+		{
+			result.append( "form.elements[ 0 ].disabled = true;" );
+		}
+		return result.toString();
 	}
 }

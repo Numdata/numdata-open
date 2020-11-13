@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,8 @@ implements HTMLFormFactory
 		HTMLTools.writeAttributes( iw, attributes );
 		iw.println( ">" );
 		iw.indentIn();
+		iw.println( "<fieldset class=\"form\">" );
+		iw.indentIn();
 		if ( title != null )
 		{
 			iw.print( "<div class=\"title\">" );
@@ -122,6 +124,8 @@ implements HTMLFormFactory
 		/*
 		 * write form end
 		 */
+		iw.indentOut();
+		iw.println( "</fieldset>" );
 		iw.indentOut();
 		iw.println( "</form>" );
 

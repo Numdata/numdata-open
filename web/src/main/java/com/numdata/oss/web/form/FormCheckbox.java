@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ extends FormField
 
 			if ( isAutoSubmit() )
 			{
-				attributes = Collections.singletonMap( "onchange", "document.forms['" + form.getName() + "'].submit();" );
+				attributes = Collections.singletonMap( "onchange", form.getSubmitDisableScript( true, true ) );
 			}
 		}
 
