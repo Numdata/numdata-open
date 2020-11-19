@@ -9,6 +9,10 @@
     "name": "Gerrit Meinders",
     "email": "meinders@numdata.com"
   },
+  "scripts": {
+    "build": "gulp build",
+    "test": "jest src"
+  },
   "license": "SEE LICENSE IN LICENSE.TXT",
   "main": "./module.js",
   "module": "./module.js",

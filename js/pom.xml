@@ -58,7 +58,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>node_modules/.bin/gulp</executable>
+							<executable>npm${cmd}</executable>
 							<arguments>
 								<argument>build</argument>
 							</arguments>
@@ -73,9 +73,9 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>node_modules/.bin/jest</executable>
+							<executable>npm${cmd}</executable>
 							<arguments>
-								<argument>src</argument>
+								<argument>test</argument>
 							</arguments>
 							<toolchain>paths</toolchain>
 							<skip>${skipTests}</skip>
@@ -85,4 +85,20 @@
 			</plugin>
 		</plugins>
 	</build>
+	<properties>
+		<cmd/>
+	</properties>
+	<profiles>
+		<profile>
+			<id>windows-cmd-fix</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<properties>
+				<cmd>.cmd</cmd>
+			</properties>
+		</profile>
+	</profiles>
 </project>
