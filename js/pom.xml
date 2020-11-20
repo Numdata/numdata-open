@@ -60,6 +60,7 @@
 						<configuration>
 							<executable>npm${cmd}</executable>
 							<arguments>
+								<argument>run</argument>
 								<argument>build</argument>
 							</arguments>
 							<toolchain>paths</toolchain>
@@ -75,6 +76,7 @@
 						<configuration>
 							<executable>npm${cmd}</executable>
 							<arguments>
+								<argument>run</argument>
 								<argument>test</argument>
 							</arguments>
 							<toolchain>paths</toolchain>
