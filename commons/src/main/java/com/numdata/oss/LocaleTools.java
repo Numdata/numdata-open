@@ -435,26 +435,41 @@ public class LocaleTools
 	 */
 	public static Locale getBestMatch( @Nullable final Locale defaultResult, @NotNull final Iterable<Locale> availableLocales, @Nullable final String language, @Nullable final String country )
 	{
+		return getBestMatch( defaultResult, availableLocales, new Locale( ( language != null ) ? language.trim() : "", ( country != null ) ? country.trim() : "", "" ) );
+	}
+
+	/**
+	 * Returns the best matching locale from the given list.
+	 *
+	 * @param defaultResult    Result if there are no (partial) matches at all.
+	 * @param availableLocales Available locales.
+	 * @param preferredLocale  Preferred locale.
+	 *
+	 * @return Best matching locale or default result.
+	 */
+	@Contract( "!null,_,_ -> !null" )
+	@Nullable
+	public static Locale getBestMatch( @Nullable final Locale defaultResult, @NotNull final Iterable<Locale> availableLocales, @Nullable final Locale preferredLocale )
+	{
 		Locale result = defaultResult;
-		int resultPreference = 0;
 
-		final Locale preferredLocale = new Locale( ( language != null ) ? language.trim() : "", ( country != null ) ? country.trim() : "", "" );
-
-		for ( final Locale locale : availableLocales )
+		if ( preferredLocale != null )
 		{
-			// Obscure matching because language and country codes can change.
-			final boolean languageMatch = locale.getLanguage().equals( preferredLocale.getLanguage() );
-			final boolean countryMatch = locale.getCountry().equals( preferredLocale.getCountry() );
+			int resultPreference = 0;
 
-			final int preference = languageMatch ? countryMatch ? 2 : 1 : 0;
-			if ( preference > resultPreference )
+			for ( final Locale locale : availableLocales )
 			{
-				result = locale;
-				resultPreference = preference;
+				final int preference = !locale.getLanguage().equals( preferredLocale.getLanguage() ) ? 0 :
+				                       !locale.getCountry().equals( preferredLocale.getCountry() ) ? 1 :
+				                       !locale.getVariant().equals( preferredLocale.getVariant() ) ? 2 : 3;
+				if ( preference > resultPreference )
+				{
+					result = locale;
+					resultPreference = preference;
+				}
 			}
 		}
 
-		//noinspection ConstantConditions
 		return result;
 	}
 }
