@@ -38,8 +38,9 @@ import org.junit.*;
 /**
  * Unit test for {@link NioTools}.
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
+@SuppressWarnings( "JavaDoc" )
 public class TestNioTools
 {
 	@Test
@@ -70,7 +71,7 @@ public class TestNioTools
 			expectedFiles.add( "" );
 			expectedFiles.add( "test.zip" );
 			expectedFiles.add( "subdir" );
-			expectedFiles.add( "subdir/test.txt" );
+			expectedFiles.add( "subdir" + File.separator + "test.txt" );
 
 			final Collection<String> actualFiles = Files.walk( dir ).map( dir::relativize ).map( Object::toString ).collect( toCollection( TreeSet::new ) );
 			assertEquals( "Unexpected list of files after unzip", expectedFiles, actualFiles );
@@ -136,7 +137,15 @@ public class TestNioTools
 						break;
 					case 1:
 						Files.createDirectory( dir2 );
-						Files.createSymbolicLink( dir2link, dir2 );
+						try
+						{
+							Files.createSymbolicLink( dir2link, dir2 );
+						}
+						catch ( FileSystemException e )
+						{
+							System.err.println( "WARNING: Symbolic link cannot be tested on this platform: " + e );
+							System.err.println( "The test will continue, but 'dir2link' will be a directory instead of a symbolic link to a directory." );
+						}
 						dest = dir2link;
 						break;
 					case 2:
