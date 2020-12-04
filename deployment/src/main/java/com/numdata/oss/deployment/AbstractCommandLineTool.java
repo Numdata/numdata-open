@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2014-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,13 +38,13 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
-@SuppressWarnings( "unused" )
+@SuppressWarnings( { "unused", "UseOfSystemOutOrSystemErr" } )
 public abstract class AbstractCommandLineTool
 {
 	/**
 	 * Command-line argument definitions.
 	 */
-	private final List<ToolOption> _argumentDefinitions = new ArrayList<ToolOption>();
+	private final List<ToolOption> _argumentDefinitions = new ArrayList<>();
 
 	/**
 	 * Command-line argument definitions.
@@ -54,12 +54,12 @@ public abstract class AbstractCommandLineTool
 	/**
 	 * Program option definitions.
 	 */
-	private final List<ToolOption> _optionDefinitions = new ArrayList<ToolOption>();
+	private final List<ToolOption> _optionDefinitions = new ArrayList<>();
 
 	/**
 	 * Program option argument values.
 	 */
-	private final Map<String, List<String>> _optionValues = new HashMap<String, List<String>>();
+	private final Map<String, List<String>> _optionValues = new HashMap<>();
 
 	/**
 	 * Construct tool.
@@ -76,7 +76,19 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void defineArgument( @NotNull final String name, @NotNull final String description )
 	{
-		defineArgument( new ToolOption( name, '<' + name + '>', description, false ) );
+		defineArgument( name, description, true );
+	}
+
+	/**
+	 * Add (mandatory) program argument.
+	 *
+	 * @param name        Name of program argument.
+	 * @param description Description of program argument.
+	 * @param required    Whether the option is required.
+	 */
+	protected void defineArgument( @NotNull final String name, @NotNull final String description, final boolean required )
+	{
+		defineArgument( name, '<' + name + '>', description, required );
 	}
 
 	/**
@@ -88,7 +100,20 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void defineArgument( @NotNull final String name, @NotNull final String label, @NotNull final String description )
 	{
-		defineArgument( new ToolOption( name, label, description, false ) );
+		defineArgument( name, label, description, true );
+	}
+
+	/**
+	 * Add (mandatory) program argument.
+	 *
+	 * @param name        Name of program argument.
+	 * @param label       Label for program argument.
+	 * @param description Description of program argument.
+	 * @param required    Whether the option is required.
+	 */
+	protected void defineArgument( @NotNull final String name, @NotNull final String label, @NotNull final String description, final boolean required )
+	{
+		defineArgument( new ToolOption( name, label, description, required ) );
 	}
 
 	/**
@@ -144,14 +169,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeArgumentDefinition( @NotNull final String name )
 	{
-		for ( final Iterator<ToolOption> it = _argumentDefinitions.iterator(); it.hasNext(); )
-		{
-			final ToolOption definition = it.next();
-			if ( name.equals( definition.getName() ) )
-			{
-				it.remove();
-			}
-		}
+		_argumentDefinitions.removeIf( definition -> name.equals( definition.getName() ) );
 	}
 
 	/**
@@ -175,7 +193,7 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	public String getArgument( @NotNull final String argumentName )
 	{
-		return _argumentValues.get( getArgumentIndex( argumentName ) );
+		return _argumentValues.get( getArgumentIndex( argumentName, true ) );
 	}
 
 	/**
@@ -187,18 +205,19 @@ public abstract class AbstractCommandLineTool
 	 * @return Program argument value; {@code defaultValue} if argument is not
 	 * set.
 	 */
+	@Contract( "_, !null -> !null" )
 	public String getArgument( @NotNull final String argumentName, @Nullable final String defaultValue )
 	{
 		String result;
 		try
 		{
-			result = getArgument( argumentName );
+			final int argumentIndex = getArgumentIndex( argumentName, false );
+			result = argumentIndex < _argumentValues.size() ? _argumentValues.get( argumentIndex ) : defaultValue;
 		}
 		catch ( final IllegalArgumentException ignored )
 		{
 			result = defaultValue;
 		}
-		//noinspection ConstantConditions
 		return result;
 	}
 
@@ -234,13 +253,15 @@ public abstract class AbstractCommandLineTool
 	 * Get index of program argument value.
 	 *
 	 * @param argumentName Name of argument.
+	 * @param required     Whether the caller requires the argument to be set,
+	 *                     even if the argument is defined as optional.
 	 *
 	 * @return Program argument index.
 	 *
 	 * @throws IllegalArgumentException if argument with given name is
 	 * undefined.
 	 */
-	private int getArgumentIndex( @NotNull final String argumentName )
+	private int getArgumentIndex( @NotNull final String argumentName, final boolean required )
 	{
 		ToolOption argument = null;
 		int index = -1;
@@ -256,14 +277,17 @@ public abstract class AbstractCommandLineTool
 			}
 		}
 
-		if ( ( argument == null ) || ( index < 0 ) )
+		if ( argument == null )
 		{
 			throw new IllegalArgumentException( "program argument '" + argumentName + "' is undefined" );
 		}
 
 		if ( index >= _argumentValues.size() )
 		{
-			abortWithSyntax( "missing " + argument.getLabel() + " program argument" );
+			if ( required || argument.isRequiresArgument() )
+			{
+				abortWithSyntax( "missing " + argument.getLabel() + " program argument" );
+			}
 		}
 
 		return index;
@@ -282,7 +306,9 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	public List<String> getVariableArgument( @NotNull final String argumentName )
 	{
-		return new ArrayList<String>( _argumentValues.subList( getArgumentIndex( argumentName ), _argumentValues.size() ) );
+		final int argumentIndex = getArgumentIndex( argumentName, false );
+		final int argumentCount = _argumentValues.size();
+		return argumentIndex >= argumentCount ? Collections.emptyList() : new ArrayList<>( _argumentValues.subList( argumentIndex, argumentCount ) );
 	}
 
 	/**
@@ -295,7 +321,7 @@ public abstract class AbstractCommandLineTool
 	{
 		final List<ToolOption> argumentDefinitions = getArgumentDefinitions();
 		final List<String> argumentValues = _argumentValues;
-		return new ArrayList<String>( argumentValues.subList( argumentDefinitions.size(), argumentValues.size() ) );
+		return new ArrayList<>( argumentValues.subList( argumentDefinitions.size(), argumentValues.size() ) );
 	}
 
 	/**
@@ -365,14 +391,7 @@ public abstract class AbstractCommandLineTool
 	 */
 	protected void removeOptionDefinition( @NotNull final String name )
 	{
-		for ( final Iterator<ToolOption> it = _optionDefinitions.iterator(); it.hasNext(); )
-		{
-			final ToolOption definition = it.next();
-			if ( name.equals( definition.getName() ) )
-			{
-				it.remove();
-			}
-		}
+		_optionDefinitions.removeIf( definition -> name.equals( definition.getName() ) );
 	}
 
 	/**
@@ -394,7 +413,7 @@ public abstract class AbstractCommandLineTool
 	public List<String> getOptionValues( @NotNull final String optionName )
 	{
 		final List<String> valueList = _optionValues.get( optionName );
-		return ( valueList == null ) ? Collections.<String>emptyList() : Collections.unmodifiableList( valueList );
+		return ( valueList == null ) ? Collections.emptyList() : Collections.unmodifiableList( valueList );
 	}
 
 	/**
@@ -439,6 +458,7 @@ public abstract class AbstractCommandLineTool
 	 * @return Program option argument value; {@code defaultValue} if option is
 	 * not set.
 	 */
+	@Contract( "_, !null -> !null" )
 	public String getOption( @NotNull final String optionName, @Nullable final String defaultValue )
 	{
 		String result = getOption( optionName );
@@ -446,7 +466,6 @@ public abstract class AbstractCommandLineTool
 		{
 			result = defaultValue;
 		}
-		//noinspection ConstantConditions
 		return result;
 	}
 
@@ -562,7 +581,7 @@ public abstract class AbstractCommandLineTool
 		{
 			run();
 		}
-		catch ( MissingOptionException e )
+		catch ( final MissingOptionException e )
 		{
 			System.err.println( e.getMessage() );
 			System.err.println();
@@ -584,14 +603,13 @@ public abstract class AbstractCommandLineTool
 		if ( profileFile.exists() )
 		{
 			// Add nulls for any missing arguments.
-			final List<String> argumentValues = new ArrayList<String>( _argumentDefinitions.size() );
+			final List<String> argumentValues = new ArrayList<>( _argumentDefinitions.size() );
 			while ( argumentValues.size() < _argumentDefinitions.size() )
 			{
 				argumentValues.add( null );
 			}
 
-			final FileInputStream in = new FileInputStream( profileFile );
-			try
+			try ( final FileInputStream in = new FileInputStream( profileFile ) )
 			{
 				final Properties properties = new Properties();
 				properties.load( in );
@@ -645,7 +663,7 @@ public abstract class AbstractCommandLineTool
 						List<String> valueList = optionValues.get( optionName );
 						if ( valueList == null )
 						{
-							valueList = new ArrayList<String>();
+							valueList = new ArrayList<>();
 							optionValues.put( optionName, valueList );
 							valueList.add( value );
 							System.err.println( " - Option " + optionName + " = " + value );
@@ -658,10 +676,6 @@ public abstract class AbstractCommandLineTool
 				}
 
 				System.err.println();
-			}
-			finally
-			{
-				in.close();
 			}
 
 			// Remove trailing null arguments, which were added above.
@@ -700,7 +714,7 @@ public abstract class AbstractCommandLineTool
 	protected void processCommandLine( @NotNull final String... args )
 	{
 		final List<ToolOption> optionDefinitions = getOptionDefinitions();
-		final List<String> commandLineArgumentValues = new ArrayList<String>( args.length );
+		final List<String> commandLineArgumentValues = new ArrayList<>( args.length );
 
 		final List<String> argList = Arrays.asList( args );
 		final Map<String, List<String>> optionValues = _optionValues;
@@ -744,13 +758,7 @@ public abstract class AbstractCommandLineTool
 						optionValue = "true";
 					}
 
-					List<String> valueList = optionValues.get( optionName );
-					if ( valueList == null )
-					{
-						valueList = new ArrayList<String>();
-						optionValues.put( optionName, valueList );
-					}
-					valueList.add( optionValue );
+					optionValues.computeIfAbsent( optionName, k -> new ArrayList<>() ).add( optionValue );
 				}
 			}
 			else
@@ -906,7 +914,7 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	protected static List<URI> getUriForPaths( @NotNull final Collection<String> paths )
 	{
-		final List<URI> result = new ArrayList<URI>( paths.size() );
+		final List<URI> result = new ArrayList<>( paths.size() );
 		for ( final String path : paths )
 		{
 			result.add( getUriForPath( path ) );
@@ -962,7 +970,7 @@ public abstract class AbstractCommandLineTool
 	@NotNull
 	protected static List<URL> getUrlForPaths( @NotNull final Collection<String> paths )
 	{
-		final List<URL> result = new ArrayList<URL>( paths.size() );
+		final List<URL> result = new ArrayList<>( paths.size() );
 		for ( final String path : paths )
 		{
 			result.add( getUrlForPath( path ) );
