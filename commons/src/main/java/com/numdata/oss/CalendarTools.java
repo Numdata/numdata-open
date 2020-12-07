@@ -27,6 +27,7 @@
 package com.numdata.oss;
 
 import java.text.*;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -310,6 +311,22 @@ public class CalendarTools
 	}
 
 	/**
+	 * Returns integer representing date.
+	 *
+	 * The result is calculated as follows: years * 10000 + month * 100 + day.
+	 *
+	 * Example: august 10th of 2049 would be 20490810.
+	 *
+	 * @param date Date to get date integer for.
+	 *
+	 * @return Integer date.
+	 */
+	public static int getDateInt( @NotNull final LocalDate date )
+	{
+		return date.getYear() * 10000 + date.getMonthValue() * 100 + date.getDayOfMonth();
+	}
+
+	/**
 	 * Returns date that is represented by an integer value.
 	 *
 	 * @param dateInt Integer date (e.g. 20370708 = July 8th 2037).
@@ -340,6 +357,20 @@ public class CalendarTools
 	{
 		//noinspection MagicConstant
 		return new GregorianCalendar( dateInt / 10000, ( ( dateInt / 100 ) % 100 ) - 1, dateInt % 100 );
+	}
+
+	/**
+	 * Returns the local date that is represented by an integer value.
+	 *
+	 * @param dateInt Integer date (e.g. 20370708 = July 8th 2037).
+	 *
+	 * @return Local date.
+	 *
+	 * @see #getDateInt
+	 */
+	public static LocalDate getLocalDateByInt( final int dateInt )
+	{
+		return LocalDate.of( dateInt / 10000, ( ( dateInt / 100 ) % 100 ), dateInt % 100 );
 	}
 
 	/**

@@ -27,6 +27,7 @@
 package com.numdata.oss;
 
 import java.text.*;
+import java.time.*;
 import java.util.*;
 
 import static com.numdata.oss.CalendarTools.*;
@@ -40,6 +41,24 @@ import org.junit.*;
  */
 public class TestCalendarTools
 {
+	@Test
+	public void testGetDateInt()
+	{
+		final Calendar calendar = Calendar.getInstance();
+		calendar.set( 2049, Calendar.AUGUST, 10, 0, 0, 0 );
+		calendar.set( Calendar.MILLISECOND, 0 );
+		final Date date = calendar.getTime();
+		final LocalDate localDate = LocalDate.of( 2049, 8, 10 );
+
+		assertEquals( "Incorrect int for date.", 20490810, getDateInt( calendar ) );
+		assertEquals( "Incorrect int for date.", 20490810, getDateInt( date ) );
+		assertEquals( "Incorrect int for date.", 20490810, getDateInt( localDate ) );
+
+		assertEquals( "Incorrect Calendar for int.", calendar, getDateCalendarByInt( 20490810 ) );
+		assertEquals( "Incorrect Date for int.", date, getDateByInt( 20490810 ) );
+		assertEquals( "Incorrect LocalDate for int.", localDate, getLocalDateByInt( 20490810 ) );
+	}
+
 	/**
 	 * Unit test for {@link CalendarTools#getEasterSunday(int)}. Verifies the
 	 * dates returned for all years between 1990 and 2050, based on a table
