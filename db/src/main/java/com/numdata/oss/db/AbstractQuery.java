@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1362,6 +1362,36 @@ public abstract class AbstractQuery<T>
 			{
 				matcher.appendReplacement( result, "%" );
 			}
+		}
+		matcher.appendTail( result );
+		result.append( '%' );
+
+		return result.toString();
+	}
+
+	/**
+	 * Creates a pattern for use in a {@code LIKE}-clause matching the given
+	 * string with any suffix. Any wildcard characters ({@code '%'} and
+	 * {@code '_'}) in the string are escaped.
+	 *
+	 * The only non-wildcard character that is escaped, is the escape
+	 * character ({@code '\'}) itself. <strong>Quotes are NOT escaped.</strong>
+	 *
+	 * @param string String to create a pattern from.
+	 *
+	 * @return Pattern for use in a {@code LIKE}-clause.
+	 */
+	@NotNull
+	public static String createPrefixLikePattern( @NotNull final CharSequence string )
+	{
+		final StringBuffer result = new StringBuffer( string.length() + 10 );
+
+		final Pattern pattern = Pattern.compile( "[\\\\%_]" );
+		final Matcher matcher = pattern.matcher( string );
+
+		while ( matcher.find() )
+		{
+			matcher.appendReplacement( result, "\\\\$0" );
 		}
 		matcher.appendTail( result );
 		result.append( '%' );
