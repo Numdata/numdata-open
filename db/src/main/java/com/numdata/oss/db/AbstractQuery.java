@@ -1105,7 +1105,7 @@ public abstract class AbstractQuery<T>
 			throw new IllegalArgumentException( "no columns specified" );
 		}
 
-		final String[] words = searchPhrase.split( "\\s+" );
+		final String[] words = searchPhrase.trim().split( "\\s+" );
 		final String[] patterns = new String[ words.length ];
 
 		for ( int i = 0; i < words.length; i++ )
