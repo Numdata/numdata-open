@@ -520,7 +520,7 @@ public class DatabaseTableUpdater
 	 */
 	private static boolean isKeyDefinition( final String createLine )
 	{
-		return createLine.startsWith("KEY ") || createLine.startsWith("UNIQUE KEY ") || createLine.startsWith("FULLTEXT KEY ");
+		return createLine.startsWith( "KEY " ) || createLine.startsWith( "UNIQUE KEY " ) || createLine.startsWith( "FULLTEXT KEY " );
 	}
 
 	/**
