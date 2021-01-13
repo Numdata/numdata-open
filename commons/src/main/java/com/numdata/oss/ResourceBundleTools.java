@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2003-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,6 +97,7 @@ public class ResourceBundleTools
 	@SuppressWarnings( "ConstantNamingConvention" )
 	public static void clearCache()
 	{
+		ResourceBundle.clearCache( ResourceBundleTools.class.getClassLoader() );
 		final Map<Locale, Map<String, ResourceBundle>> recursiveBundleCache = _recursiveBundleCache;
 		//noinspection SynchronizationOnLocalVariableOrMethodParameter
 		synchronized ( recursiveBundleCache )
