@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,17 +119,43 @@ public class ListEditor<E>
 	public static final String MOVE_DOWN = "moveDown";
 
 	/**
+	 * Registered change listeners.
+	 */
+	@Nullable
+	private List<ChangeListener> _changeListeners = null;
+
+	/**
 	 * Construct editor for a list.
 	 *
 	 * @param list List to edit.
 	 */
 	public ListEditor( @NotNull final List<E> list )
 	{
-		final ListModelDecorator<E> decoratedList = new ListModelDecorator<E>( list );
+		final ListModelDecorator<E> decoratedList = new ListModelDecorator<>( list );
 		_list = decoratedList;
 
 		//noinspection OverridableMethodCallDuringObjectConstruction
 		final JList listComponent = createListComponent( decoratedList );
+		listComponent.getModel().addListDataListener( new ListDataListener()
+		{
+			@Override
+			public void intervalAdded( final ListDataEvent e )
+			{
+				fireChangeEvent();
+			}
+
+			@Override
+			public void intervalRemoved( final ListDataEvent e )
+			{
+				fireChangeEvent();
+			}
+
+			@Override
+			public void contentsChanged( final ListDataEvent e )
+			{
+				fireChangeEvent();
+			}
+		} );
 		_listComponent = listComponent;
 
 		final CompoundListener compoundListener = _componentListener;
@@ -148,6 +174,55 @@ public class ListEditor<E>
 		horizontalScrollBar.setBorder( BorderFactory.createEmptyBorder() );
 		listPanel.add( scrollPane, BorderLayout.CENTER );
 		_listPanel = listPanel;
+	}
+
+	/**
+	 * Add change listener. This listener will be called when the property page
+	 * contents change.
+	 *
+	 * @param listener Listener to add.
+	 */
+	public void addChangeListener( final ChangeListener listener )
+	{
+		List<ChangeListener> changeListeners = _changeListeners;
+		if ( changeListeners == null )
+		{
+			changeListeners = new LinkedList<>();
+			_changeListeners = changeListeners;
+		}
+		changeListeners.add( listener );
+	}
+
+	/**
+	 * Remove change listener.
+	 *
+	 * @param listener Listener to remove.
+	 */
+	public void removeChangeListener( final ChangeListener listener )
+	{
+		final List<ChangeListener> changeListeners = _changeListeners;
+		if ( changeListeners != null )
+		{
+			changeListeners.remove( listener );
+		}
+	}
+
+	/**
+	 * Fire change event to all registered listeners.
+	 */
+	protected void fireChangeEvent()
+	{
+		final List<ChangeListener> changeListeners = _changeListeners;
+		if ( ( changeListeners != null ) && !changeListeners.isEmpty() )
+		{
+			final ChangeEvent changeEvent = new ChangeEvent( this );
+
+			for ( final ChangeListener listener : changeListeners )
+			{
+				listener.stateChanged( changeEvent );
+
+			}
+		}
 	}
 
 	/**
@@ -508,14 +583,7 @@ public class ListEditor<E>
 		final JList result = new JList( listModel );
 
 		final ListCellRenderer defaultRenderer = result.getCellRenderer();
-		result.setCellRenderer( new ListCellRenderer()
-		{
-			@Override
-			public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus )
-			{
-				return defaultRenderer.getListCellRendererComponent( list, getDisplayValue( (E)value ), index, isSelected, cellHasFocus );
-			}
-		} );
+		result.setCellRenderer( ( list, value, index, isSelected, cellHasFocus ) -> defaultRenderer.getListCellRendererComponent( list, getDisplayValue( (E)value ), index, isSelected, cellHasFocus ) );
 
 		return result;
 	}
@@ -600,14 +668,14 @@ public class ListEditor<E>
 		if ( isRemoveDuplicates() )
 		{
 			final List<E> list = getList();
-			final Collection<E> tmp = isSorted() ? new TreeSet<E>( _comparator ) : new LinkedHashSet<E>( list.size() );
+			final Collection<E> tmp = isSorted() ? new TreeSet<>( _comparator ) : new LinkedHashSet<>( list.size() );
 			tmp.addAll( list );
 			setValue( tmp );
 		}
 		else if ( isSorted() )
 		{
-			final List<E> list = new ArrayList<E>( getList() );
-			Collections.sort( list, _comparator );
+			final List<E> list = new ArrayList<>( getList() );
+			list.sort( _comparator );
 			setValue( list );
 		}
 	}
