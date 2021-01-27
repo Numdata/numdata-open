@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,5 +126,18 @@ public class TestDatabaseName
 		assertEquals( "Failed to parse 'user' property from '" + input + '\'', "defaultUser", databaseName.getUser() );
 		assertEquals( "Failed to parse 'password' property from '" + input + '\'', "defaultPassword", databaseName.getPassword() );
 		assertEquals( "Failed to parse 'tunnel' property from '" + input + '\'', "defaultTunnel", databaseName.getTunnel() );
+	}
+
+	@Test
+	public void testValueOf8()
+	{
+		final String input = "database_name@database-server:12345;user=databaseUser;pass=databasePassword@user:pass@host:port";
+		final DatabaseName databaseName = DatabaseName.valueOf( input );
+		assertEquals( "Failed to parse 'database' property from '" + input + '\'', "database_name", databaseName.getDatabase() );
+		assertEquals( "Failed to parse 'host' property from '" + input + '\'', "database-server", databaseName.getHost() );
+		assertEquals( "Failed to parse 'port' property from '" + input + '\'', Integer.valueOf( 12345 ), databaseName.getPort() );
+		assertEquals( "Failed to parse 'user' property from '" + input + '\'', "databaseUser", databaseName.getUser() );
+		assertEquals( "Failed to parse 'password' property from '" + input + '\'', "databasePassword", databaseName.getPassword() );
+		assertEquals( "Failed to parse 'tunnel' property from '" + input + '\'', "user:pass@host:port", databaseName.getTunnel() );
 	}
 }

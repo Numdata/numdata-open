@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ public class DatabaseName
 	/**
 	 * Regex pattern to match syntax (see class comment).
 	 */
-	private static final Pattern PATTERN = Pattern.compile( "(\\w+)(?:@([\\w.]+)(?::([0-9]{1,5}))?(?:;user=([^;@]+))?(?:;pass=([^;@]+))?(?:@(.+))?)?" );
+	private static final Pattern PATTERN = Pattern.compile( "(\\w+)(?:@([\\w.-]+)(?::([0-9]{1,5}))?(?:;user=([^;@]+))?(?:;pass=([^;@]+))?(?:@(.+))?)?" );
 
 	/**
 	 * SSH tunnel information (&lt;user&gt;:&lt;pass&gt;@&lt;host&gt;[':'&lt;port&gt;]).
