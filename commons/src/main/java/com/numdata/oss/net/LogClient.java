@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package com.numdata.oss.net;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.log.*;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.*;
  *
  * @author Peter S. Heijnen
  */
+@SuppressWarnings( "UseOfSystemOutOrSystemErr" )
 public class LogClient
 {
 	/**
@@ -56,10 +58,9 @@ public class LogClient
 	public static void main( final String[] args )
 	throws Exception
 	{
-		int logLevel = ClassLogger.INFO;
-		String logLevels = "";
-		String host = null;
-		int port = LogServer.DEFAULT_PORT;
+		final LogClient logClient = new LogClient();
+		boolean hostSet = false;
+		final List<Pattern> exclusions = new ArrayList<>();
 
 		final List<String> argList = Arrays.asList( args );
 		final Iterator<String> argIterator = argList.iterator();
@@ -67,23 +68,47 @@ public class LogClient
 		while ( argIterator.hasNext() )
 		{
 			final String arg = argIterator.next();
-			if ( "-level".equals( arg ) )
+			if ( "-l".equals( arg ) ||
+			     "-level".equals( arg ) )
 			{
 				if ( !argIterator.hasNext() )
 				{
 					throw new RuntimeException( "No arguments after '" + arg + '\'' );
 				}
 
-				logLevel = ClassLogger.parseLevel( argIterator.next() );
+				final String levels = argIterator.next();
+				final int length = levels.length();
+				int levelsStart = 0;
+
+				for ( int i = 0; i <= length; i++ )
+				{
+					final char ch = ( i < length ) ? levels.charAt( i ) : ',';
+					if ( ch == ',' )
+					{
+						logClient.setLogLevel( ClassLogger.parseLevel( levels.substring( 0, i ).trim() ) );
+						levelsStart = i + 1;
+						break;
+					}
+					else if ( ch == '=' )
+					{
+						break;
+					}
+				}
+
+				if ( levelsStart < length )
+				{
+					logClient.setLogLevels( levels.substring( levelsStart ).trim() );
+				}
 			}
-			else if ( "-levels".equals( arg ) )
+			else if ( "-e".equals( arg ) ||
+			          "-exclude".equals( arg ) )
 			{
 				if ( !argIterator.hasNext() )
 				{
 					throw new RuntimeException( "No arguments after '" + arg + '\'' );
 				}
 
-				logLevels = argIterator.next();
+				exclusions.add( Pattern.compile( argIterator.next() ) );
 			}
 			else if ( TextTools.startsWith( arg, '-' ) )
 			{
@@ -91,42 +116,47 @@ public class LogClient
 			}
 			else
 			{
-				if ( TextTools.isNonEmpty( host ) )
+				if ( hostSet )
 				{
 					throw new RuntimeException( "Can't connect to multiple servers" );
 				}
 
 				final int colon = arg.indexOf( ':' );
-				host = ( colon < 0 ) ? arg : arg.substring( 0, colon );
+				logClient.setHost( ( colon < 0 ) ? arg : arg.substring( 0, colon ) );
 				if ( colon >= 0 )
 				{
-					port = Integer.parseInt( arg.substring( colon + 1 ) );
+					logClient.setPort( Integer.parseInt( arg.substring( colon + 1 ) ) );
 				}
+				hostSet = true;
 			}
+		}
+
+		if ( TextTools.isEmpty( logClient.getHost() ) )
+		{
+			System.out.println( "Command-line: " + LogClient.class.getName() + " -level <levels> -exclude <regex> <host>[:<port>]" );
+			System.out.println();
+			System.out.println( "    -l[evel] <level>[,<pattern>=<level>]..." );
+			System.out.println( "        Set log level(s)." );
+			System.out.println();
+			System.out.println( "    -e[xclude] <regex>" );
+			System.out.println( "        Exclude log messages that match this pattern (multiple allowed)" );
+			System.out.println();
+			System.out.println( "    <host>[:<port>]>" );
+			System.out.println( "        Host name and optional port number to connect to." );
+			System.exit( 0 );
 		}
 
 		/*
 		 * Connect to client and show any incoming messages.
 		 */
+		System.out.println( "Connecting to log server" );
 		final LogTarget consoleTarget = new ConsoleTarget( ClassLogger.TRACE, System.out );
-
-		LOG.info( "Connecting to log server" );
-		final LogClient logClient = new LogClient();
-		logClient.setHost( host );
-		logClient.setPort( port );
-		logClient.setLogLevel( logLevel );
-		logClient.setLogLevels( logLevels );
-
-		LOG.debug( "Start listening for incoming messages" );
-		logClient.addListener( new LogClientListener()
-		{
-			@Override
-			public void logMessageReceived( final LogMessage logMessage )
+		logClient.addListener( logMessage -> {
+			if ( exclusions.stream().noneMatch( regex -> regex.matcher( logMessage.message ).find() ) )
 			{
 				consoleTarget.log( logMessage.name, logMessage.level, logMessage.message, logMessage.throwable, logMessage.threadName );
 			}
 		} );
-
 		logClient.connect().run();
 	}
 
@@ -157,7 +187,8 @@ public class LogClient
 	/**
 	 * Registered listeners.
 	 */
-	private final List<LogClientListener> _listeners = new ArrayList<LogClientListener>();
+	@NotNull
+	private final List<LogClientListener> _listeners = new ArrayList<>();
 
 	/**
 	 * Open connection to server.
