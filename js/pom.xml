@@ -81,6 +81,9 @@
 							</arguments>
 							<toolchain>paths</toolchain>
 							<skip>${skipTests}</skip>
+							<environmentVariables>
+								<JEST_JUNIT_OUTPUT_DIR>${project.build.directory}/jest-reports</JEST_JUNIT_OUTPUT_DIR>
+							</environmentVariables>
 							<successCodes>
 								<code>0</code>
 								<code>1</code>
