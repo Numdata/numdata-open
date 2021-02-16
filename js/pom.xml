@@ -81,6 +81,9 @@
 							</arguments>
 							<toolchain>paths</toolchain>
 							<skip>${skipTests}</skip>
+							<successCodes>
+								<code>1</code>
+							</successCodes>
 						</configuration>
 					</execution>
 				</executions>
