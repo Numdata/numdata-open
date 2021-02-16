@@ -82,6 +82,7 @@
 							<toolchain>paths</toolchain>
 							<skip>${skipTests}</skip>
 							<successCodes>
+								<code>0</code>
 								<code>1</code>
 							</successCodes>
 						</configuration>
