@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,10 +25,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: 'src/**/*.js',
-	sourceCopy: 'src/**/*.d.ts',
-	target: 'lib',
-	test: 'test/**/Test*.js',
-	testTarget: 'generated-sources/test'
-} );
+/**
+ * Base class for enumeration types.
+ *
+ * @author Gerrit Meinders
+ */
+export default class Enum
+{
+    /**
+     * Returns the enum constant with the specified value.
+     *
+     * @param {string} value Value to find.
+     *
+     * @returns {Enum} Enum type.
+     *
+     * @throws TypeError if no matching enum constant is found.
+     */
+    static valueOf( value: string ): Enum;
+
+    constructor( name: string );
+
+    name: string;
+
+    valueOf(): string;
+
+    toString(): string;
+}
