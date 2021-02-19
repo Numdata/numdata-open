@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ export default class LocalizedString
 	/**
 	 * Construct localized string based on the given (localized) string.
 	 *
-	 * @param {string|LocalizedString} [original] (Localized) string to copy.
+	 * @param {string|object|LocalizedString} [original] (Localized) string to copy.
 	 */
 	constructor( original )
 	{
@@ -161,6 +161,7 @@ export default class LocalizedString
 	 */
 	getSpecific( locale )
 	{
+		console.info( "LocalizedString.getSpecific", locale, this._values[ locale || '' ] || null );
 		return this._values[ locale || '' ] || null;
 	}
 
@@ -168,7 +169,7 @@ export default class LocalizedString
 	 * Set string for the specified locale or copy all entries from another
 	 * localized string.
 	 *
-	 * @param {LocalizedString|string} value (Localized) string to set.
+	 * @param {LocalizedString|object|string} value (Localized) string to set.
 	 * @param {string} [locale] Locale to set string for; {@code null} or empty string to set the default.
 	 */
 	set( value, locale )
@@ -176,6 +177,19 @@ export default class LocalizedString
 		if ( value instanceof LocalizedString )
 		{
 			this._values = Object.assign( {}, value._values );
+		}
+		else if ( typeof value === 'object' )
+		{
+			const values = {};
+			Object.keys( value ).forEach( key => {
+				const locale = String( key || '' );
+				if ( locale && !locale.match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
+				{
+					throw new TypeError( 'Invalid locale: ' + key );
+				}
+				values[ locale ] = String( value[ key ] );
+			} );
+			this._values = values;
 		}
 		else if ( locale && !String( locale ).match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
 		{
@@ -190,7 +204,7 @@ export default class LocalizedString
 	/**
 	 * Sets all values based on the given source.
 	 *
-	 * @param {LocalizedString|{}} source
+	 * @param {LocalizedString|object} source
 	 */
 	setAll( source )
 	{
