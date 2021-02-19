@@ -161,7 +161,6 @@ export default class LocalizedString
 	 */
 	getSpecific( locale )
 	{
-		console.info( "LocalizedString.getSpecific", locale, this._values[ locale || '' ] || null );
 		return this._values[ locale || '' ] || null;
 	}
 
