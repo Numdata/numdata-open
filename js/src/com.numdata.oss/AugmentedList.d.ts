@@ -25,34 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import AugmentedList from '../../src/com.numdata.oss/AugmentedList';
-
-/**
- * Javascript implementation of <code>com.numdata.oss.AugmentedArrayList</code>.
- *
- * @author Gerrit Meinders
- */
-export default class AugmentedArrayList<T> implements AugmentedList<T>
+export default interface AugmentedList<T>
 {
-    /**
-     * Array with elements in this list.
-     */
-    _elements: T[];
-
-    /**
-     * Constructs a new instance.
-     *
-     * @param {AugmentedArrayList|[]} [original] List or array to copy.
-     */
-    constructor( original?: AugmentedList<T> | T[] );
-
     [ Symbol.iterator ](): Iterator<T>;
 
     /**
      * Length of the list.
      * @returns {number}
      */
-    get length(): number;
+    readonly length: number;
 
     /**
      * Calls the given function for each element of the aggregation.

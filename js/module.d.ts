@@ -32,6 +32,7 @@ import scrollToElement from './lib/scrollToElement';
 import { difference as moduloDifference, nearest as moduloNearest } from './lib/Modulo';
 
 import ArrayTools from './lib/com.numdata.oss/ArrayTools';
+import AugmentedList from './src/com.numdata.oss/AugmentedList';
 import AugmentedArrayList from './lib/com.numdata.oss/AugmentedArrayList';
 import DecimalFormat from './lib/com.numdata.oss/DecimalFormat';
 import DecimalFormatSymbols from './lib/com.numdata.oss/DecimalFormatSymbols';
@@ -58,6 +59,7 @@ export {
     moduloNearest,
 
     ArrayTools,
+    AugmentedList,
     AugmentedArrayList,
     DecimalFormat,
     DecimalFormatSymbols,
