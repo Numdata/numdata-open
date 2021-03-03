@@ -83,6 +83,7 @@
 							<skip>${skipTests}</skip>
 							<environmentVariables>
 								<JEST_JUNIT_OUTPUT_DIR>${project.build.directory}/jest-reports</JEST_JUNIT_OUTPUT_DIR>
+								<JEST_COVERAGE_OUTPUT_DIR>${project.build.directory}/istanbul-reports</JEST_COVERAGE_OUTPUT_DIR>
 							</environmentVariables>
 							<successCodes>
 								<code>0</code>
