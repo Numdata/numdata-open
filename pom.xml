@@ -325,7 +325,7 @@
 				<configuration>
 					<toolchains>
 						<jdk>
-							<version>1.8</version>
+							<version>${jdk.version}</version>
 						</jdk>
 					</toolchains>
 				</configuration>
@@ -348,7 +348,7 @@
 				<configuration>
 					<doclint>none</doclint>
 					<jdkToolchain>
-						<version>1.8</version>
+						<version>${jdk.version}</version>
 					</jdkToolchain>
 				</configuration>
 				<executions>
@@ -452,6 +452,31 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>java11</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>javax.activation</artifactId>
+					<version>${javax.activation.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+					<version>${jaxb.api.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-core</artifactId>
+					<version>${jaxb.api.version}</version>
+				</dependency>
+			</dependencies>
+			<properties>
+				<jdk.version>11</jdk.version>
+				<javax.activation.version>1.2.0</javax.activation.version>
+				<jaxb.api.version>2.3.0</jaxb.api.version>
+			</properties>
+		</profile>
 	</profiles>
 
 	<reporting>
@@ -467,6 +492,7 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<jdk.version>1.8</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<coverage.minimum>0.8</coverage.minimum>
 		<coverage.maximumMissedClasses>150</coverage.maximumMissedClasses>

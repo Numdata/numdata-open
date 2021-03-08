@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,9 @@ import org.jetbrains.annotations.*;
 /**
  * Basic implementation of {@link TreeNode} interface.
  *
+ * @param <C> Child type.
+ * @param <V> Value type.
+ *
  * @author Peter S. Heijnen
  * @see TreeNode
  */
@@ -48,7 +51,7 @@ implements TreeNode, Iterable<BasicTreeNode<?, ?>>
 	/**
 	 * Children of this node.
 	 */
-	private final List<C> _children = new ArrayList<C>();
+	private final List<C> _children = new ArrayList<>();
 
 	/**
 	 * Associated value of this node.
@@ -79,7 +82,7 @@ implements TreeNode, Iterable<BasicTreeNode<?, ?>>
 	}
 
 	@Override
-	public Enumeration<?> children()
+	public Enumeration<C> children()
 	{
 		return Collections.enumeration( _children );
 	}
@@ -125,6 +128,7 @@ implements TreeNode, Iterable<BasicTreeNode<?, ?>>
 	@Override
 	public int getIndex( final TreeNode node )
 	{
+		//noinspection SuspiciousMethodCalls
 		return _children.indexOf( node );
 	}
 
@@ -148,31 +152,13 @@ implements TreeNode, Iterable<BasicTreeNode<?, ?>>
 	@Override
 	public TreeNodeIterator<BasicTreeNode<?, ?>> iterator()
 	{
-		return new TreeNodeIterator<BasicTreeNode<?, ?>>( this );
+		return new TreeNodeIterator<>( this );
 	}
 
 	@Override
 	public boolean equals( final Object obj )
 	{
-		final boolean result;
-
-		if ( obj == this )
-		{
-			result = true;
-		}
-		else if ( obj instanceof BasicTreeNode )
-		{
-			final Object value1 = getValue();
-			final Object value2 = ( (BasicTreeNode<?, ?>)obj ).getValue();
-
-			result = ( value1 == null ) ? ( value2 == null ) : value1.equals( value2 );
-		}
-		else
-		{
-			result = false;
-		}
-
-		return result;
+		return ( obj == this ) || ( obj instanceof BasicTreeNode ) && Objects.equals( getValue(), ( (BasicTreeNode<?, ?>)obj ).getValue() );
 	}
 
 	@Override

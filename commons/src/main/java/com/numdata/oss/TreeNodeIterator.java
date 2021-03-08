@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@ import org.jetbrains.annotations.*;
 /**
  * Iterates depth-first through a tree starting at a given {@link TreeNode}.
  *
+ * @param <T> Node type.
+ *
  * @author Peter S. Heijnen
  */
 public class TreeNodeIterator<T extends TreeNode>
@@ -61,7 +63,7 @@ implements Iterator<T>
 	 *
 	 * @param node Node to start iteration at.
 	 */
-	public TreeNodeIterator( @NotNull final T node )
+	public TreeNodeIterator( final @NotNull T node )
 	{
 		this( node, -1 );
 	}
@@ -72,7 +74,7 @@ implements Iterator<T>
 	 * @param node       Node to start iteration at.
 	 * @param childIndex Index of first child (-1 to start at node).
 	 */
-	private TreeNodeIterator( @NotNull final T node, final int childIndex )
+	private TreeNodeIterator( final @NotNull T node, final int childIndex )
 	{
 		_node = node;
 		_childIndex = childIndex;
@@ -102,7 +104,7 @@ implements Iterator<T>
 			int childIndex = _childIndex;
 			if ( childIndex >= node.getChildCount() )
 			{
-				throw new NoSuchElementException();
+				throw new NoSuchElementException( "no more children" );
 			}
 
 			if ( childIndex < 0 )
@@ -113,7 +115,7 @@ implements Iterator<T>
 			else
 			{
 				result = (T)node.getChildAt( childIndex++ );
-				childIterator = result.isLeaf() ? null : new TreeNodeIterator<T>( result, 0 );
+				childIterator = result.isLeaf() ? null : new TreeNodeIterator<>( result, 0 );
 			}
 
 			_childIndex = childIndex;
@@ -126,6 +128,6 @@ implements Iterator<T>
 	@Override
 	public void remove()
 	{
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException( "remove not supported" );
 	}
 }

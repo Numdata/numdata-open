@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,27 +32,30 @@ import javax.swing.tree.*;
 /**
  * Basic implementation of a node of a tree table.
  *
+ * @param <C> Child type.
+ * @param <V> Value type.
+ *
  * @author Gerrit Meinders
  */
-public class BasicTreeTableNode<V,C extends TreeNode>
-	extends BasicTreeNode<V,C>
-	implements TreeTableNode<V>
+public class BasicTreeTableNode<V, C extends TreeNode>
+extends BasicTreeNode<V, C>
+implements TreeTableNode<V>
 {
 	/**
 	 * Attributes associated with this node.
 	 */
-	private final Map<String,Object> _attributes;
+	private final Map<String, Object> _attributes;
 
 	/**
 	 * Construct tree node.
 	 *
-	 * @param   parent  Parent of this node.
-	 * @param   value   Associated value.
+	 * @param parent Parent of this node.
+	 * @param value  Associated value.
 	 */
 	public BasicTreeTableNode( final TreeNode parent, final V value )
 	{
 		super( parent, value );
-		_attributes = new LinkedHashMap<String,Object>();
+		_attributes = new LinkedHashMap<>();
 	}
 
 	@Override
@@ -70,8 +73,8 @@ public class BasicTreeTableNode<V,C extends TreeNode>
 	/**
 	 * Set attribute value.
 	 *
-	 * @param   name    Attribute name.
-	 * @param   value   Attribute value.
+	 * @param name  Attribute name.
+	 * @param value Attribute value.
 	 */
 	public void setAttribute( final String name, final Object value )
 	{
