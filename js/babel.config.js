@@ -25,4 +25,4 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module.exports = require( '@numdata/common-config/babel.config' );
+module.exports = require( '@numdata/common-config/babel-typescript.config' );

@@ -1,1 +1,1 @@
-module.exports = require( '@numdata/common-config/jest.config' );
+module.exports = { ...require( '@numdata/common-config/jest.config' ) };
