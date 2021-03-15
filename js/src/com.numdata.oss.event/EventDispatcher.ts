@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import type EventFilter from './EventFilter';
+import type EventListener from './EventListener';
+
+/**
+ * Provides information about an event.
+ */
+export type EventObject = any;
+
 /**
  * This class and its supporting interfaces provides a simple filterable event
  * framework for applications.
@@ -35,42 +43,39 @@
 export default class EventDispatcher
 {
 	/**
+	 * This is a special event dispatcher that ignores all events and does not
+	 * register any listeners or filers.
+	 */
+	static NULL: NullEventDispatcher;
+
+	/**
 	 * Chain of filters an incoming event must pass through before being passed
 	 * on to the registered listeners.
 	 *
 	 * NOTE: The entry with the lowest index is executed last!
-	 * @type EventFilter[]
 	 */
-	_filters;
+	private readonly _filters: EventFilter[] = [];
 
 	/**
 	 * Filter that is given first pick when filtering events. The rest of the
 	 * filter ordering is retained. When the focus is released, the original
 	 * filter ordering is restored.
-	 * @type EventFilter
 	 */
-	_focusFilter = null;
+	private _focusFilter: EventFilter = null;
 
 	/**
 	 * List of registered listeners.
-	 * @type EventListener[]
 	 */
-	_listeners;
-
-	constructor()
-	{
-		this._filters = [];
-		this._listeners = [];
-	}
+	private readonly _listeners: EventListener[] = [];
 
 	/**
 	 * Append event filter to the end of the filter chain. This filter will be
 	 * applied after all previously registered filters. Note that a filter may
 	 * be added multiple times to the filter chain (unlike a listener).
 	 *
-	 * @param   {EventFilter} filter      Event filter to add to the filter chain.
+	 * @param   filter      Event filter to add to the filter chain.
 	 */
-	appendFilter( filter )
+	appendFilter( filter: EventFilter ): void
 	{
 		this._filters.push( filter );
 	}
@@ -80,9 +85,9 @@ export default class EventDispatcher
 	 * be applied before all previously registered filters. Note that a filter
 	 * may be added multiple times to the filter chain (unlike a listener).
 	 *
-	 * @param   {EventFilter} filter      Event filter to add to the filter chain.
+	 * @param   filter      Event filter to add to the filter chain.
 	 */
-	insertFilter( filter )
+	insertFilter( filter: EventFilter ): void
 	{
 		this._filters.splice( 0, 0, filter );
 	}
@@ -91,9 +96,9 @@ export default class EventDispatcher
 	 * Removes an event filter from the filter chain. If the filter is added
 	 * multiple times, the first entry in the filter chain is removed.
 	 *
-	 * @param   {EventFilter} filter      Event filter to remove from the filter chain.
+	 * @param   filter      Event filter to remove from the filter chain.
 	 */
-	removeFilter( filter )
+	removeFilter( filter: EventFilter ): void
 	{
 		const index = this._filters.indexOf( filter );
 		if ( index !== -1 )
@@ -105,13 +110,13 @@ export default class EventDispatcher
 	/**
 	 * Tests whether the specified filter currently has this dispatcher's focus.
 	 *
-	 * @param   {!EventFilter} filter  Filter to test.
+	 * @param   filter  Filter to test.
 	 *
-	 * @return  {boolean} {@code true} if the specified filter has focus; {@code false} otherwise.
+	 * @return  {@code true} if the specified filter has focus; {@code false} otherwise.
 	 *
 	 * @throws  TypeError if {@code filter} is {@code null}.
 	 */
-	hasFocus( filter )
+	hasFocus( filter: EventFilter ): boolean
 	{
 		if ( !filter )
 		{
@@ -129,9 +134,9 @@ export default class EventDispatcher
 	 * other filters will be processed as usual (the filter having focus will
 	 * not be called twice).
 	 *
-	 * @param   {!EventFilter} filter  Filter to be given focus.
+	 * @param   filter  Filter to be given focus.
 	 */
-	requestFocus( filter )
+	requestFocus( filter: EventFilter ): void
 	{
 		this._focusFilter = filter;
 	}
@@ -140,7 +145,7 @@ export default class EventDispatcher
 	 * Requests that focus is released from any filter set as such. This will
 	 * restore the original filter ordering.
 	 */
-	releaseFocus()
+	releaseFocus(): void
 	{
 		this._focusFilter = null;
 	}
@@ -149,14 +154,14 @@ export default class EventDispatcher
 	 * Send event through the filter chain. The filter chain may cause the event
 	 * to change or dissipate completely.
 	 *
-	 * @param   {EventObject} event       Event to filter.
+	 * @param   event       Event to filter.
 	 *
-	 * @return  {?EventObject} Filtered event (may be different or same as argument);
+	 * @return  Filtered event (may be different or same as argument);
 	 *          {@code null} if event dissipated (event was filtered out).
 	 *
 	 * @private
 	 */
-	filterEvent( event )
+	filterEvent( event: EventObject ): EventObject | null
 	{
 		let filteredEvent = event;
 		if ( filteredEvent )
@@ -186,9 +191,9 @@ export default class EventDispatcher
 	 * Register a listener. Registering a listener twice or specifying
 	 * {@code null} as listener has no effect.
 	 *
-	 * @param   {EventListener} listener    Listener to register.
+	 * @param   listener    Listener to register.
 	 */
-	addListener( listener )
+	addListener( listener: EventListener ): void
 	{
 		if ( listener && ( this._listeners.indexOf( listener ) === -1 ) )
 		{
@@ -200,9 +205,9 @@ export default class EventDispatcher
 	 * Unregisters a listener. Unregistering a listener twice or specifying
 	 * {@code null} as listener has no effect.
 	 *
-	 * @param   {EventListener} listener    Listener to unregister.
+	 * @param   listener    Listener to unregister.
 	 */
-	removeListener( listener )
+	removeListener( listener: EventListener ): void
 	{
 		if ( listener )
 		{
@@ -219,12 +224,12 @@ export default class EventDispatcher
 	 * the filter chain. The filter chain may cause the event to change or
 	 * dry out all together (no listener is invoked).
 	 *
-	 * @param   {EventObject} event       Event to be filtered and dispatched.
+	 * @param   event       Event to be filtered and dispatched.
 	 *
-	 * @return  {?EventObject} Event that was passed to listeners (may be changed);
+	 * @return  Event that was passed to listeners (may be changed);
 	 *          {@code null} if no event was sent (event was filtered out).
 	 */
-	dispatch( event )
+	dispatch( event: EventObject ): EventObject | null
 	{
 		let filteredEvent = this.filterEvent( event );
 		if ( filteredEvent )
@@ -252,61 +257,36 @@ export default class EventDispatcher
 }
 
 /**
- * Provides information about an event.
- *
- * @typedef {object} EventObject
- */
-
-/**
- * Event listener.
- *
- * @callback EventListener
- * @param {!EventObject} [event] Event.
- */
-
-/**
- * Event filter that decides whether an event should be passed on by the dispatcher or not.
- *
- * @callback EventFilter
- * @param {!EventObject} event Event to filter.
- * @returns {?EventObject} Filtered event, or null.
- */
-
-/**
  * This is a special event dispatcher that ignores all events and does not
  * register any listeners or filers.
  */
-class NullEventDispatcher extends EventDispatcher
+export class NullEventDispatcher extends EventDispatcher
 {
-	addListener( listener ) // eslint-disable-line no-unused-vars
+	addListener( listener: EventListener ): void
 	{
 		throw new Error( "NULL dispatcher does not accept listeners" );
 	}
 
-	appendFilter( filter ) // eslint-disable-line no-unused-vars
+	appendFilter( filter: EventFilter ): void
 	{
 		throw new Error( "NULL dispatcher does not accept filters" );
 	}
 
-	insertFilter( filter ) // eslint-disable-line no-unused-vars
+	insertFilter( filter: EventFilter ): void
 	{
 		throw new Error( "NULL dispatcher does not accept filters" );
 	}
 
-	dispatch( event ) // eslint-disable-line no-unused-vars
+	dispatch( event: EventObject ): EventObject | null
 	{
 		/* straight to /dev/null */
 		return null;
 	}
 
-	requestFocus( filter ) // eslint-disable-line no-unused-vars
+	requestFocus( filter: EventFilter )
 	{
 		/* don't accept focus */
 	}
 }
 
-/**
- * This is a special event dispatcher that ignores all events and does not
- * register any listeners or filers.
- */
 EventDispatcher.NULL = new NullEventDispatcher();

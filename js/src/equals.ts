@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Unicon Creation BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,28 +26,15 @@
  */
 
 /**
- * Base class for enumeration types.
+ * Tests if two objects are equal, using an equals method if available or
+ * the strict equality operator (===) otherwise.
  *
- * @author Gerrit Meinders
+ * @param o1 First value.
+ * @param o2 Second value.
+ *
+ * @returns true if the values are equal; false otherwise.
  */
-export default class Enum
+export default function equals( o1: any, o2: any ): boolean
 {
-    /**
-     * Returns the enum constant with the specified value.
-     *
-     * @param {string} value Value to find.
-     *
-     * @returns {Enum} Enum type.
-     *
-     * @throws TypeError if no matching enum constant is found.
-     */
-    static valueOf( value: string ): Enum;
-
-    constructor( name: string );
-
-    name: string;
-
-    valueOf(): string;
-
-    toString(): string;
+	return o1 && o1.equals ? o2 && o1.equals( o2 ) : o1 === o2;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,9 @@
  */
 export default class Enum
 {
-	constructor( name )
+	readonly name: string;
+
+	constructor( name: string )
 	{
 		this.name = name;
 	}
@@ -47,16 +49,18 @@ export default class Enum
 		return Object.getPrototypeOf( this ).constructor.name + "." + this.name;
 	}
 
+	static values: Enum[];
+
 	/**
 	 * Returns the enum constant with the specified value.
 	 *
-	 * @param {string} value Value to find.
+	 * @param value Value to find.
 	 *
-	 * @returns {Enum} Enum type.
+	 * @returns Enum type.
 	 *
 	 * @throws TypeError if no matching enum constant is found.
 	 */
-	static valueOf( value )
+	static valueOf( value: string ): Enum
 	{
 		const result = this.values.find( e => e.name === value );
 		if ( !result )

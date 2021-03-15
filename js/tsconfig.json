@@ -1,0 +1,6 @@
+{
+  "extends": "@numdata/common-config/tsconfig.json",
+  "include": [
+    "src/**/*"
+  ]
+}

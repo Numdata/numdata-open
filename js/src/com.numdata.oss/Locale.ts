@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -143,18 +143,33 @@ export default class Locale
 	static ROOT = new Locale();
 
 	/**
+	 * An ISO 639 alpha-2 language code.
+	 */
+	readonly language: string;
+
+	/**
+	 * An ISO 3166 alpha-2 country code.
+	 */
+	readonly country: string;
+
+	/**
+	 * Any arbitrary value used to indicate a variation.
+	 */
+	readonly variant: string;
+
+	/**
 	 * @param [language] An ISO 639 alpha-2 language code.
 	 * @param [country] An ISO 3166 alpha-2 country code.
 	 * @param [variant] Any arbitrary value used to indicate a variation.
 	 */
-	constructor( language, country, variant )
+	constructor( language?: string, country?: string, variant?: string )
 	{
 		this.language = language || '';
 		this.country = country || '';
 		this.variant = variant || '';
 	}
 
-	toString()
+	toString(): string
 	{
 		let result = this.language;
 		if ( this.country || this.variant )
@@ -173,7 +188,7 @@ export default class Locale
 	 *
 	 * @returns {Locale} Default locale.
 	 */
-	static getDefault()
+	static getDefault(): Locale
 	{
 		return Locale.ENGLISH;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,7 +25,37 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-module.exports = require( '@numdata/common-build-gulp' ).build( {
-	source: 'src/**/*.js',
-	target: 'lib'
-} );
+import { EventObject } from './EventDispatcher';
+
+/**
+ * This interface should be implemented to create an event filter. The filter
+ * decides whether the event should be passed on by the dispatcher or not.
+ *
+ * @author S. Bouwman
+ * @see EventDispatcher
+ * @see EventListener
+ */
+export default interface EventFilter
+{
+	/**
+	 * Filters an event. The filter must decide whether the event should be:
+	 * <dl>
+	 *
+	 * <dt>Dispatched as-is</dt><dd> The filter should return the event that was
+	 * passed as argument.</dd>
+	 *
+	 * <dt>Modified</dt><dd> The filter may create a new event (e.g. to
+	 * transform an event into some other event) and return it.</dd>
+	 *
+	 * <dt>Discarded</dt><dd> The event is discarded (no further filters are
+	 * processed).</dd>
+	 *
+	 * </dl>
+	 *
+	 * @param event Event to be filtered.
+	 *
+	 * @return Filtered event (may be same or modified); {@code null} to discard
+	 * event completely.
+	 */
+	filterEvent( event: EventObject ): EventObject | null;
+}

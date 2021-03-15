@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,37 @@
  */
 import equals from '../equals';
 import ArrayTools from './ArrayTools';
+import AugmentedList from './AugmentedList';
+
+type Collection<T> = AugmentedArrayList<T> | T[];
 
 /**
  * Javascript implementation of <code>com.numdata.oss.AugmentedArrayList</code>.
  *
  * @author Gerrit Meinders
  */
-export default class AugmentedArrayList
+export default class AugmentedArrayList<T> implements AugmentedList<T>
 {
 	/**
 	 * Array with elements in this list.
 	 */
-	_elements;
+	_elements: T[];
 
 	/**
 	 * Constructs a new instance.
 	 *
 	 * @param {AugmentedArrayList|[]} [original] List or array to copy.
 	 */
-	constructor( original )
+	constructor( original?: AugmentedArrayList<T> | T[] )
 	{
 		if ( original )
 		{
-			const elements = original._elements || original;
-			if ( Array.isArray( elements ) )
+			const elements = original instanceof AugmentedArrayList ? original._elements : original;
+			if ( !Array.isArray( elements ) )
 			{
-				this._elements = elements.slice();
+				throw new TypeError( String( original ) );
 			}
-			else
-			{
-				throw new TypeError( original );
-			}
+			this._elements = elements.slice();
 		}
 		else
 		{
@@ -64,7 +64,7 @@ export default class AugmentedArrayList
 		}
 	}
 
-	[Symbol.iterator]()
+	[ Symbol.iterator ]()
 	{
 		return this._elements[ Symbol.iterator ]();
 	}
@@ -83,7 +83,7 @@ export default class AugmentedArrayList
 	 *
 	 * @param {function} consumer Consumer function.
 	 */
-	forEach( consumer )
+	forEach( consumer: ( element: T, index: number ) => void )
 	{
 		this._elements.forEach( consumer );
 	}
@@ -96,7 +96,7 @@ export default class AugmentedArrayList
 	 *
 	 * @return {Array} Created array.
 	 */
-	map( callback )
+	map<U>( callback: ( element: T, index: number ) => U ): U[]
 	{
 		return this._elements.map( callback );
 	}
@@ -109,7 +109,7 @@ export default class AugmentedArrayList
 	 *
 	 * @return {Array}
 	 */
-	filter( condition )
+	filter( condition: ( element: T, index: number ) => boolean ): T[]
 	{
 		return this._elements.filter( condition );
 	}
@@ -121,7 +121,7 @@ export default class AugmentedArrayList
 	 *
 	 * @return {*}
 	 */
-	find( condition )
+	find( condition: ( element: T ) => boolean ): T
 	{
 		return this._elements.find( condition );
 	}
@@ -130,7 +130,7 @@ export default class AugmentedArrayList
 	 * Tests whether all elements pass the given test.
 	 * @param condition Function implementing the test.
 	 */
-	every( condition )
+	every( condition: ( element: T, index: number ) => boolean ): boolean
 	{
 		return this._elements.every( condition );
 	}
@@ -140,7 +140,7 @@ export default class AugmentedArrayList
 	 *
 	 * @param condition Function implementing the test.
 	 */
-	some( condition )
+	some( condition: ( element: T ) => boolean ): boolean
 	{
 		return this._elements.some( condition );
 	}
@@ -160,25 +160,27 @@ export default class AugmentedArrayList
 		this._elements.length = 0;
 	}
 
-	add()
+	add( element: T ): boolean;
+	add( index: number, element: T ): void;
+	add( ...args: any[] )
 	{
-		if ( arguments.length === 1 )
+		if ( args.length === 1 )
 		{
-			return this.addElement.apply( this, arguments );
+			return this.addElement( args[ 0 ] );
 		}
 		else
 		{
-			this.addIndex.apply( this, arguments );
+			this.addIndex( args[ 0 ], args[ 1 ] );
 		}
 	}
 
-	addElement( element )
+	addElement( element: T ): boolean
 	{
 		this._elements.push( element );
 		return true;
 	}
 
-	addIndex( index, element )
+	addIndex( index: number, element: T ): void
 	{
 		let elementCount = this.size();
 		if ( ( index < 0 ) || ( index > elementCount ) )
@@ -188,7 +190,7 @@ export default class AugmentedArrayList
 		this._elements.splice( index, 0, element );
 	}
 
-	addAll( collection )
+	addAll( collection: Collection<T> ): boolean
 	{
 		let result = collection.length > 0;
 		if ( result )
@@ -198,11 +200,11 @@ export default class AugmentedArrayList
 		return result;
 	}
 
-	setLength( length )
+	setLength( length: number )
 	{
 		if ( length < 0 )
 		{
-			throw new TypeError( length );
+			throw new TypeError( String( length ) );
 		}
 
 		if ( length < this._elements.length )
@@ -218,27 +220,27 @@ export default class AugmentedArrayList
 		}
 	}
 
-	contains( element )
+	contains( element: T )
 	{
 		return this._elements.indexOf( element ) !== -1;
 	}
 
-	containsAll( collection )
+	containsAll( collection: Collection<T> )
 	{
 		return collection.every( element => this._elements.indexOf( element ) !== -1 );
 	}
 
-	indexOf( element )
+	indexOf( element: T )
 	{
 		return this._elements.indexOf( element );
 	}
 
-	lastIndexOf( element )
+	lastIndexOf( element: T )
 	{
 		return this._elements.lastIndexOf( element );
 	}
 
-	get( index )
+	get( index: number )
 	{
 		if ( ( index < 0 ) || ( index >= this._elements.length ) )
 		{
@@ -269,7 +271,7 @@ export default class AugmentedArrayList
 		return this._elements[ size - 1 ];
 	}
 
-	setIndex( index, element )
+	setIndex( index: number, element: T )
 	{
 		if ( ( index < 0 ) || ( index >= this._elements.length ) )
 		{
@@ -283,30 +285,32 @@ export default class AugmentedArrayList
 		return oldElement;
 	}
 
-	setAll( list )
+	setAll( list: Collection<T> )
 	{
-		let changed = ( list.length !== this.length ) || !list.every( ( element, i ) => equals( this._elements[ i ], element ) );
+		let changed = ( list.length !== this.length ) || !list.every( ( element: T, i: number ) => equals( this._elements[ i ], element ) );
 		if ( changed )
 		{
-			let elements = list._elements || list;
+			let elements = ( list as any )._elements || list;
 			this._elements = elements.slice();
 		}
 	}
 
-	remove()
+	remove( index: number ): T;
+	remove( element: T ): boolean;
+	remove( arg: number | T )
 	{
 		// FIXME: But what happens for int<>?
-		if ( typeof arguments[ 0 ] === 'number' )
+		if ( typeof arg === 'number' )
 		{
-			return this.removeIndex.apply( this, arguments );
+			return this.removeIndex( arg );
 		}
 		else
 		{
-			return this.removeElement.apply( this, arguments );
+			return this.removeElement( arg );
 		}
 	}
 
-	removeIndex( index )
+	removeIndex( index: number ): T
 	{
 		if ( ( index < 0 ) || ( index >= this.length ) )
 		{
@@ -318,17 +322,17 @@ export default class AugmentedArrayList
 		return element;
 	}
 
-	removeRange( startIndex, endIndex )
+	removeRange( startIndex: number, endIndex: number ): void
 	{
 		let elementCount = this.length;
 		if ( ( startIndex < 0 ) || ( startIndex > elementCount ) )
 		{
-			throw new Error( startIndex );
+			throw new Error( String( startIndex ) );
 		}
 
 		if ( ( endIndex < 0 ) || ( endIndex > elementCount ) )
 		{
-			throw new Error( endIndex );
+			throw new Error( String( endIndex ) );
 		}
 
 		let length = endIndex - startIndex;
@@ -338,9 +342,9 @@ export default class AugmentedArrayList
 		}
 	}
 
-	removeElement( element )
+	removeElement( element: T ): boolean
 	{
-		var index = this._elements.indexOf( element );
+		const index = this._elements.indexOf( element );
 		let result = index !== -1;
 		if ( result )
 		{
@@ -349,7 +353,7 @@ export default class AugmentedArrayList
 		return result;
 	}
 
-	removeFirst()
+	removeFirst(): T
 	{
 		if ( this.isEmpty() )
 		{
@@ -361,7 +365,7 @@ export default class AugmentedArrayList
 		return element;
 	}
 
-	removeLast()
+	removeLast(): T
 	{
 		let size = this.size();
 		if ( size === 0 )
@@ -374,17 +378,17 @@ export default class AugmentedArrayList
 		return element;
 	}
 
-	removeAll( collection )
+	removeAll( collection: Collection<T> ): boolean
 	{
 		let result = false;
 		collection.forEach( element =>
 		{
-			result |= this.removeElement( element );
+			result = result || this.removeElement( element );
 		} );
 		return result;
 	}
 
-	equals( other )
+	equals( other: any )
 	{
 		return other._elements && ( this._elements.length === other._elements.length ) && ArrayTools.equals( this._elements, other._elements );
 	}

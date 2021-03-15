@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2004-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,16 +25,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { EventObject } from './EventDispatcher';
+
 /**
- * Tests if two objects are equal, using an equals method if available or
- * the strict equality operator (===) otherwise.
+ * This listener should be implemented to handle events sent by the
+ * {@link EventDispatcher}.
  *
- * @param o1 First value.
- * @param o2 Second value.
- *
- * @returns {boolean} true if the values are equal; false otherwise.
+ * @author S. Bouwman
+ * @see EventFilter
  */
-export default function equals( o1, o2 )
+export default interface EventListener
 {
-	return o1 && o1.equals ? o2 && o1.equals( o2 ) : o1 === o2;
+	/**
+	 * Handles an event. Due to the generic nature of this listener, there is
+	 * only this generic event handler method.
+	 *
+	 * Of course, a more elaborate interface may be implemented on top of this.
+	 *
+	 * @param event Event to handle.
+	 */
+	( event: EventObject ): void;
 }

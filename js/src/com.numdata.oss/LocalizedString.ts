@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+type ValueStore = { [ key: string ]: string };
+
 /**
  * This class provides a localized string value.
  *
@@ -34,16 +36,15 @@ export default class LocalizedString
 {
 	/**
 	 * Map's locale to string value.
-	 * @type {Object.<string, string>}
 	 */
-	_values = {};
+	_values: ValueStore = {};
 
 	/**
 	 * Construct localized string based on the given (localized) string.
 	 *
-	 * @param {string|object|LocalizedString} [original] (Localized) string to copy.
+	 * @param [original] (Localized) string to copy.
 	 */
-	constructor( original )
+	constructor( original?: string | object | LocalizedString )
 	{
 		if ( original )
 		{
@@ -60,12 +61,12 @@ export default class LocalizedString
 	 * create( "Dog" , "de" , "Hund" , "nl" , "Hond" )
 	 * </pre>
 	 *
-	 * @param {string} defaultString String to set as default.
-	 * @param {...string} localeSpecificStrings Pairs of locale names and string values.
+	 * @param defaultString String to set as default.
+	 * @param localeSpecificStrings Pairs of locale names and string values.
 	 *
-	 * @return {LocalizedString} Created localized string.
+	 * @return Created localized string.
 	 */
-	static create( defaultString, localeSpecificStrings )
+	static create( defaultString: string, ...localeSpecificStrings: string[] ): LocalizedString
 	{
 		let result = new LocalizedString( defaultString );
 
@@ -100,7 +101,7 @@ export default class LocalizedString
 	/**
 	 * Clear all values.
 	 */
-	clear()
+	clear(): void
 	{
 		this._values = {};
 	}
@@ -108,12 +109,12 @@ export default class LocalizedString
 	/**
 	 * Get string for the specified locale.
 	 *
-	 * @param {string} [locale]       Locale to get string for; {@code null} for any.
-	 * @param {string} [defaultValue] Value to return if no string is available.
+	 * @param [locale]       Locale to get string for; {@code null} for any.
+	 * @param [defaultValue] Value to return if no string is available.
 	 *
-	 * @return {?string} String for the specified locale; {@code defaultValue} if no suitable string was found.
+	 * @return String for the specified locale; {@code defaultValue} if no suitable string was found.
 	 */
-	get( locale = null, defaultValue = null )
+	get( locale: string = null, defaultValue: string = null ): string | null
 	{
 		let result;
 
@@ -155,11 +156,11 @@ export default class LocalizedString
 	/**
 	 * Get string for the specified locale and only that locale.
 	 *
-	 * @param {string|null} locale Locale to get string for; {@code null} or empty string for the default locale.
+	 * @param locale Locale to get string for; {@code null} or empty string for the default locale.
 	 *
-	 * @return {string|null} String for the specified locale; {@code null} if no entry was found.
+	 * @return String for the specified locale; {@code null} if no entry was found.
 	 */
-	getSpecific( locale )
+	getSpecific( locale: string | null ): string | null
 	{
 		return this._values[ locale || '' ] || null;
 	}
@@ -168,10 +169,10 @@ export default class LocalizedString
 	 * Set string for the specified locale or copy all entries from another
 	 * localized string.
 	 *
-	 * @param {LocalizedString|object|string} value (Localized) string to set.
-	 * @param {string} [locale] Locale to set string for; {@code null} or empty string to set the default.
+	 * @param value (Localized) string to set.
+	 * @param [locale] Locale to set string for; {@code null} or empty string to set the default.
 	 */
-	set( value, locale )
+	set( value: LocalizedString | object | string, locale: string = null ): void
 	{
 		if ( value instanceof LocalizedString )
 		{
@@ -179,14 +180,14 @@ export default class LocalizedString
 		}
 		else if ( typeof value === 'object' )
 		{
-			const values = {};
+			const values: ValueStore = {};
 			Object.keys( value ).forEach( key => {
 				const locale = String( key || '' );
 				if ( locale && !locale.match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
 				{
 					throw new TypeError( 'Invalid locale: ' + key );
 				}
-				values[ locale ] = String( value[ key ] );
+				values[ locale ] = String( ( value as any )[ key ] );
 			} );
 			this._values = values;
 		}
@@ -203,9 +204,9 @@ export default class LocalizedString
 	/**
 	 * Sets all values based on the given source.
 	 *
-	 * @param {LocalizedString|object} source
+	 * @param source
 	 */
-	setAll( source )
+	setAll( source: LocalizedString | object ): void
 	{
 		this._values = Object.assign( {}, source instanceof LocalizedString ? source._values : source );
 	}
@@ -213,10 +214,10 @@ export default class LocalizedString
 	/**
 	 * Test whether at least one string value is available.
 	 *
-	 * @return {boolean} {@code true} if no string values are available; {@code false} if at
+	 * @return {@code true} if no string values are available; {@code false} if at
 	 *         least one string value is available.
 	 */
-	isEmpty()
+	isEmpty(): boolean
 	{
 		return Object.keys( this._values ).length === 0;
 	}
@@ -224,9 +225,9 @@ export default class LocalizedString
 	/**
 	 * Remove string for the specified locale.
 	 *
-	 * @param {string} [locale] Locale to remove string for; {@code null} or empty string to remove the default.
+	 * @param [locale] Locale to remove string for; {@code null} or empty string to remove the default.
 	 */
-	remove( locale )
+	remove( locale: string ): void
 	{
 		delete this._values[ locale || '' ];
 	}
@@ -234,11 +235,11 @@ export default class LocalizedString
 	/**
 	 * Returns whether the given localized string is equal to this.
 	 *
-	 * @param {*} other Localized string to compare with.
+	 * @param other Localized string to compare with.
 	 *
-	 * @return {boolean} true if the localized strings are equal.
+	 * @return true if the localized strings are equal.
 	 */
-	equals( other )
+	equals( other: any ): boolean
 	{
 		let result = false;
 		if ( other === this )

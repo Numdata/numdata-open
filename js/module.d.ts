@@ -32,7 +32,7 @@ import scrollToElement from './lib/scrollToElement';
 import { difference as moduloDifference, nearest as moduloNearest } from './lib/Modulo';
 
 import ArrayTools from './lib/com.numdata.oss/ArrayTools';
-import AugmentedList from './src/com.numdata.oss/AugmentedList';
+import AugmentedList from './lib/com.numdata.oss/AugmentedList';
 import AugmentedArrayList from './lib/com.numdata.oss/AugmentedArrayList';
 import DecimalFormat from './lib/com.numdata.oss/DecimalFormat';
 import DecimalFormatSymbols from './lib/com.numdata.oss/DecimalFormatSymbols';
@@ -47,6 +47,8 @@ import toDegrees from './lib/com.numdata.oss/toDegrees';
 import toRadians from './lib/com.numdata.oss/toRadians';
 
 import EventDispatcher from './lib/com.numdata.oss.event/EventDispatcher';
+import EventFilter from './lib/com.numdata.oss.event/EventFilter';
+import EventListener from './lib/com.numdata.oss.event/EventListener';
 import ClassLogger from './lib/com.numdata.oss.log/ClassLogger';
 import Enum from './lib/java.lang/Enum';
 
@@ -74,6 +76,8 @@ export {
     toRadians,
 
     EventDispatcher,
+    EventFilter,
+    EventListener,
     ClassLogger,
     Enum
 };

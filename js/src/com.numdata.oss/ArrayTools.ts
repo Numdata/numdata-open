@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import type AugmentedList from './AugmentedList';
 
 /**
  * This class contains utility methods for working with arrays.
@@ -62,15 +64,15 @@ export default
 	 *          {@code null} (see method comment for details);
 	 *          {@code false} otherwise.
 	 */
-	equals: function( array1, array2 )
+	equals: function( array1: any[] | AugmentedList<any>, array2: any[] | AugmentedList<any> ): boolean
 	{
 		let result = array1 === array2;
 
 		if ( !result && array1 && array2 && ( typeof array1 === 'object' ) && ( typeof array2 === 'object' ) )
 		{
-			if ( typeof array1.equals === 'function' )
+			if ( typeof ( array1 as any ).equals === 'function' )
 			{
-				result = array1.equals( array2 );
+				result = ( array1 as any ).equals( array2 );
 			}
 			else if ( Array.isArray( array1 ) && Array.isArray( array2 ) )
 			{
