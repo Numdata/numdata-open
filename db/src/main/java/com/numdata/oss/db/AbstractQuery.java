@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -547,7 +547,7 @@ public abstract class AbstractQuery<T>
 		final StringBuilder sb = getWhereBuilder();
 		appendColumn( sb, column );
 		sb.append( '=' );
-		sb.append( value );
+		appendValue( sb, _whereParameters, value );
 	}
 
 	/**
@@ -640,7 +640,7 @@ public abstract class AbstractQuery<T>
 		final StringBuilder sb = getWhereBuilder();
 		appendColumn( sb, column );
 		sb.append( "<>" );
-		sb.append( value );
+		appendValue( sb, _whereParameters, value );
 	}
 
 	/**
@@ -1273,36 +1273,14 @@ public abstract class AbstractQuery<T>
 	}
 
 	/**
-	 * Test whether specified value is a simple literal that should be embedded
-	 * literally in the query without quotes and without the use of query
-	 * parameters.
-	 *
-	 * @param value Value to test.
-	 *
-	 * @return {@code true} if value is a simple literal; {@code false}
-	 * otherwise.
-	 */
-	protected static boolean isSimpleLiteral( final Object value )
-	{
-		return ( ( value instanceof Boolean ) || ( value instanceof Enum ) || ( value instanceof Number ) );
-	}
-
-	/**
 	 * Append value to SQL query. This will write '{@code NULL}' for {@code
 	 * null} values, write simple literals as-is, and add a query parameter or
 	 * escaped value otherwise.
-	 *
-	 * A query parameters is only added the value
-	 * is not {@code null}, {@link #isSimpleLiteral} returns {@code false} for
-	 * the specified {@code value}, the {@code parameters} argument is set, and
-	 * the {@link #isUsingQueryParameters()} method returns {@code true}. If a
-	 * query parameter is added, a '?' is appended to the query string.
 	 *
 	 * @param sb         Builder for query string.
 	 * @param parameters List of query parameters.
 	 * @param value      Value to append.
 	 *
-	 * @see #isSimpleLiteral
 	 * @see #isUsingQueryParameters
 	 */
 	protected void appendValue( @NotNull final StringBuilder sb, @Nullable final Collection<Object> parameters, @Nullable final Object value )
@@ -1311,7 +1289,7 @@ public abstract class AbstractQuery<T>
 		{
 			sb.append( "NULL" );
 		}
-		else if ( ( parameters != null ) && isUsingQueryParameters() && !isSimpleLiteral( value ) )
+		else if ( ( parameters != null ) && isUsingQueryParameters() )
 		{
 			sb.append( '?' );
 			parameters.add( value );
