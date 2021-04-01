@@ -2,5 +2,8 @@
   "extends": "@numdata/common-config/tsconfig.json",
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**"
   ]
 }

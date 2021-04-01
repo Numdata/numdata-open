@@ -10,6 +10,7 @@
     "email": "meinders@numdata.com"
   },
   "scripts": {
+    "clean": "gulp clean",
     "build": "gulp build",
     "watch": "gulp watch",
     "test": "jest src"
