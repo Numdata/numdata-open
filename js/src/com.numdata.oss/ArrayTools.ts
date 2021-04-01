@@ -25,8 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type AugmentedList from './AugmentedList';
-
 /**
  * This class contains utility methods for working with arrays.
  *
@@ -64,7 +62,7 @@ export default
 	 *          {@code null} (see method comment for details);
 	 *          {@code false} otherwise.
 	 */
-	equals: function( array1: any[] | AugmentedList<any>, array2: any[] | AugmentedList<any> ): boolean
+	equals: function( array1: any, array2: any ): boolean
 	{
 		let result = array1 === array2;
 
