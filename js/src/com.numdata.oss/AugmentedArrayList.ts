@@ -69,80 +69,39 @@ export default class AugmentedArrayList<T> implements AugmentedList<T>
 		return this._elements[ Symbol.iterator ]();
 	}
 
-	/**
-	 * Length of the list.
-	 * @returns {number}
-	 */
 	get length()
 	{
 		return this._elements.length;
 	}
 
-	/**
-	 * Calls the given function for each element of the aggregation.
-	 *
-	 * @param {function} consumer Consumer function.
-	 */
-	forEach( consumer: ( element: T, index: number ) => void )
+	forEach( consumer: ( element: T, index: number, array: T[] ) => void, thisArg?: any )
 	{
-		this._elements.forEach( consumer );
+		this._elements.forEach( consumer, thisArg );
 	}
 
-	/**
-	 * Creates a new array with the results of calling a provided function on
-	 * every element in this list.
-	 *
-	 * @param {function} callback Callback that produces the element of the new array.
-	 *
-	 * @return {Array} Created array.
-	 */
-	map<U>( callback: ( element: T, index: number ) => U ): U[]
+	map<U>( callback: ( element: T, index: number, array: T[] ) => U, thisArg?: any ): U[]
 	{
-		return this._elements.map( callback );
+		return this._elements.map( callback, thisArg );
 	}
 
-	/**
-	 * Returns a new array containing only the elements from this list that
-	 * match the given condition.
-	 *
-	 * @param {function} condition Condition function.
-	 *
-	 * @return {Array}
-	 */
-	filter( condition: ( element: T, index: number ) => boolean ): T[]
+	filter( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): T[]
 	{
-		return this._elements.filter( condition );
+		return this._elements.filter( condition, thisArg );
 	}
 
-	/**
-	 * Finds the first element in the list for which the given condition holds.
-	 *
-	 * @param {function} condition Condition function.
-	 *
-	 * @return {*}
-	 */
-	find( condition: ( element: T ) => boolean ): T
+	find( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): T
 	{
-		return this._elements.find( condition );
+		return this._elements.find( condition, thisArg );
 	}
 
-	/**
-	 * Tests whether all elements pass the given test.
-	 * @param condition Function implementing the test.
-	 */
-	every( condition: ( element: T, index: number ) => boolean ): boolean
+	every( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): boolean
 	{
-		return this._elements.every( condition );
+		return this._elements.every( condition, thisArg );
 	}
 
-	/**
-	 * Tests whether some element passes the given test.
-	 *
-	 * @param condition Function implementing the test.
-	 */
-	some( condition: ( element: T ) => boolean ): boolean
+	some( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): boolean
 	{
-		return this._elements.some( condition );
+		return this._elements.some( condition, thisArg );
 	}
 
 	isEmpty()

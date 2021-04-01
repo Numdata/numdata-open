@@ -31,58 +31,64 @@ export default interface AugmentedList<T>
 
     /**
      * Length of the list.
-     * @returns {number}
      */
     readonly length: number;
 
     /**
      * Calls the given function for each element of the aggregation.
      *
-     * @param {function} consumer Consumer function.
+     * @param consumer Consumer function.
+     * @param thisArg  Value of 'this' from the callback function.
      */
-    forEach( consumer: ( element: T, index?: number, array?: T[] ) => void ): void;
+    forEach( consumer: ( element: T, index: number, array: T[] ) => void, thisArg?: any ): void;
 
     /**
      * Creates a new array with the results of calling a provided function on
      * every element in this list.
      *
-     * @param {function} callback Callback that produces the element of the new array.
+     * @param callback Callback that produces the element of the new array.
+     * @param thisArg  Value of 'this' from the callback function.
      *
-     * @return {Array} Created array.
+     * @return Created array.
      */
-    map<R>( callback: ( element: T, index?: number, array?: T[] ) => R ): R[];
+    map<R>( callback: ( element: T, index: number, array: T[] ) => R, thisArg?: any ): R[];
 
     /**
      * Returns a new array containing only the elements from this list that
      * match the given condition.
      *
-     * @param {function} condition Condition function.
+     * @param condition Condition function.
+     * @param thisArg   Value of 'this' from the callback function.
      *
-     * @return {Array}
+     * @return Created array.
      */
-    filter( condition: ( element: T, index?: number, array?: T[] ) => boolean ): T[];
+    filter( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): T[];
 
     /**
      * Finds the first element in the list for which the given condition holds.
      *
-     * @param {function} condition Condition function.
+     * @param condition Condition function.
+     * @param thisArg   Value of 'this' from the callback function.
      *
-     * @return {*}
+     * @return Found element, or undefined.
      */
-    find( condition: ( element: T, index?: number, array?: T[] ) => boolean ): T;
+    find( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): T;
 
     /**
      * Tests whether all elements pass the given test.
+     *
      * @param condition Function implementing the test.
+     * @param thisArg   Value of 'this' from the callback function.
      */
-    every( condition: ( element: T, index?: number, array?: T[] ) => boolean ): boolean;
+    every( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): boolean;
 
     /**
      * Tests whether some element passes the given test.
      *
      * @param condition Function implementing the test.
+     * @param thisArg   Value of 'this' from the callback function.
      */
-    some( condition: ( element: T, index?: number, array?: T[] ) => boolean ): boolean;
+    some( condition: ( element: T, index: number, array: T[] ) => boolean, thisArg?: any ): boolean;
 
     isEmpty(): boolean;
 
