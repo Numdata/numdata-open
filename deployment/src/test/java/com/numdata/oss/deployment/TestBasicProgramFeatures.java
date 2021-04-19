@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package com.numdata.oss.deployment;
+
+import java.util.*;
 
 import com.numdata.oss.deployment.ProgramFeatures.*;
 import static com.numdata.oss.deployment.ProgramFeatures.UserLevel.*;
@@ -281,5 +283,51 @@ public class TestBasicProgramFeatures
 		tester.addExpectedKey( "extendedUserLevel" );
 		tester.addExpectedKey( "resources" );
 		tester.run();
+	}
+
+	@Test
+	public void testEnumSets()
+	{
+		final BasicProgramFeatures features = new BasicProgramFeatures();
+		features.setFeature( "set1." + ALWAYS, ALWAYS, OBSERVER );
+		features.setFeature( "set1." + OBSERVER, OBSERVER, NOVICE );
+		features.setFeature( "set1." + NOVICE, NOVICE, BEGINNER );
+		features.setFeature( "set1." + BEGINNER, BEGINNER, NORMAL );
+		features.setFeature( "set1." + NORMAL, NORMAL, ADVANCED );
+		features.setFeature( "set1." + ADVANCED, ADVANCED, EXPERT );
+		features.setFeature( "set1." + EXPERT, EXPERT, CONFIGURATOR );
+		features.setFeature( "set1." + CONFIGURATOR, CONFIGURATOR, DEVELOPER );
+		features.setFeature( "set1." + DEVELOPER, DEVELOPER, NEVER );
+		features.setFeature( "set1." + NEVER, NEVER );
+
+		features.setDefaultUserLevel( NORMAL );
+		features.setExtendedUserLevel( EXPERT );
+		features.setExtendedUserLevelEnabled( false );
+
+		assertEquals( "Unexpected 'available now' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL ),
+		              features.getAvailableNowEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'available at all' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED, EXPERT ),
+		              features.getAvailableAtAllEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'writable now' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER ),
+		              features.getWritableNowEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'writable at all' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED ),
+		              features.getWritableAtAllEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		features.setExtendedUserLevelEnabled( true );
+
+		assertEquals( "Unexpected 'available now' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED, EXPERT ),
+		              features.getAvailableNowEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'available at all' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED, EXPERT ),
+		              features.getAvailableAtAllEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'writable now' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED ),
+		              features.getWritableNowEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
+
+		assertEquals( "Unexpected 'writable at all' set", EnumSet.of( ALWAYS, OBSERVER, NOVICE, BEGINNER, NORMAL, ADVANCED ),
+		              features.getWritableAtAllEnumSet( "set1", ProgramFeatures.UserLevel.class ) );
 	}
 }

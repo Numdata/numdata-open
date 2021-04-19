@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,13 @@
 package com.numdata.oss.deployment;
 
 import java.io.*;
+import java.nio.charset.*;
 import java.util.*;
+import java.util.function.*;
 
 import com.numdata.oss.*;
 import com.numdata.oss.deployment.ProgramFeatures.*;
+import static java.util.stream.Collectors.*;
 import org.jetbrains.annotations.*;
 import org.json.*;
 
@@ -53,7 +56,7 @@ public class BasicProgramFeatures
 	 * Feature set.
 	 */
 	@NotNull
-	private final Map<String, Feature> _features = new HashMap<String, Feature>();
+	private final Map<String, Feature> _features = new HashMap<>();
 
 	/**
 	 * Default user level.
@@ -579,6 +582,94 @@ public class BasicProgramFeatures
 	}
 
 	/**
+	 * Returns an enum set of elements that are {@link #isAvailableNow available now}.
+	 * This is based on program feature names created by concatenating the
+	 * {@code name} parameter, a period (".") and the name of each enum
+	 * constant.
+	 *
+	 * @param name     Program feature name prefix.
+	 * @param enumType Enum type.
+	 * @param <T>      Enum type.
+	 *
+	 * @return Enum set of elements that are available now.
+	 */
+	public <T extends Enum<T>> @NotNull EnumSet<T> getAvailableNowEnumSet( final @NotNull String name, final @NotNull Class<T> enumType )
+	{
+		return getEnumSet( this::isAvailableNow, name, enumType );
+	}
+
+	/**
+	 * Returns an enum set of elements that are {@link #isAvailableAtAll available at all}.
+	 * This is based on program feature names created by concatenating the
+	 * {@code name} parameter, a period (".") and the name of each enum
+	 * constant.
+	 *
+	 * @param name     Program feature name prefix.
+	 * @param enumType Enum type.
+	 * @param <T>      Enum type.
+	 *
+	 * @return Enum set of elements that are available now.
+	 */
+	public <T extends Enum<T>> @NotNull EnumSet<T> getAvailableAtAllEnumSet( final @NotNull String name, final @NotNull Class<T> enumType )
+	{
+		return getEnumSet( this::isAvailableAtAll, name, enumType );
+	}
+
+	/**
+	 * Returns an enum set of elements that are {@link #isWritableNow writable now}.
+	 * This is based on program feature names created by concatenating the
+	 * {@code name} parameter, a period (".") and the name of each enum
+	 * constant.
+	 *
+	 * @param name     Program feature name prefix.
+	 * @param enumType Enum type.
+	 * @param <T>      Enum type.
+	 *
+	 * @return Enum set of elements that are available now.
+	 */
+	public <T extends Enum<T>> @NotNull EnumSet<T> getWritableNowEnumSet( final @NotNull String name, final @NotNull Class<T> enumType )
+	{
+		return getEnumSet( this::isWritableNow, name, enumType );
+	}
+
+	/**
+	 * Returns an enum set of elements that are {@link #isWritableAtAll writable at all}.
+	 * This is based on program feature names created by concatenating the
+	 * {@code name} parameter, a period (".") and the name of each enum
+	 * constant.
+	 *
+	 * @param name     Program feature name prefix.
+	 * @param enumType Enum type.
+	 * @param <T>      Enum type.
+	 *
+	 * @return Enum set of elements that are available now.
+	 */
+	public <T extends Enum<T>> @NotNull EnumSet<T> getWritableAtAllEnumSet( final @NotNull String name, final @NotNull Class<T> enumType )
+	{
+		return getEnumSet( this::isWritableAtAll, name, enumType );
+	}
+
+	/**
+	 * Returns an enum set of elements that match the given predicate.
+	 * This is based on program feature names created by concatenating the
+	 * {@code name} parameter, a period (".") and the name of each enum
+	 * constant.
+	 *
+	 * @param predicate Predicate to test.
+	 * @param name      Program feature name prefix.
+	 * @param enumType  Enum type.
+	 * @param <T>       Enum type.
+	 *
+	 * @return Enum set of matching elements.
+	 */
+	private <T extends Enum<T>> EnumSet<T> getEnumSet( final @NotNull Predicate<String> predicate, final @NotNull String name, final @NotNull Class<T> enumType )
+	{
+		return EnumSet.allOf( enumType ).stream()
+		              .filter( element -> predicate.test( name + "." + element ) )
+		              .collect( toCollection( () -> EnumSet.noneOf( enumType ) ) );
+	}
+
+	/**
 	 * Load feature set from a stream. The stream is assumed to use ISO 8859-1
 	 * character encoding (for consistency with the {@link Properties} class).
 	 *
@@ -589,7 +680,7 @@ public class BasicProgramFeatures
 	public void load( @NotNull final InputStream in )
 	throws IOException
 	{
-		load( new InputStreamReader( in, "ISO-8859-1" ) );
+		load( new InputStreamReader( in, StandardCharsets.ISO_8859_1 ) );
 	}
 
 	/**
@@ -831,6 +922,7 @@ public class BasicProgramFeatures
 		{
 			if ( _unknownFeatureWarningsEnabled && !features.containsKey( name ) )
 			{
+				//noinspection UseOfSystemOutOrSystemErr
 				System.err.println( "WARNING: Unknown feature '" + name + "' requested." );
 				features.put( name, null );
 			}
@@ -884,7 +976,7 @@ public class BasicProgramFeatures
 		/**
 		 * Resources configured for this program feature.
 		 */
-		final Map<String, Object> _resources = new HashMap<String, Object>();
+		final Map<String, Object> _resources = new HashMap<>();
 
 		/**
 		 * Constructs a new instance.
