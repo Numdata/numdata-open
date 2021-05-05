@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2013-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -333,9 +333,10 @@ implements Icon
 	 */
 	public void registerComponent( @NotNull final Component component )
 	{
-		if ( ( _image == null ) && ( _componentsToUpdate != null ) && !( component instanceof ListCellRenderer ) && !( component instanceof TableCellRenderer ) )
+		final Collection<Component> componentsToUpdate = _componentsToUpdate;
+		if ( ( _image == null ) && ( componentsToUpdate != null ) && !( component instanceof ListCellRenderer ) && !( component instanceof TableCellRenderer ) )
 		{
-			_componentsToUpdate.add( component );
+			componentsToUpdate.add( component );
 		}
 	}
 
