@@ -28,6 +28,7 @@
     "@numdata/common-build-gulp": "^2.0.3",
     "@numdata/common-config": "^1.6.0",
     "chai": "^4.2.0",
+    "expect": "^26.0.1",
     "gulp": "^4.0.2",
     "jest": "^26.0.1"
   },

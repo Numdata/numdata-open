@@ -354,7 +354,7 @@ export default class AugmentedArrayList<T> implements AugmentedList<T>
 
 	equals( other: any )
 	{
-		return other._elements && ( this._elements.length === other._elements.length ) && ArrayTools.equals( this._elements, other._elements );
+		return other._elements ? ( this._elements.length === other._elements.length ) && ArrayTools.equals( this._elements, other._elements ) : false;
 	}
 
 	toString()
