@@ -43,6 +43,14 @@ export default interface AugmentedList<T>
     forEach( consumer: ( element: T, index: number, array: T[] ) => void, thisArg?: any ): void;
 
     /**
+     * Creates an array containing the specified range from this list.
+     *
+     * @param start Start index, inclusive. Default: 0.
+     * @param end   End index, exclusive. Default: this.length.
+     */
+    slice( start?: number, end?: number ): T[];
+
+    /**
      * Creates a new array with the results of calling a provided function on
      * every element in this list.
      *

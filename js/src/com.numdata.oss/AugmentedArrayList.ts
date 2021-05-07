@@ -79,6 +79,11 @@ export default class AugmentedArrayList<T> implements AugmentedList<T>
 		this._elements.forEach( consumer, thisArg );
 	}
 
+	slice( start?: number, end?: number ): T[]
+	{
+		return this._elements.slice( start, end );
+	}
+
 	map<U>( callback: ( element: T, index: number, array: T[] ) => U, thisArg?: any ): U[]
 	{
 		return this._elements.map( callback, thisArg );
