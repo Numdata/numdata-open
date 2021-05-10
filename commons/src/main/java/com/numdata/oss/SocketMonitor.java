@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2012-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -228,9 +228,9 @@ implements ResourceMonitor
 					LOG.trace( "Connect to '" + _host + ':' + _port + '\'' );
 				}
 
-				final Socket socket = new Socket();
-				try
+				try ( final Socket socket = new Socket() )
 				{
+					socket.setKeepAlive( true );
 					socket.connect( new InetSocketAddress( _host, _port ), _connectTimeout );
 					_socket = socket;
 					_lastException = null;
@@ -253,7 +253,6 @@ implements ResourceMonitor
 				}
 				finally
 				{
-					socket.close(); // Also closes 'in' and 'out'.
 					_socket = null;
 				}
 			}
