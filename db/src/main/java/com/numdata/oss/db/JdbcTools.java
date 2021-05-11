@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ import java.util.stream.*;
 import javax.sql.*;
 
 import com.numdata.oss.*;
+import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -44,6 +45,11 @@ import org.jetbrains.annotations.*;
 @SuppressWarnings( { "JDBCExecuteWithNonConstantString", "JDBCPrepareStatementWithNonConstantString" } )
 public class JdbcTools
 {
+	/**
+	 * Log used for messages related to this class.
+	 */
+	private static final ClassLogger LOG = ClassLogger.getFor( JdbcTools.class );
+
 	/**
 	 * Result processor that takes a string result from the first row/column in
 	 * the result set.
@@ -87,6 +93,26 @@ public class JdbcTools
 
 		return result;
 	};
+
+	/**
+	 * Maximum number of rows that can safely be returned. If this value is
+	 * exceeded, a warning will be logged.
+	 */
+	private static final int MAXIMUM_SAFE_ROW_COUNT = 100000;
+
+	/**
+	 * Logs a warning the {@link #MAXIMUM_SAFE_ROW_COUNT} is reached.
+	 *
+	 * @param rowCount Current row count.
+	 */
+	public static void checkMaximumSafeRowCount( final int rowCount )
+	{
+		if ( rowCount == MAXIMUM_SAFE_ROW_COUNT )
+		{
+			final String message = "Maximum safe row count reached";
+			LOG.warn( message, new DatabaseException( message ) );
+		}
+	}
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -712,8 +738,10 @@ public class JdbcTools
 	public static <E, C extends Collection<? super E>> ResultProcessor<C> collect( @NotNull final ResultProcessor<E> processor, @NotNull final C collection )
 	{
 		return resultSet -> {
+			int rowCount = 0;
 			while ( resultSet.next() )
 			{
+				checkMaximumSafeRowCount( ++rowCount );
 				collection.add( processor.process( resultSet ) );
 			}
 
@@ -741,8 +769,10 @@ public class JdbcTools
 		return resultSet -> {
 			final A result = collector.supplier().get();
 			final BiConsumer<A, E> accumulator = collector.accumulator();
+			int rowCount = 0;
 			while ( resultSet.next() )
 			{
+				checkMaximumSafeRowCount( ++rowCount );
 				accumulator.accept( result, processor.process( resultSet ) );
 			}
 			return collector.finisher().apply( result );
@@ -791,8 +821,10 @@ public class JdbcTools
 
 		final List<List<?>> data = new ArrayList<>();
 
+		int rowCount = 0;
 		while ( resultSet.next() )
 		{
+			checkMaximumSafeRowCount( ++rowCount );
 			final List<Object> row = new ArrayList<>( columnCount );
 			for ( int i = 1; i <= columnCount; i++ )
 			{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -182,8 +182,10 @@ implements ResultSet
 		final int columnCount = _metaData.getColumnCount();
 
 		final Collection<Object[]> data = new ArrayList<>( source.getFetchSize() );
+		int rowCount = 0;
 		while ( source.next() )
 		{
+			JdbcTools.checkMaximumSafeRowCount( ++rowCount );
 			final Object[] row = new Object[ columnCount ];
 			for ( int i = 0; i < columnCount; i++ )
 			{
@@ -1968,8 +1970,10 @@ implements ResultSet
 		}
 
 		final List<List<String>> tableData = new ArrayList<>();
+		int rowCount = 0;
 		while ( next() )
 		{
+			JdbcTools.checkMaximumSafeRowCount( ++rowCount );
 			final List<String> rowData = new ArrayList<>( columnCount );
 			for ( int i = 1; i <= columnCount; i++ )
 			{

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2008-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2061,8 +2061,10 @@ public class DbServices
 		{
 			final List<T> result = new ArrayList<T>();
 
+			int rowCount = 0;
 			while ( resultSet.next() )
 			{
+				JdbcTools.checkMaximumSafeRowCount( ++rowCount );
 				result.add( _converter.convert( resultSet ) );
 			}
 
