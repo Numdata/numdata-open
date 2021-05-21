@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2009-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
 
+import com.numdata.oss.net.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
@@ -41,55 +42,25 @@ import org.xml.sax.helpers.*;
  */
 @SuppressWarnings( "JavaDoc" )
 public class FlickrWebClient
-	extends DefaultHandler
+extends DefaultHandler
 {
 	public static final String KEY = "339db1433e5f6f11f3ad54135e6c07a9";
+
 	private static final String IMAGE_URL = "http://static.flickr.com";
+
 	private static final String SEARCH_URL = "http://api.flickr.com/services/rest/?method=flickr.photos.search";
 
-	public static List<ImageInfo> searchImages( final String text , final int maxImages  )
+	public static List<ImageInfo> searchImages( final String text, final int maxImages )
 	{
 		List<ImageInfo> result = null;
 
-		String encodedText;
-		try
+		try ( final InputStream is = new URL( SEARCH_URL + "&api_key=" + KEY + "&per_page=" + maxImages + "&text=" + UrlTools.urlEncode( text ) ).openStream() )
 		{
-			encodedText = URLEncoder.encode( text , "UTF-8" );
-		}
-		catch ( UnsupportedEncodingException ex )
-		{
-			ex.printStackTrace();
-			encodedText = text;
-		}
-
-		InputStream is = null;
-		try
-		{
-			final URL url = new URL( SEARCH_URL + "&api_key=" + KEY + "&per_page=" + String.valueOf( maxImages ) + "&text=" + encodedText );
-			is = url.openStream();
 			result = parseImageInfo( is );
 		}
-		catch ( MalformedURLException mfe )
+		catch ( final Exception mfe )
 		{
 			mfe.printStackTrace();
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			if ( is != null )
-			{
-				try
-				{
-					is.close();
-				}
-				catch ( IOException e )
-				{
-					/* silently ignore , we don't want to obscure other exceptions */
-				}
-			}
 		}
 
 		return result;
@@ -104,7 +75,7 @@ public class FlickrWebClient
 			final URL imgUrl = new URL( IMAGE_URL + "/" + info.getServer() + "/" + info.getId() + "_" + info.getSecret() + "_s.jpg" );
 			result = new ImageIcon( imgUrl );
 		}
-		catch ( MalformedURLException ex )
+		catch ( final MalformedURLException ex )
 		{
 			ex.printStackTrace();
 			result = null;
@@ -120,23 +91,24 @@ public class FlickrWebClient
 	 */
 	private static List<ImageInfo> parseImageInfo( final InputStream is )
 	{
-		final List<ImageInfo> result = new ArrayList<ImageInfo>();
+		final List<ImageInfo> result = new ArrayList<>();
 
 		final DefaultHandler handler = new DefaultHandler()
+		{
+			public void startElement( final String uri, final String localName, final String qName, final Attributes attributes )
+			throws SAXException
 			{
-				public void startElement( final String uri, final String localName, final String qName, final Attributes attributes )
-					throws SAXException
+				switch ( qName )
 				{
-					if ( "rsp".equals( qName ) )
-					{
+					case "rsp":
 						final String status = attributes.getValue( "stat" );
 						if ( !"ok".equalsIgnoreCase( status ) )
 						{
 							throw new SAXException( "Response Error" );
 						}
-					}
-					else if ( "photo".equals( qName ) )
-					{
+						break;
+
+					case "photo":
 						final String id = attributes.getValue( "id" );
 						final String owner = attributes.getValue( "owner" );
 						final String secret = attributes.getValue( "secret" );
@@ -146,10 +118,11 @@ public class FlickrWebClient
 						final boolean bFriend = "1".equals( attributes.getValue( "isfriend" ) );
 						final boolean bFamily = "1".equals( attributes.getValue( "isfamily" ) );
 
-						result.add( new ImageInfo( id , owner , secret , server , title , bPublic , bFriend , bFamily ) );
-					}
+						result.add( new ImageInfo( id, owner, secret, server, title, bPublic, bFriend, bFamily ) );
+						break;
 				}
-			};
+			}
+		};
 
 		try
 		{
@@ -157,15 +130,7 @@ public class FlickrWebClient
 			final SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse( is, handler );
 		}
-		catch ( ParserConfigurationException ex )
-		{
-			ex.printStackTrace();
-		}
-		catch ( SAXException ex )
-		{
-			ex.printStackTrace();
-		}
-		catch ( IOException ex )
+		catch ( final ParserConfigurationException | SAXException | IOException ex )
 		{
 			ex.printStackTrace();
 		}
@@ -178,7 +143,7 @@ public class FlickrWebClient
 	 */
 	@SuppressWarnings( "JavaDoc" )
 	public static class ImageInfo
-		implements Comparable<ImageInfo>
+	implements Comparable<ImageInfo>
 	{
 		private String _id = null;
 
@@ -202,7 +167,7 @@ public class FlickrWebClient
 
 		public int compareTo( final ImageInfo o )
 		{
-			return ( _lastRequested > o._lastRequested ) ? -1 : ( _lastRequested < o._lastRequested ) ?  1 : 0;
+			return Long.compare( o._lastRequested, _lastRequested );
 		}
 
 		public void request()

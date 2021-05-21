@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@ package com.numdata.jnlp.ant;
 import java.io.*;
 import java.util.*;
 
-import com.numdata.oss.*;
 import com.numdata.jnlp.*;
+import com.numdata.oss.*;
 import com.numdata.oss.io.*;
 import org.apache.tools.ant.*;
 
@@ -39,7 +39,7 @@ import org.apache.tools.ant.*;
  *
  * @author G. Meinders
  */
-@SuppressWarnings( { "ReturnOfCollectionOrArrayField", "unused" } )
+@SuppressWarnings( { "ReturnOfCollectionOrArrayField", "unused", "UseOfSystemOutOrSystemErr" } )
 public class JnlpTask
 extends Task
 {
@@ -95,7 +95,7 @@ extends Task
 	/**
 	 * Nested JNLP information elements.
 	 */
-	private final List<InformationElement> _information = new ArrayList<InformationElement>();
+	private final List<InformationElement> _information = new ArrayList<>();
 
 	/**
 	 * Implicit resources element.
@@ -117,7 +117,7 @@ extends Task
 	 */
 	public JnlpTask()
 	{
-		final List<ResourcesElement> resources = new ArrayList<ResourcesElement>();
+		final List<ResourcesElement> resources = new ArrayList<>();
 		_resources = resources;
 
 		final ResourcesElement defaultResources = new ResourcesElement();
@@ -436,27 +436,27 @@ extends Task
 		/**
 		 * Nested library JAR elements.
 		 */
-		private final List<LibraryJarElement> _libs = new ArrayList<LibraryJarElement>();
+		private final List<LibraryJarElement> _libs = new ArrayList<>();
 
 		/**
 		 * Nested library JAR elements.
 		 */
-		private final List<NativeLibraryElement> _nativeLibs = new ArrayList<NativeLibraryElement>();
+		private final List<NativeLibraryElement> _nativeLibs = new ArrayList<>();
 
 		/**
 		 * Nested JAR elements.
 		 */
-		private final List<JarElement> _jars = new ArrayList<JarElement>();
+		private final List<JarElement> _jars = new ArrayList<>();
 
 		/**
 		 * Nested extension elements.
 		 */
-		private final List<ExtensionElement> _extensions = new ArrayList<ExtensionElement>();
+		private final List<ExtensionElement> _extensions = new ArrayList<>();
 
 		/**
 		 * Nested j2se elements.
 		 */
-		private final List<JreElement> _jres = new ArrayList<JreElement>();
+		private final List<JreElement> _jres = new ArrayList<>();
 
 		/**
 		 * Constructs a new instance.
@@ -866,7 +866,7 @@ extends Task
 		/**
 		 * Application arguments.
 		 */
-		private final List<ArgumentElement> _arguments = new ArrayList<ArgumentElement>();
+		private final List<ArgumentElement> _arguments = new ArrayList<>();
 
 		public String getMainClass()
 		{
@@ -933,7 +933,7 @@ extends Task
 	public static class AppletDescElement
 	extends DescriptorElement
 	{
-		private final Collection<ParameterElement> _parameters = new ArrayList<ParameterElement>();
+		private final Collection<ParameterElement> _parameters = new ArrayList<>();
 
 		private String _documentbase = null;
 
@@ -1125,14 +1125,9 @@ extends Task
 			{
 				try
 				{
-					final FileInputStream in = new FileInputStream( versionFile );
-					try
+					try ( final FileInputStream in = new FileInputStream( versionFile ) )
 					{
 						jnlpVersionFile.read( in );
-					}
-					finally
-					{
-						in.close();
 					}
 				}
 				catch ( final Exception e )
@@ -1280,14 +1275,7 @@ extends Task
 				}
 
 				final String groupName = jarFile.getName();
-				try
-				{
-					jnlpFileGenerator.addNativelib( resources, groupName, jarFile, isLazyDownload(), element.getVersion() );
-				}
-				catch ( final IOException e )
-				{
-					throw new BuildException( e );
-				}
+				jnlpFileGenerator.addNativelib( resources, groupName, jarFile, isLazyDownload(), element.getVersion() );
 			}
 
 			for ( final JarElement element : resourcesElement.getJars() )
@@ -1394,14 +1382,9 @@ extends Task
 			final File directory = jnlpFile.getParentFile();
 			directory.mkdirs();
 
-			final OutputStream out = new FileOutputStream( jnlpFile );
-			try
+			try ( final OutputStream out = new FileOutputStream( jnlpFile ) )
 			{
 				jnlpFileGenerator.writeFormatted( out );
-			}
-			finally
-			{
-				out.close();
 			}
 		}
 		catch ( final Exception e )

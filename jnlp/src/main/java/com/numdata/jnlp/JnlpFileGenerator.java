@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,10 @@ import java.util.regex.*;
 import javax.xml.parsers.*;
 import javax.xml.stream.*;
 
-import com.numdata.oss.*;
 import com.numdata.jnlp.JnlpFile.*;
+import com.numdata.oss.*;
 import com.numdata.oss.io.*;
+import org.jetbrains.annotations.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
@@ -50,7 +51,7 @@ import org.xml.sax.*;
  * name followed by a colon character, this is useful for grouping several JAR
  * files into a single group or to use more descriptive names for JAR files.
  *
- * @author  Peter S. Heijnen
+ * @author Peter S. Heijnen
  */
 public class JnlpFileGenerator
 {
@@ -72,7 +73,7 @@ public class JnlpFileGenerator
 	 * @throws Exception if the application crashes.
 	 */
 	public static void main( final String[] args )
-		throws Exception
+	throws Exception
 	{
 		final JnlpFileGenerator jnlpFileGenerator = new JnlpFileGenerator();
 
@@ -88,7 +89,7 @@ public class JnlpFileGenerator
 			final Matcher groupMatcher = groupPrefix.matcher( arg );
 			if ( groupMatcher.matches() )
 			{
-				groupName = groupMatcher.group( 1);
+				groupName = groupMatcher.group( 1 );
 				jarFile = new File( groupMatcher.group( 2 ) );
 			}
 			else
@@ -120,15 +121,15 @@ public class JnlpFileGenerator
 	/**
 	 * Write formatted XML document to the given stream.
 	 *
-	 * @param   out     Stream to write JNLP file to.
+	 * @param out Stream to write JNLP file to.
 	 *
-	 * @throws  XMLStreamException if the JNLP file could not be written.
-	 * @throws  ParserConfigurationException if we could not create a DOM.
-	 * @throws  SAXException if the written JNLP file could not be parsed.
-	 * @throws  IOException if there was a problem writing to the stream.
+	 * @throws XMLStreamException if the JNLP file could not be written.
+	 * @throws ParserConfigurationException if we could not create a DOM.
+	 * @throws SAXException if the written JNLP file could not be parsed.
+	 * @throws IOException if there was a problem writing to the stream.
 	 */
 	public void writeFormatted( final OutputStream out )
-		throws XMLStreamException, ParserConfigurationException, SAXException, IOException
+	throws XMLStreamException, ParserConfigurationException, SAXException, IOException
 	{
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		write( baos );
@@ -141,12 +142,12 @@ public class JnlpFileGenerator
 	/**
 	 * Write JNLP file to the given stream.
 	 *
-	 * @param   out     Stream to write JNLP file to.
+	 * @param out Stream to write JNLP file to.
 	 *
-	 * @throws  XMLStreamException if the JNLP file could not be written.
+	 * @throws XMLStreamException if the JNLP file could not be written.
 	 */
-	public void write( final OutputStream out )
-		throws XMLStreamException
+	public void write( final @NotNull OutputStream out )
+	throws XMLStreamException
 	{
 		final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
 		final XMLStreamWriter xmlStreamWriter = xmlOutputFactory.createXMLStreamWriter( out, "UTF-8" );
@@ -157,12 +158,12 @@ public class JnlpFileGenerator
 	/**
 	 * Write JNLP file to the given stream.
 	 *
-	 * @param   out     Stream to write JNLP file to.
+	 * @param out Stream to write JNLP file to.
 	 *
-	 * @throws  XMLStreamException if the JNLP file could not be written.
+	 * @throws XMLStreamException if the JNLP file could not be written.
 	 */
-	public void write( final XMLStreamWriter out )
-		throws XMLStreamException
+	public void write( final @NotNull XMLStreamWriter out )
+	throws XMLStreamException
 	{
 		for ( final JnlpResources resources : _jnlpFile.getResourcesList() )
 		{
@@ -174,59 +175,57 @@ public class JnlpFileGenerator
 	/**
 	 * Add JAR file.
 	 *
-	 * @param   source          Name of JAR file source.
-	 * @param   jarFile         JAR file to add.
-	 * @param   lazyDownload    Whether the resource may be lazily downloaded.
-	 * @param   version         JAR file version.
+	 * @param resources    JNLP resources.
+	 * @param source       Name of JAR file source.
+	 * @param jarFile      JAR file to add.
+	 * @param lazyDownload Whether the resource may be lazily downloaded.
+	 * @param version      JAR file version.
 	 *
-	 * @return  Added JAR file.
+	 * @return Added JAR file.
 	 *
-	 * @throws  IOException if there was a problem reading the JAR file.
+	 * @throws IOException if there was a problem reading the JAR file.
 	 */
-	public JnlpJar addJar( final JnlpResources resources, final String source, final File jarFile, final boolean lazyDownload, final String version )
-		throws IOException
+	public JnlpJar addJar( final @NotNull JnlpResources resources, final @NotNull String source, final @NotNull File jarFile, final boolean lazyDownload, final @Nullable String version )
+	throws IOException
 	{
 		final JnlpJar jar = resources.addJar();
 		jar.setHref( jarFile.isAbsolute() ? jarFile.getName() : jarFile.getPath() );
 		jar.setPart( source );
 		jar.setLazyDownload( lazyDownload );
-		jar.setSize( Integer.valueOf( (int) jarFile.length() ) );
+		jar.setSize( (int)jarFile.length() );
 
 		if ( version != null )
 		{
 			jar.setVersion( version );
 		}
 
-		final FileInputStream fis = new FileInputStream( jarFile );
-		try
+		try ( final FileInputStream fis = new FileInputStream( jarFile ) )
 		{
-			final JarInputStream jis = new JarInputStream( fis );
-			while ( true )
+			try ( final JarInputStream jis = new JarInputStream( fis ) )
 			{
-				final JarEntry jarEntry = jis.getNextJarEntry();
-				if ( jarEntry == null )
+				while ( true )
 				{
-					break;
-				}
-
-				final String entryName = jarEntry.getName();
-				if ( entryName.endsWith( ".class" ) )
-				{
-					PackageInfo currentPackage = _root;
-
-					final List<String> path = TextTools.tokenize( entryName, '/', false );
-					for ( int i = 0; i < path.size() - 1; i++ )
+					final JarEntry jarEntry = jis.getNextJarEntry();
+					if ( jarEntry == null )
 					{
-						currentPackage = currentPackage.getOrAddChild( path.get( i ) );
+						break;
 					}
 
-					currentPackage.addSource( source );
+					final String entryName = jarEntry.getName();
+					if ( entryName.endsWith( ".class" ) )
+					{
+						PackageInfo currentPackage = _root;
+
+						final List<String> path = TextTools.tokenize( entryName, '/', false );
+						for ( int i = 0; i < path.size() - 1; i++ )
+						{
+							currentPackage = currentPackage.getOrAddChild( path.get( i ) );
+						}
+
+						currentPackage.addSource( source );
+					}
 				}
 			}
-		}
-		finally
-		{
-			fis.close();
 		}
 
 		return jar;
@@ -235,23 +234,21 @@ public class JnlpFileGenerator
 	/**
 	 * Add native library JAR file.
 	 *
-	 * @param   source          Name of JAR file source.
-	 * @param   jarFile         JAR file to add.
-	 * @param   lazyDownload    Whether the resource may be lazily downloaded.
-	 * @param   version         JAR file version.
+	 * @param resources    JNLP resources.
+	 * @param source       Name of JAR file source.
+	 * @param jarFile      JAR file to add.
+	 * @param lazyDownload Whether the resource may be lazily downloaded.
+	 * @param version      JAR file version.
 	 *
-	 * @return  Added native library JAR file.
-	 *
-	 * @throws  IOException if there was a problem reading the JAR file.
+	 * @return Added native library JAR file.
 	 */
-	public JnlpNativelib addNativelib( final JnlpResources resources, final String source, final File jarFile, final boolean lazyDownload, final String version )
-		throws IOException
+	public @NotNull JnlpNativelib addNativelib( final @NotNull JnlpResources resources, final @NotNull String source, final @NotNull File jarFile, final boolean lazyDownload, final @Nullable String version )
 	{
 		final JnlpNativelib jar = resources.addNativelib();
 		jar.setHref( jarFile.isAbsolute() ? jarFile.getName() : jarFile.getPath() );
 		jar.setPart( source );
 		jar.setLazyDownload( lazyDownload );
-		jar.setSize( Integer.valueOf( (int) jarFile.length() ) );
+		jar.setSize( (int)jarFile.length() );
 
 		if ( version != null )
 		{
@@ -264,10 +261,11 @@ public class JnlpFileGenerator
 	/**
 	 * Determine the which packages are in which groups/sources.
 	 *
-	 * @param   node    Root node.
-	 * @param   prefix  Package name prefix (empty for root).
+	 * @param resources JNLP resources.
+	 * @param node      Root node.
+	 * @param prefix    Package name prefix (empty for root).
 	 */
-	private void determinePackageSources( final JnlpResources resources, final PackageInfo node, final String prefix )
+	private void determinePackageSources( final @NotNull JnlpResources resources, final @NotNull PackageInfo node, final @NotNull String prefix )
 	{
 		final String fullName = prefix + node._name;
 		final String childPrefix = fullName.isEmpty() ? "" : fullName + '.';
@@ -318,7 +316,7 @@ public class JnlpFileGenerator
 	 * Returns the JNLP file being generated. The returned instance may be used
 	 * to apply custom modifications to the JNLP file.
 	 *
-	 * @return  JNLP file.
+	 * @return JNLP file.
 	 */
 	public JnlpFile getJnlpFile()
 	{
@@ -333,24 +331,24 @@ public class JnlpFileGenerator
 		/**
 		 * Unqualified name of package.
 		 */
-		final String _name;
+		final @NotNull String _name;
 
 		/**
 		 * Child nodes of this package (sub-packages).
 		 */
-		final Map <String,PackageInfo> _childNodes = new TreeMap<String, PackageInfo>(  );
+		final @NotNull Map<String, PackageInfo> _childNodes = new TreeMap<>();
 
 		/**
 		 * Sources that define classes in this package.
 		 */
-		final Set <String> _sources = new TreeSet<String>(  );
+		final @NotNull Set<String> _sources = new TreeSet<>();
 
 		/**
 		 * Create package property container.
 		 *
-		 * @param   name    Unqualified name of package.
+		 * @param name Unqualified name of package.
 		 */
-		PackageInfo( final String name )
+		PackageInfo( final @NotNull String name )
 		{
 			_name = name;
 		}
@@ -358,11 +356,11 @@ public class JnlpFileGenerator
 		/**
 		 * Get or add child node (sub-package).
 		 *
-		 * @param   name    Name of child node (unqualified name of sub-package).
+		 * @param name Name of child node (unqualified name of sub-package).
 		 *
-		 * @return  Child node.
+		 * @return Child node.
 		 */
-		public PackageInfo getOrAddChild( final String name )
+		public PackageInfo getOrAddChild( final @NotNull String name )
 		{
 			PackageInfo result = _childNodes.get( name );
 			if ( result == null )
@@ -376,7 +374,7 @@ public class JnlpFileGenerator
 		/**
 		 * Add source from which this package is referenced.
 		 *
-		 * @param   source  Source from which this package is referenced.
+		 * @param source Source from which this package is referenced.
 		 */
 		public void addSource( final String source )
 		{
@@ -386,8 +384,8 @@ public class JnlpFileGenerator
 		/**
 		 * Test whether this is a leaf node.
 		 *
-		 * @return  {@code true} if this is a leaf node;
-		 *          {@code false} if this node has at least one descendant.
+		 * @return {@code true} if this is a leaf node;
+		 * {@code false} if this node has at least one descendant.
 		 */
 		public boolean isLeaf()
 		{
@@ -398,7 +396,7 @@ public class JnlpFileGenerator
 		/**
 		 * Get child nodes (sub-packages).
 		 *
-		 * @return  Child nodes.
+		 * @return Child nodes.
 		 */
 		public Collection<PackageInfo> getChildren()
 		{
@@ -408,18 +406,12 @@ public class JnlpFileGenerator
 		/**
 		 * Get combined sources for this node and all its descendants.
 		 *
-		 * @return  Combined sources.
+		 * @return Combined sources.
 		 */
 		public Set<String> getCombinedSources()
 		{
-			final TreeSet<String> result = new TreeSet<String>();
-			result.addAll( _sources );
-
-			for ( final PackageInfo child : getChildren() )
-			{
-				result.addAll( child.getCombinedSources() );
-			}
-
+			final Set<String> result = new TreeSet<>( _sources );
+			getChildren().stream().map( PackageInfo::getCombinedSources ).forEach( result::addAll );
 			return result;
 		}
 	}
