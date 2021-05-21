@@ -32,6 +32,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
 
+import com.numdata.oss.io.*;
 import com.numdata.oss.net.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -126,7 +127,7 @@ extends DefaultHandler
 
 		try
 		{
-			final SAXParserFactory factory = SAXParserFactory.newInstance();
+			final SAXParserFactory factory = XMLTools.createSAXParserFactory();
 			final SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse( is, handler );
 		}

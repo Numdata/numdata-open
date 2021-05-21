@@ -133,7 +133,7 @@ public class JnlpFileGenerator
 	{
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		write( baos );
-		final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilderFactory builderFactory = XMLTools.createDocumentBuilderFactory();
 		final DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
 		final Document document = documentBuilder.parse( new ByteArrayInputStream( baos.toByteArray() ) );
 		XMLTools.prettyPrint( document.getDocumentElement(), out );

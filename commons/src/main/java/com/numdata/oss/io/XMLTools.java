@@ -35,12 +35,16 @@ import javax.xml.parsers.*;
 import javax.xml.stream.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
+import javax.xml.transform.sax.*;
 import javax.xml.transform.stream.*;
+import javax.xml.validation.Validator;
+import javax.xml.validation.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.*;
+import org.xml.sax.*;
 
 /**
  * This class provides some utility methods that may be helpful when processing
@@ -62,6 +66,85 @@ public class XMLTools
 	private static XMLInputFactory xmlInputFactory = null;
 
 	/**
+	 * Create (secure) {@link SAXParserFactory}.
+	 *
+	 * @return {@link SAXParserFactory}.
+	 */
+	public static @NotNull SAXParserFactory createSAXParserFactory()
+	{
+		final SAXParserFactory spf = SAXParserFactory.newInstance();
+		protectAgainstXXE( spf );
+		return spf;
+	}
+
+	/**
+	 * Protect {@link SAXParserFactory} against XML eXternal Entity
+	 * injection (XXE).
+	 *
+	 * @param spf {@link SAXParserFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull SAXParserFactory spf )
+	{
+		setFeature( spf, "http://xerces.apache.org/xerces-j/features.html#external-general-entities", false ); // Xerces 1
+		setFeature( spf, "http://xerces.apache.org/xerces2-j/features.html#external-general-entities", false ); // Xerces 2
+		setFeature( spf, "http://xml.org/sax/features/external-general-entities", false ); // JDK 7+
+		setFeature( spf, "http://apache.org/xml/features/disallow-doctype-decl", true );
+	}
+
+	/**
+	 * Creates a {@link DocumentBuilderFactory}.
+	 *
+	 * @return {@link DocumentBuilderFactory}.
+	 */
+	public static @NotNull DocumentBuilderFactory createDocumentBuilderFactory()
+	{
+		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		protectAgainstXXE( documentBuilderFactory );
+		return documentBuilderFactory;
+	}
+
+	/**
+	 * Protect {@link DocumentBuilderFactory} against XML eXternal Entity
+	 * injection (XXE).
+	 *
+	 * @param dbf {@link DocumentBuilderFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull DocumentBuilderFactory dbf )
+	{
+		// XML entity attacks are prevented
+//		setFeature( dbf, "http://xerces.apache.org/xerces2-j/features.html#disallow-doctype-decl", true ); // Xerces 2 only
+//		setFeature( dbf, "http://apache.org/xml/features/disallow-doctype-decl", true );
+
+		// If you can't completely disable DTDs, then at least do the following:
+		setFeature( dbf, "http://xerces.apache.org/xerces-j/features.html#external-general-entities", false ); // Xerces 1
+		setFeature( dbf, "http://xerces.apache.org/xerces2-j/features.html#external-general-entities", false ); // Xerces 2
+		setFeature( dbf, "http://xml.org/sax/features/external-general-entities", false ); // JDK7+
+
+		//This feature has to be used together with the previous one, otherwise it will not protect you from XXE for sure
+		setFeature( dbf, "http://xerces.apache.org/xerces-j/features.html#external-parameter-entities", false ); // Xerces 1
+		setFeature( dbf, "http://xerces.apache.org/xerces2-j/features.html#external-parameter-entities", false ); // Xerces 2
+		setFeature( dbf, "http://xml.org/sax/features/external-parameter-entities", false ); // JDK7+
+
+		setFeature( dbf, "http://apache.org/xml/features/nonvalidating/load-external-dtd", false ); // Disable external DTDs as well
+
+		// and these as well, per Timothy Morgan's 2014 paper: "XML Schema, DTD, and Entity Attacks"
+		try
+		{
+			dbf.setXIncludeAware( false );
+		}
+		catch ( final UnsupportedOperationException ignored )
+		{
+			// XIncludeAware is not supported, so not necessary to disable it
+		}
+
+		dbf.setExpandEntityReferences( false );
+	}
+
+	/**
 	 * Returns a namespace-aware document builder.
 	 *
 	 * @return Document builder.
@@ -71,7 +154,7 @@ public class XMLTools
 		DocumentBuilder result = documentBuilder;
 		if ( result == null )
 		{
-			final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilderFactory documentBuilderFactory = createDocumentBuilderFactory();
 			documentBuilderFactory.setNamespaceAware( true );
 			try
 			{
@@ -97,6 +180,65 @@ public class XMLTools
 	}
 
 	/**
+	 * Creates a new {@link Transformer}.
+	 *
+	 * @return {@link Transformer}.
+	 */
+	public static @NotNull Transformer createTransformer()
+	{
+		final TransformerFactory transformerFactory = createTransformerFactory();
+		try
+		{
+			return transformerFactory.newTransformer();
+		}
+		catch ( final TransformerConfigurationException e )
+		{
+			throw new RuntimeException( transformerFactory + " failed to create transformer: " + e, e );
+		}
+	}
+
+	/**
+	 * Creates a new {@link TransformerFactory}.
+	 *
+	 * @return {@link TransformerFactory}.
+	 */
+	public static @NotNull TransformerFactory createTransformerFactory()
+	{
+		final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		protectAgainstXXE( transformerFactory );
+		return transformerFactory;
+	}
+
+	/**
+	 * Protect {@link TransformerFactory} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param tf {@link TransformerFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull TransformerFactory tf )
+	{
+		try
+		{
+			tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+		}
+		catch ( final RuntimeException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+
+		try
+		{
+			tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "" );
+		}
+		catch ( final RuntimeException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
 	 * Returns an XML input factory. Coalescing of character data is enabled.
 	 *
 	 * @return XML input factory.
@@ -107,10 +249,28 @@ public class XMLTools
 		if ( result == null )
 		{
 			result = XMLInputFactory.newInstance();
+			protectAgainstXXE( result );
 			result.setProperty( XMLInputFactory.IS_COALESCING, Boolean.TRUE );
 			xmlInputFactory = result;
 		}
 		return result;
+	}
+
+	/**
+	 * Protect {@link XMLInputFactory} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param xif {@link XMLInputFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull XMLInputFactory xif )
+	{
+		// This disables DTDs entirely for that factory
+		setProperty( xif, XMLInputFactory.SUPPORT_DTD, false );
+
+		// disable external entities
+		setProperty( xif, "javax.xml.stream.isSupportingExternalEntities", false );
 	}
 
 	/**
@@ -388,10 +548,9 @@ public class XMLTools
 	 */
 	public static void prettyPrint( final @NotNull Node node, final @NotNull OutputStream out )
 	{
-		final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		try
 		{
-			final Transformer transformer = transformerFactory.newTransformer();
+			final Transformer transformer = createTransformer();
 			transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
 			transformer.setOutputProperty( "{http://xml.apache.org/xslt}indent-amount", "2" );
 			transformer.transform( new DOMSource( node ), new StreamResult( out ) );
@@ -658,6 +817,173 @@ public class XMLTools
 		sb.append( '>' );
 
 		xmlWriter.writeDTD( sb.toString() );
+	}
+
+	/**
+	 * Set {@link DocumentBuilderFactory} feature safely (any exception will be
+	 * caught and ignored).
+	 *
+	 * @param dbf     {@link DocumentBuilderFactory} to update.
+	 * @param feature Feature name.
+	 * @param state   Feature state.
+	 */
+	private static void setFeature( final @NotNull DocumentBuilderFactory dbf, final @NotNull String feature, final boolean state )
+	{
+		try
+		{
+			dbf.setFeature( feature, state );
+		}
+		catch ( final ParserConfigurationException | RuntimeException ignored )
+		{
+			// ignore unsupported feature, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
+	 * Set {@link DocumentBuilderFactory} feature safely (any exception will be
+	 * caught and ignored).
+	 *
+	 * @param spf     {@link DocumentBuilderFactory} to update.
+	 * @param feature Feature name.
+	 * @param state   Feature state.
+	 */
+	private static void setFeature( final @NotNull SAXParserFactory spf, final @NotNull String feature, final boolean state )
+	{
+		try
+		{
+			spf.setFeature( feature, state );
+		}
+		catch ( final ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException | RuntimeException ignored )
+		{
+			// ignore unsupported feature, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
+	 * Set {@link XMLInputFactory} feature safely (any exception will be caught
+	 * and ignored).
+	 *
+	 * @param xif   {@link XMLInputFactory} to update.
+	 * @param name  Property name.
+	 * @param value Property value.
+	 */
+	private static void setProperty( final @NotNull XMLInputFactory xif, final String name, final boolean value )
+	{
+		try
+		{
+			xif.setProperty( name, value );
+		}
+		catch ( final RuntimeException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
+	 * Protect {@link SchemaFactory} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param sf {@link SchemaFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull SchemaFactory sf )
+	{
+		try
+		{
+			sf.setProperty( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+		}
+		catch ( final RuntimeException | SAXNotSupportedException | SAXNotRecognizedException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+
+		try
+		{
+			sf.setProperty( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
+		}
+		catch ( final RuntimeException | SAXNotSupportedException | SAXNotRecognizedException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
+	 * Protect {@link Validator} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param sf {@link Validator} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull Validator sf )
+	{
+		try
+		{
+			sf.setProperty( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+		}
+		catch ( final RuntimeException | SAXNotSupportedException | SAXNotRecognizedException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+
+		try
+		{
+			sf.setProperty( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
+		}
+		catch ( final RuntimeException | SAXNotSupportedException | SAXNotRecognizedException ignored )
+		{
+			// ignore unsupported property, it is probably a different implementation version than requested
+		}
+	}
+
+	/**
+	 * Protect {@link SAXTransformerFactory} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param stf {@link SAXTransformerFactory} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull SAXTransformerFactory stf )
+	{
+		for ( final String name : Arrays.asList( XMLConstants.ACCESS_EXTERNAL_DTD,
+		                                         XMLConstants.ACCESS_EXTERNAL_STYLESHEET ) )
+		{
+			try
+			{
+				stf.setAttribute( name, "" );
+			}
+			catch ( final RuntimeException ignored )
+			{
+				// ignore unsupported property, it is probably a different implementation version than requested
+			}
+		}
+	}
+
+	/**
+	 * Protect {@link XMLReader} against XML eXternal Entity injection
+	 * (XXE).
+	 *
+	 * @param xmlReader {@link XMLReader} to be protected.
+	 *
+	 * @see <a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">XML External Entity Prevention Cheat Sheet (at OWASP)</a>
+	 */
+	public static void protectAgainstXXE( final @NotNull XMLReader xmlReader )
+	{
+		for ( final String name : Arrays.asList( "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+		                                         "http://xml.org/sax/features/external-general-entities",
+		                                         "http://xml.org/sax/features/external-parameter-entities" ) )
+		{
+			try
+			{
+				xmlReader.setFeature( name, false );
+			}
+			catch ( final RuntimeException | SAXNotRecognizedException | SAXNotSupportedException ignored )
+			{
+				// ignore unsupported property, it is probably a different implementation version than requested
+			}
+		}
 	}
 
 	/**
