@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,8 @@ import javax.xml.transform.stream.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
-import org.w3c.dom.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.*;
 
 /**
  * This class provides some utility methods that may be helpful when processing
@@ -66,8 +66,7 @@ public class XMLTools
 	 *
 	 * @return Document builder.
 	 */
-	@NotNull
-	public static DocumentBuilder getDocumentBuilder()
+	public static @NotNull DocumentBuilder getDocumentBuilder()
 	{
 		DocumentBuilder result = documentBuilder;
 		if ( result == null )
@@ -92,11 +91,9 @@ public class XMLTools
 	 *
 	 * @return {@link Document} that was created.
 	 */
-	@NotNull
-	public static Document createDocument()
+	public static @NotNull Document createDocument()
 	{
-		final DocumentBuilder documentBuilder = getDocumentBuilder();
-		return documentBuilder.newDocument();
+		return getDocumentBuilder().newDocument();
 	}
 
 	/**
@@ -104,8 +101,7 @@ public class XMLTools
 	 *
 	 * @return XML input factory.
 	 */
-	@NotNull
-	private static XMLInputFactory getXMLInputFactory()
+	public static @NotNull XMLInputFactory getXMLInputFactory()
 	{
 		XMLInputFactory result = xmlInputFactory;
 		if ( result == null )
@@ -125,7 +121,7 @@ public class XMLTools
 	 * @return XML stream reader.
 	 */
 	@NotNull
-	public static XMLStreamReader createXMLStreamReader( @NotNull final InputStream in )
+	public static XMLStreamReader createXMLStreamReader( final @NotNull InputStream in )
 	{
 		final XMLInputFactory xmlInputFactory = getXMLInputFactory();
 		try
@@ -149,8 +145,7 @@ public class XMLTools
 	 *
 	 * @return XML stream reader.
 	 */
-	@NotNull
-	public static XMLStreamReader createXMLStreamReader( @NotNull final Reader reader )
+	public static @NotNull XMLStreamReader createXMLStreamReader( final @NotNull Reader reader )
 	{
 		final XMLInputFactory xmlInputFactory = getXMLInputFactory();
 		try
@@ -171,7 +166,7 @@ public class XMLTools
 	 * @throws XMLStreamException if an error occurs while parsing the
 	 * document.
 	 */
-	public static void skipElement( @NotNull final XMLStreamReader reader )
+	public static void skipElement( final @NotNull XMLStreamReader reader )
 	throws XMLStreamException
 	{
 		reader.require( XMLStreamConstants.START_ELEMENT, null, null );
@@ -203,8 +198,7 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if an I/O exception occurs.
 	 */
-	@NotNull
-	public static String readTextContent( @NotNull final XMLStreamReader reader )
+	public static @NotNull String readTextContent( final @NotNull XMLStreamReader reader )
 	throws XMLStreamException
 	{
 		reader.require( XMLStreamConstants.START_ELEMENT, null, null );
@@ -247,8 +241,7 @@ public class XMLTools
 	 * @throws XMLStreamException if an error occurs while parsing the
 	 * document.
 	 */
-	@NotNull
-	public static Element readElementAsDOM( @NotNull final XMLStreamReader reader )
+	public static @NotNull Element readElementAsDOM( final @NotNull XMLStreamReader reader )
 	throws XMLStreamException
 	{
 		final Document document = createDocument();
@@ -267,7 +260,7 @@ public class XMLTools
 	 * @throws XMLStreamException if an error occurs while parsing the
 	 * document.
 	 */
-	public static void readDocument( @NotNull final XMLStreamReader reader, @NotNull final Node rootNode )
+	public static void readDocument( final @NotNull XMLStreamReader reader, final @NotNull Node rootNode )
 	throws XMLStreamException
 	{
 		final Object namespaceAwareValue = reader.getProperty( XMLInputFactory.IS_NAMESPACE_AWARE );
@@ -393,7 +386,7 @@ public class XMLTools
 	 * @param node DOM node to print.
 	 * @param out  Stream to send the output to.
 	 */
-	public static void prettyPrint( @NotNull final Node node, @NotNull final OutputStream out )
+	public static void prettyPrint( final @NotNull Node node, final @NotNull OutputStream out )
 	{
 		final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		try
@@ -418,8 +411,7 @@ public class XMLTools
 	 *
 	 * @see JAXB#marshal(Object, Result)
 	 */
-	@NotNull
-	public static String getPrettyJaxb( @NotNull final Object jaxbObject )
+	public static @NotNull String getPrettyJaxb( final @NotNull Object jaxbObject )
 	{
 		final Document document = createDocument();
 		JAXB.marshal( jaxbObject, new DOMResult( document ) );
@@ -433,8 +425,7 @@ public class XMLTools
 	 *
 	 * @return Pretty-printed XML-document.
 	 */
-	@NotNull
-	public static String getPretty( @NotNull final Node node )
+	public static @NotNull String getPretty( final @NotNull Node node )
 	{
 		final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		prettyPrint( node, buffer );
@@ -457,13 +448,13 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if there a problem writing the XML document.
 	 */
-	public static void writeNode( @NotNull final XMLStreamWriter xmlWriter, @NotNull final Node node )
+	public static void writeNode( final @NotNull XMLStreamWriter xmlWriter, final @NotNull Node node )
 	throws XMLStreamException
 	{
 		switch ( node.getNodeType() )
 		{
 			case Node.ELEMENT_NODE:
-				writeElement( xmlWriter, (Element)node );
+				writeElement( xmlWriter, node );
 				break;
 
 			case Node.TEXT_NODE:
@@ -520,7 +511,7 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if there a problem writing the XML document.
 	 */
-	public static void writeChildren( @NotNull final XMLStreamWriter xmlWriter, @NotNull final Node node )
+	public static void writeChildren( final @NotNull XMLStreamWriter xmlWriter, final @NotNull Node node )
 	throws XMLStreamException
 	{
 		for ( Node child = node.getFirstChild(); child != null; child = child.getNextSibling() )
@@ -537,7 +528,7 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if there a problem writing the XML document.
 	 */
-	public static void writeDocument( @NotNull final XMLStreamWriter xmlWriter, @NotNull final Node document )
+	public static void writeDocument( final @NotNull XMLStreamWriter xmlWriter, final @NotNull Node document )
 	throws XMLStreamException
 	{
 		xmlWriter.writeStartDocument();
@@ -554,7 +545,7 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if there a problem writing the XML document.
 	 */
-	public static void writeElement( @NotNull final XMLStreamWriter xmlWriter, @NotNull final Element element )
+	public static void writeElement( final @NotNull XMLStreamWriter xmlWriter, final @NotNull Node element )
 	throws XMLStreamException
 	{
 		String elementPrefix = element.getPrefix();
@@ -630,7 +621,7 @@ public class XMLTools
 	 *
 	 * @throws XMLStreamException if there a problem writing the XML document.
 	 */
-	public static void writeDTD( @NotNull final XMLStreamWriter xmlWriter, @NotNull final DocumentType documentType )
+	public static void writeDTD( final @NotNull XMLStreamWriter xmlWriter, final @NotNull DocumentType documentType )
 	throws XMLStreamException
 	{
 		final String name = documentType.getName();
@@ -685,7 +676,7 @@ public class XMLTools
 	 * @return Wrapped {@link XMLStreamWriter}.
 	 */
 	@NotNull
-	public static XMLStreamWriter streamPretty( @NotNull final XMLStreamWriter xmlStreamWriter )
+	public static XMLStreamWriter streamPretty( final @NotNull XMLStreamWriter xmlStreamWriter )
 	{
 		return (XMLStreamWriter)Proxy.newProxyInstance( XMLStreamWriter.class.getClassLoader(), new Class[] { XMLStreamWriter.class }, new PrettyXMLStreamWriterHandler( xmlStreamWriter ) );
 	}
@@ -696,13 +687,13 @@ public class XMLTools
 	 * list behaves exactly the same as the node list would.
 	 *
 	 * @param nodeList Node list.
-	 * @param <T> Node type.
+	 * @param <T>      Node type.
 	 *
 	 * @return Created list.
 	 */
 	public static <T extends Node> List<T> asList( final NodeList nodeList )
 	{
-		return new NodeListAdapter<T>( nodeList );
+		return new NodeListAdapter<>( nodeList );
 	}
 
 	/**
@@ -725,7 +716,7 @@ public class XMLTools
 		/**
 		 * Whether the element at the given depth has child elements.
 		 */
-		private final Set<Integer> _hasChild = new HashSet<Integer>();
+		private final Set<Integer> _hasChild = new HashSet<>();
 
 		/**
 		 * Current indentation depth.
@@ -742,7 +733,7 @@ public class XMLTools
 		 *
 		 * @param target Target XML writer.
 		 */
-		public PrettyXMLStreamWriterHandler( @NotNull final XMLStreamWriter target )
+		public PrettyXMLStreamWriterHandler( final @NotNull XMLStreamWriter target )
 		{
 			_writer = target;
 		}
@@ -755,23 +746,25 @@ public class XMLTools
 			final Set<Integer> hasChild = _hasChild;
 
 			final String methodName = method.getName();
-			if ( "writeStartElement".equals( methodName ) )
+			switch ( methodName )
 			{
-				hasChild.add( _depth - 1 );
-				writeIndent();
-				hasChild.remove( _depth++ );
-			}
-			else if ( "writeEndElement".equals( methodName ) )
-			{
-				if ( hasChild.contains( --_depth ) )
-				{
+				case "writeStartElement":
+					hasChild.add( _depth - 1 );
 					writeIndent();
-				}
-			}
-			else if ( "writeEmptyElement".equals( methodName ) )
-			{
-				hasChild.add( _depth - 1 );
-				writeIndent();
+					hasChild.remove( _depth++ );
+					break;
+
+				case "writeEndElement":
+					if ( hasChild.contains( --_depth ) )
+					{
+						writeIndent();
+					}
+					break;
+
+				case "writeEmptyElement":
+					hasChild.add( _depth - 1 );
+					writeIndent();
+					break;
 			}
 
 			method.invoke( _writer, args );
