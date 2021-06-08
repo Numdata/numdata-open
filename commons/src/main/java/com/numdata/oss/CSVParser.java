@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,11 @@ public class CSVParser
 	 */
 	private boolean _skipEmptyRows = false;
 
+	/**
+	 * Replace empty values with {@code null}.
+	 */
+	private boolean _emptyNull = false;
+
 	public char getSeparator()
 	{
 		return _separator;
@@ -98,6 +103,16 @@ public class CSVParser
 		_skipEmptyRows = skipEmptyRows;
 	}
 
+	public boolean isEmptyNull()
+	{
+		return _emptyNull;
+	}
+
+	public void setEmptyNull( final boolean emptyNull )
+	{
+		_emptyNull = emptyNull;
+	}
+
 	/**
 	 * Reads all rows from the given stream.
 	 *
@@ -111,8 +126,9 @@ public class CSVParser
 	public List<List<String>> readAll( @NotNull final Reader reader )
 	throws IOException
 	{
-		final List<List<String>> result = new ArrayList<List<String>>();
+		final List<List<String>> result = new ArrayList<>();
 
+		//noinspection IOResourceOpenedButNotSafelyClosed
 		final BufferedReader bufferedReader = ( reader instanceof BufferedReader ) ? (BufferedReader)reader : new BufferedReader( reader );
 		for ( String line = bufferedReader.readLine(); line != null; line = bufferedReader.readLine() )
 		{
@@ -164,7 +180,7 @@ public class CSVParser
 	@NotNull
 	public List<List<String>> parseLines( @NotNull final Iterable<? extends CharSequence> lines )
 	{
-		final List<List<String>> result = new ArrayList<List<String>>( ( lines instanceof Collection<?> ) ? ( (Collection<CharSequence>)lines ).size() : 0 );
+		final List<List<String>> result = new ArrayList<>( ( lines instanceof Collection<?> ) ? ( (Collection<CharSequence>)lines ).size() : 0 );
 
 		for ( final CharSequence line : lines )
 		{
@@ -188,11 +204,10 @@ public class CSVParser
 	@Nullable
 	public List<String> parseLine( @NotNull final CharSequence line )
 	{
-		final char separator = _separator;
-		final boolean skipComments = _skipComments;
-		final boolean skipEmptyRows = _skipEmptyRows;
+		final char separator = getSeparator();
+		final boolean skipComments = isSkipComments();
 
-		final List<String> row = new ArrayList<String>();
+		final List<String> row = new ArrayList<>();
 		final StringBuilder value = new StringBuilder();
 
 		boolean quotedValue = false;
@@ -208,7 +223,6 @@ public class CSVParser
 		while ( pos < length )
 		{
 			final char ch = line.charAt( pos++ );
-			final char next = ( pos < length ) ? line.charAt( pos ) : (char)-1;
 
 			if ( ch != (char)-1 )
 			{
@@ -226,19 +240,13 @@ public class CSVParser
 					}
 					else
 					{
-						if ( whitespace > 0 )
-						{
-							value.setLength( value.length() - whitespace );
-							whitespace = 0;
-						}
-
-						row.add( value.toString() );
-
+						addValueToRow( row, value, value.length() - whitespace );
 						value.setLength( 0 );
 						quotedValue = false;
 						quotesStarted = false;
 						quotesEnded = false;
 						valueStarted = false;
+						whitespace = 0;
 					}
 					rowStarted = true;
 				}
@@ -246,8 +254,9 @@ public class CSVParser
 				{
 					if ( quotesStarted )
 					{
-						if ( next == '"' )
+						if ( ( pos < length ) && ( line.charAt( pos ) == '"' ) )
 						{
+							// double quote within quotes: keep single quote
 							pos++;
 							value.append( ch );
 							valueStarted = true;
@@ -265,7 +274,7 @@ public class CSVParser
 						quotesEnded = false;
 						valueStarted = true; // Because empty values can be quoted too.
 
-						whitespace -= value.length();
+						whitespace = 0;
 						value.setLength( 0 ); // All characters before the quotes are ignored.
 					}
 					rowStarted = true;
@@ -310,32 +319,48 @@ public class CSVParser
 		{
 			if ( valueStarted )
 			{
-				if ( whitespace > 0 )
-				{
-					value.setLength( value.length() - whitespace );
-				}
-
-				row.add( value.toString() );
+				addValueToRow( row, value, value.length() - whitespace );
 			}
 
-			boolean addRow = true;
-			if ( skipEmptyRows )
-			{
-				addRow = false;
-
-				for ( final String column : row )
-				{
-					if ( !column.isEmpty() )
-					{
-						addRow = true;
-						break;
-					}
-				}
-			}
-
-			if ( addRow )
+			if ( !isSkipEmptyRows() || !isEmptyRow( row ) )
 			{
 				result = row;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Add given value to row.
+	 *
+	 * @param row    Row to add value to.
+	 * @param value  Value buffer (may be larger than length).
+	 * @param length Length of value.
+	 */
+	private void addValueToRow( final List<String> row, final @NotNull StringBuilder value, final int length )
+	{
+		row.add( ( length == 0 ) ? isEmptyNull() ? null : "" : value.substring( 0, length ) );
+	}
+
+	/**
+	 * Returns whether the given row is empty (it contains no values or only
+	 * {@code null} or empty string values).
+	 *
+	 * @param row Row to consider.
+	 *
+	 * @return {@code true} if row is empty.
+	 */
+	private boolean isEmptyRow( final @NotNull Iterable<String> row )
+	{
+		boolean result = true;
+
+		for ( final String column : row )
+		{
+			if ( ( column != null ) && !column.isEmpty() )
+			{
+				result = false;
+				break;
 			}
 		}
 
