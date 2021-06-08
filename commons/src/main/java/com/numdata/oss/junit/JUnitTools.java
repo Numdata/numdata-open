@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2020-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,12 @@ public class JUnitTools
 		}
 		catch ( final Exception e )
 		{
-			assertEquals( message, expectedException.getClass(), e.getClass() );
+			if ( !expectedException.getClass().equals( e.getClass() ) )
+			{
+				e.printStackTrace();
+				assertEquals( message, expectedException.getClass(), e.getClass() );
+			}
+
 			final String expectedMessage = expectedException.getMessage();
 			if ( ( expectedMessage != null ) && !expectedMessage.equals( e.getMessage() ) )
 			{
