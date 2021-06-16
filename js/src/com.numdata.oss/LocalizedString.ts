@@ -25,7 +25,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import type Locale from './Locale';
+
 type ValueStore = { [ key: string ]: string };
+
+const localePattern = /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?$/;
+
+function localeToString( locale: string | Locale ): string
+{
+	const result = String( locale || '' );
+	if ( result && !result.match( localePattern ) )
+	{
+		throw new TypeError( 'Invalid locale: ' + result );
+	}
+	return result;
+}
 
 /**
  * This class provides a localized string value.
@@ -114,11 +128,11 @@ export default class LocalizedString
 	 *
 	 * @return String for the specified locale; {@code defaultValue} if no suitable string was found.
 	 */
-	get( locale: string = null, defaultValue: string = null ): string | null
+	get( locale: string | Locale = null, defaultValue: string = null ): string | null
 	{
 		let result;
 
-		let key = String( locale || '' );
+		let key = localeToString( locale );
 		while ( true ) // eslint-disable-line no-constant-condition
 		{
 			result = this.getSpecific( key );
@@ -160,9 +174,9 @@ export default class LocalizedString
 	 *
 	 * @return String for the specified locale; {@code null} if no entry was found.
 	 */
-	getSpecific( locale: string | null ): string | null
+	getSpecific( locale: string | Locale | null ): string | null
 	{
-		return this._values[ locale || '' ] || null;
+		return this._values[ localeToString( locale ) ] || null;
 	}
 
 	/**
@@ -172,7 +186,7 @@ export default class LocalizedString
 	 * @param value (Localized) string to set.
 	 * @param [locale] Locale to set string for; {@code null} or empty string to set the default.
 	 */
-	set( value: LocalizedString | object | string, locale: string = null ): void
+	set( value: LocalizedString | object | string, locale: string | Locale = null ): void
 	{
 		if ( value instanceof LocalizedString )
 		{
@@ -182,22 +196,14 @@ export default class LocalizedString
 		{
 			const values: ValueStore = {};
 			Object.keys( value ).forEach( key => {
-				const locale = String( key || '' );
-				if ( locale && !locale.match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
-				{
-					throw new TypeError( 'Invalid locale: ' + key );
-				}
+				const locale = localeToString( key );
 				values[ locale ] = String( ( value as any )[ key ] );
 			} );
 			this._values = values;
 		}
-		else if ( locale && !String( locale ).match( /^[a-z][a-z](_[A-Z][A-Z](_.*)?)?/ ) )
-		{
-			throw new TypeError( 'Invalid locale: ' + locale );
-		}
 		else
 		{
-			this._values[ locale || '' ] = value;
+			this._values[ localeToString( locale ) ] = value;
 		}
 	}
 
@@ -227,9 +233,9 @@ export default class LocalizedString
 	 *
 	 * @param [locale] Locale to remove string for; {@code null} or empty string to remove the default.
 	 */
-	remove( locale: string ): void
+	remove( locale: string | Locale ): void
 	{
-		delete this._values[ locale || '' ];
+		delete this._values[ localeToString( locale ) ];
 	}
 
 	/**
