@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,14 +26,17 @@
  */
 
 /**
- * Converts degrees to radians.
+ * Returns the signum function for the given number.
  *
- * @param {number} degrees Degrees.
+ * @param {number} v Any number.
  *
- * @return {number} Radians.
+ * @returns {number} -1 if less than zero, 1 if greater than zero, otherwise (positive or negative zero) the input is returned.
  */
-const degreesToRadians = Math.PI / 180;
-export default function toRadians( degrees )
+export default function signum( v: number ): number
 {
-	return degreesToRadians * degrees;
+	if ( typeof v !== 'number' )
+	{
+		throw new TypeError( 'expected a number, but was: ' + ( typeof v ) + " (" + v + ")" );
+	}
+	return v > 0 ? 1 : v < 0 ? -1 : v;
 }

@@ -26,14 +26,14 @@
  */
 
 /**
- * Converts radians to degrees.
+ * Converts degrees to radians.
  *
- * @param {number} radians Radians.
+ * @param {number} degrees Degrees.
  *
- * @return {number} Degrees.
+ * @return {number} Radians.
  */
-const radiansToDegrees = 180 / Math.PI;
-export default function toDegrees( radians )
+const degreesToRadians = Math.PI / 180;
+export default function toRadians( degrees: number ): number
 {
-	return radiansToDegrees * radians;
+	return degreesToRadians * degrees;
 }

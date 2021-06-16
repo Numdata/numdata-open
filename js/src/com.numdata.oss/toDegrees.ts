@@ -26,13 +26,14 @@
  */
 
 /**
- * Returns the signum function for the given number.
+ * Converts radians to degrees.
  *
- * @param {number} v Any number.
+ * @param {number} radians Radians.
  *
- * @returns {number} -1 if less than zero, 1 if greater than zero, 0 otherwise.
+ * @return {number} Degrees.
  */
-export default function signum( v )
+const radiansToDegrees = 180 / Math.PI;
+export default function toDegrees( radians: number ): number
 {
-	return v > 0 ? 1 : v < 0 ? -1 : 0;
+	return radiansToDegrees * radians;
 }
