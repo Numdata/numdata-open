@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ public class TestDbServices
 		if ( true ) // HSQLDB
 		{
 			final HsqlDbServices hsql = new HsqlDbServices( CLASS_NAME, true );
-			hsql.setDatabaseTransactionControl( HsqlDbServices.TransactionControl.MVCC );
+			JdbcTools.executeUpdate( hsql.getDataSource(), "SET DATABASE TRANSACTION CONTROL MVCC" );
 			db = hsql;
 			otherDb = new HsqlDbServices( CLASS_NAME, true );
 		}
