@@ -92,6 +92,18 @@ public class DatabaseName
 	private String _password;
 
 	/**
+	 * JDBC driver.
+	 */
+	@Nullable
+	private String _jdbcDriver;
+
+	/**
+	 * JDBC URL format ({0}=host, {1}=port, {2}=suffix).
+	 */
+	@Nullable
+	private String _jdbcUrlFormat;
+
+	/**
 	 * Constructs a new instance.
 	 *
 	 * @param host     Host name.
@@ -145,6 +157,26 @@ public class DatabaseName
 	public String getPassword()
 	{
 		return _password;
+	}
+
+	public @Nullable String getJdbcDriver()
+	{
+		return _jdbcDriver;
+	}
+
+	public void setJdbcDriver( final @Nullable String jdbcDriver )
+	{
+		_jdbcDriver = jdbcDriver;
+	}
+
+	public @Nullable String getJdbcUrlFormat()
+	{
+		return _jdbcUrlFormat;
+	}
+
+	public void setJdbcUrlFormat( final @Nullable String jdbcUrlFormat )
+	{
+		_jdbcUrlFormat = jdbcUrlFormat;
 	}
 
 	@Override
