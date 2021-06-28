@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2010-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,12 @@ public class VelocityTools
 	/**
 	 * Pattern to parse line and column numbers in velocity exception message.
 	 */
-	public static final Pattern VELOCITY_LOG_FILE_POSITION_PATTERN = Pattern.compile( "\\[line (\\d+), column (\\d+)]" );
+	private static final Pattern VELOCITY_LOG_FILE_POSITION_PATTERN = Pattern.compile( "\\[line (\\d+), column (\\d+)]" );
+
+	/**
+	 * Pattern matching any common line ending.
+	 */
+	private static final Pattern END_OF_LINE = Pattern.compile( "\r\n|\r|\n" );
 
 	/**
 	 * Shared engine instance. Created on-demand by {@link
@@ -152,6 +157,7 @@ public class VelocityTools
 	 * @return Rendered output.
 	 */
 	@Nullable
+	@Contract( "!null, _, _ -> !null" )
 	public static String evaluate( @Nullable final String input, @Nullable final Context context, @NotNull final String logTag )
 	{
 		return evaluate( input, getSharedRuntime(), context, logTag );
@@ -168,6 +174,7 @@ public class VelocityTools
 	 * @return Rendered output.
 	 */
 	@Nullable
+	@Contract( "!null, _, _, _ -> !null" )
 	public static String evaluate( @Nullable final String input, @NotNull final RuntimeServices runtime, @Nullable final Context context, @NotNull final String logTag )
 	{
 		String result = input;
@@ -190,7 +197,7 @@ public class VelocityTools
 					//final int column = Integer.parseInt( matcher.group( 2 ) );
 					if ( lineNumber > 0 )
 					{
-						final String[] lines = input.split( "\r\n|\r|\n" );
+						final String[] lines = END_OF_LINE.split( input );
 						if ( lineNumber <= lines.length )
 						{
 							final StringBuilder sb = new StringBuilder();
