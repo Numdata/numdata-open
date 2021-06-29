@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021, Numdata BV, The Netherlands.
+ * Copyright (c) 2011-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ import org.jetbrains.annotations.*;
  *
  * Syntax: &lt;databaseName&gt;[@&lt;databaseServer&gt;[:&lt;databasePort&gt;][;user=&lt;databaseUser&gt;][;pass=&lt;databasePassword&gt;][@[&lt;user&gt;[:&lt;pass&gt;]@]&lt;host&gt;[:&lt;port&gt;]]]
  *
- * @author G. Meinders
+ * @author Gerrit Meinders
  */
 public class DatabaseName
 {
@@ -123,10 +123,32 @@ public class DatabaseName
 		_port = port;
 	}
 
+	/**
+	 * Constructs a copy of the given instance.
+	 *
+	 * @param original Original to copy.
+	 */
+	public DatabaseName( final @NotNull DatabaseName original )
+	{
+		_tunnel = original._tunnel;
+		_host = original._host;
+		_port = original._port;
+		_database = original._database;
+		_user = original._user;
+		_password = original._password;
+		_jdbcDriver = original._jdbcDriver;
+		_jdbcUrlFormat = original._jdbcUrlFormat;
+	}
+
 	@Nullable
 	public String getTunnel()
 	{
 		return _tunnel;
+	}
+
+	public void setTunnel( final @Nullable String tunnel )
+	{
+		_tunnel = tunnel;
 	}
 
 	@Nullable
@@ -135,10 +157,20 @@ public class DatabaseName
 		return _database;
 	}
 
+	public void setDatabase( final @Nullable String database )
+	{
+		_database = database;
+	}
+
 	@Nullable
 	public String getHost()
 	{
 		return _host;
+	}
+
+	public void setHost( final @Nullable String host )
+	{
+		_host = host;
 	}
 
 	@Nullable
@@ -147,16 +179,31 @@ public class DatabaseName
 		return _port;
 	}
 
+	public void setPort( final @Nullable Integer port )
+	{
+		_port = port;
+	}
+
 	@Nullable
 	public String getUser()
 	{
 		return _user;
 	}
 
+	public void setUser( final @Nullable String user )
+	{
+		_user = user;
+	}
+
 	@Nullable
 	public String getPassword()
 	{
 		return _password;
+	}
+
+	public void setPassword( final @Nullable String password )
+	{
+		_password = password;
 	}
 
 	public @Nullable String getJdbcDriver()
@@ -266,14 +313,9 @@ public class DatabaseName
 					}
 				}
 
-				final InputStream in = new FileInputStream( file );
-				try
+				try ( final InputStream in = new FileInputStream( file ) )
 				{
 					properties.load( in );
-				}
-				finally
-				{
-					in.close();
 				}
 			}
 			catch ( final IOException e )
