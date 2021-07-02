@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,16 @@ const parseBigRational = bigRat;
  * @author Gerrit Meinders (ported to Javascript)
  */
 
-describe( 'LengthMeasureFormat', () =>
+describe( 'parse and format', () =>
 {
+	/**
+	 * Test case.
+	 *
+	 * @param {string} text Text to parse.
+	 * @param {LengthMeasurePreferences} preferences Preferences to test with.
+	 * @param {Locale} locale Locale to test with.
+	 * @class
+	 */
 	function Test( text, preferences, locale )
 	{
 		this._text = text;
@@ -127,8 +135,8 @@ describe( 'LengthMeasureFormat', () =>
 /**
  * Create {@link LengthMeasurePreferences} based on {@link LengthMeasurePreferences#getArchitecturalInstance()}.
  *
- * @param {boolean} feet                   Whether to include feet in output.
- * @param {string} feetInchesSeparator    Separator to insert between feet and inches.
+ * @param {boolean} feet Whether to include feet in output.
+ * @param {string} feetInchesSeparator Separator to insert between feet and inches.
  * @param {string} wholeFractionSeparator Separator to insert between whole and fraction.
  *
  * @return {LengthMeasurePreferences} {@link LengthMeasurePreferences}.
@@ -144,8 +152,16 @@ function createArchitecturalPreferences( feet, feetInchesSeparator, wholeFractio
 	return result;
 }
 
-describe( "LengthMeasureFormat.format", () =>
+describe( "format", () =>
 {
+	/**
+	 * Test case.
+	 *
+	 * @param {*} number Text to parse.
+	 * @param {string} text Text to parse.
+	 * @param {LengthMeasurePreferences} preferences Preferences to test with.
+	 * @class
+	 */
 	function Test( number, text, preferences )
 	{
 		this._number = number;
@@ -200,6 +216,14 @@ describe( "LengthMeasureFormat.format", () =>
 
 describe( 'unit conversion', () =>
 {
+	/**
+	 * Test case.
+	 *
+	 * @param {*} number Text to parse.
+	 * @param {string} text Text to parse.
+	 * @param {LengthMeasurePreferences} preferences Preferences to test with.
+	 * @class
+	 */
 	function Test( number, text, preferences )
 	{
 		this._number = number;

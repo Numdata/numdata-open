@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
  * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
@@ -34,7 +35,7 @@ import BigRational from 'big-rational';
 import LengthMeasureFormat from './LengthMeasureFormat';
 // @ts-ignore
 import DecimalFormatSymbols from './DecimalFormatSymbols';
-import Locale from './Locale'
+import Locale from './Locale';
 
 /**
  * Basic unit of length.
@@ -71,6 +72,13 @@ class LengthUnit extends Enum
 
 	static values = [ LengthUnit.INCH, LengthUnit.FOOT, LengthUnit.METER, LengthUnit.CENTIMETER, LengthUnit.MILLIMETER ];
 
+	/**
+	 * Returns the enum constant for the given string.
+	 *
+	 * @param value String representation.
+	 *
+	 * @return Enum constant.
+	 */
 	static valueOf( value: string ): LengthUnit
 	{
 		return super.valueOf( value ) as LengthUnit;
@@ -102,7 +110,7 @@ class LengthUnit extends Enum
 	/**
 	 * Test whether this unit is an imperial unit (based on inches).
 	 *
-	 * @return {@code true} if this unit is imperial.
+	 * @return 'true' if this unit is imperial.
 	 */
 	isImperial(): boolean
 	{
@@ -112,7 +120,7 @@ class LengthUnit extends Enum
 	/**
 	 * Test whether this unit is a metric unit (based on meters).
 	 *
-	 * @return {@code true} if this unit is metric.
+	 * @return 'true' if this unit is metric.
 	 */
 	isMetric(): boolean
 	{
@@ -165,7 +173,7 @@ class LengthUnit extends Enum
 	/**
 	 * Converts a measure from one unit to another.
 	 *
-	 * @param value  Measure to convert.
+	 * @param value Measure to convert.
 	 * @param toUnit Unit to convert to.
 	 *
 	 * @return Converted measure.
@@ -176,9 +184,11 @@ class LengthUnit extends Enum
 	}
 
 	/**
-	 * Short name used to identify the unit, e.g. to choose a units.
+	 * Short name used to identify the unit, e.g. To choose a units.
 	 *
-	 * @returns Short unit name.
+	 * @return Short unit name.
+	 *
+	 * @throws If display unit is invalid.
 	 */
 	getShortName(): string
 	{
@@ -213,12 +223,35 @@ class LengthUnit extends Enum
 }
 
 /**
+ * Supported input for {@link LengthMeasurePreferences.fromJSON}.
+ */
+interface LengthMeasurePreferencesJSON
+{
+	baseUnit?: string;
+	displayUnit?: string;
+	minScale?: number;
+	maxScale?: number;
+	fraction?: boolean;
+	fractionSeparator?: string;
+	whole?: boolean;
+	wholeZero?: boolean;
+	wholeFractionSeparator?: string;
+	feet?: boolean;
+	feetZero?: boolean;
+	feetSymbol?: string;
+	feetInchesSeparator?: string;
+	inchesZero?: boolean;
+	inchSymbol?: string;
+}
+
+/**
  * This class provides length measure format preferences.
  *
  * @author Peter S. Heijnen
  * @author Gerrit Meinders (ES6 port)
  */
-export default class LengthMeasurePreferences {
+export default class LengthMeasurePreferences
+{
 	/**
 	 * Name of the {@link #getBaseUnit} property.
 	 */
@@ -302,6 +335,8 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Get preferences for basic decimal format with maximum of 4 fractional
 	 * digits.
+	 *
+	 * @return Metric preferences.
 	 */
 	static getMetricInstance(): LengthMeasurePreferences
 	{
@@ -310,10 +345,12 @@ export default class LengthMeasurePreferences {
 
 	/**
 	 * Get preferences for engineering units based on decimal inches.
+	 *
+	 * @return Engineering preferences.
 	 */
 	static getEngineeringInstance(): LengthMeasurePreferences
 	{
-		let result = new LengthMeasurePreferences();
+		const result = new LengthMeasurePreferences();
 		result.setBaseUnit( LengthMeasurePreferences.LengthUnit.INCH );
 		result.setDisplayUnit( LengthMeasurePreferences.LengthUnit.INCH );
 		result.setFeet( true );
@@ -322,10 +359,12 @@ export default class LengthMeasurePreferences {
 
 	/**
 	 * Get preferences for architectural units based on fractional inches.
+	 *
+	 * @return Architectural preferences.
 	 */
 	static getArchitecturalInstance(): LengthMeasurePreferences
 	{
-		let result = new LengthMeasurePreferences();
+		const result = new LengthMeasurePreferences();
 		result.setBaseUnit( LengthMeasurePreferences.LengthUnit.INCH );
 		result.setDisplayUnit( LengthMeasurePreferences.LengthUnit.INCH );
 		result.setFeet( true );
@@ -335,10 +374,12 @@ export default class LengthMeasurePreferences {
 
 	/**
 	 * Get preferences for units based on fractions.
+	 *
+	 * @return Fractional preferences.
 	 */
 	static getFractionalInstance(): LengthMeasurePreferences
 	{
-		let result = new LengthMeasurePreferences();
+		const result = new LengthMeasurePreferences();
 		result.setFraction( true );
 		return result;
 	}
@@ -347,12 +388,23 @@ export default class LengthMeasurePreferences {
 	 * Creates preferences from a JSON representation.
 	 *
 	 * @param preferences Preferences as JSON.
+	 *
+	 * @return Created preferences.
 	 */
-	static fromJSON( preferences: any ): LengthMeasurePreferences
+	static fromJSON( preferences: LengthMeasurePreferencesJSON ): LengthMeasurePreferences
 	{
-		let result = new LengthMeasurePreferences();
-		result.setBaseUnit( LengthUnit.valueOf( preferences.baseUnit ) );
-		result.setDisplayUnit( LengthUnit.valueOf( preferences.displayUnit ) );
+		const result = new LengthMeasurePreferences();
+
+		if ( preferences.baseUnit )
+		{
+			result.setBaseUnit( LengthUnit.valueOf( preferences.baseUnit ) );
+		}
+
+		if ( preferences.displayUnit )
+		{
+			result.setDisplayUnit( LengthUnit.valueOf( preferences.displayUnit ) );
+		}
+
 		result.setMinScale( preferences.minScale );
 		result.setMaxScale( preferences.maxScale );
 		result.setFraction( preferences.fraction );
@@ -457,7 +509,7 @@ export default class LengthMeasurePreferences {
 	 *
 	 * @param [original] Original to clone.
 	 */
-	constructor( original?: any )
+	constructor( original?: LengthMeasurePreferences )
 	{
 		if ( !original )
 		{
@@ -580,7 +632,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Get whether to use fractional or decimal notation for numbers.
 	 *
-	 * @return {@code true} if fractional notation is used; {@code false} if decimal notation is used.
+	 * @return 'true' if fractional notation is used; 'false' if decimal notation is used.
 	 */
 	isFraction(): boolean
 	{
@@ -590,7 +642,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Set whether to use fractional or decimal notation for numbers.
 	 *
-	 * @param enabled {@code true} to use fractional notation; {@code false} to use decimal notation.
+	 * @param enabled 'true' to use fractional notation; 'false' to use decimal notation.
 	 */
 	setFraction( enabled: boolean ): void
 	{
@@ -623,7 +675,7 @@ export default class LengthMeasurePreferences {
 	 * Get whether to include whole and part fractions instead of a single
 	 * fraction (default: true). This only applies to fractional numbers.
 	 *
-	 * @return {@code true} if whole and part fractions are included; {@code false} if a single fraction is used.
+	 * @return 'true' if whole and part fractions are included; 'false' if a single fraction is used.
 	 */
 	isWhole(): boolean
 	{
@@ -634,7 +686,7 @@ export default class LengthMeasurePreferences {
 	 * Set whether to include whole and part fractions instead of a single
 	 * fraction (default: true). This only applies to fractional numbers.
 	 *
-	 * @param enabled {@code true} to include whole and part fractions; {@code false} to use a single fraction.
+	 * @param enabled 'true' to include whole and part fractions; 'false' to use a single fraction.
 	 */
 	setWhole( enabled: boolean ): void
 	{
@@ -645,7 +697,7 @@ export default class LengthMeasurePreferences {
 	 * Get whether to include the whole fraction, even if it is zero (default:
 	 * false).
 	 *
-	 * @return {@code true} to include zero whole fraction.
+	 * @return 'true' to include zero whole fraction.
 	 */
 	isWholeZero(): boolean
 	{
@@ -656,7 +708,7 @@ export default class LengthMeasurePreferences {
 	 * Set whether to include the whole fraction, even if it is zero (default:
 	 * false).
 	 *
-	 * @param enabled {@code true} to include zero whole fraction.
+	 * @param enabled 'true' to include zero whole fraction.
 	 */
 	setWholeZero( enabled: boolean ): void
 	{
@@ -688,7 +740,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Get whether to include feet (default: false).
 	 *
-	 * @return {@code true} if feet are included.
+	 * @return 'true' if feet are included.
 	 */
 	isFeet(): boolean
 	{
@@ -698,7 +750,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Set whether to include feet (default: false).
 	 *
-	 * @param enabled {@code true} to include feet.
+	 * @param enabled 'true' to include feet.
 	 */
 	setFeet( enabled: boolean ): void
 	{
@@ -709,7 +761,7 @@ export default class LengthMeasurePreferences {
 	 * Get whether to include feet, even if the number of feet is zero (default:
 	 * false).
 	 *
-	 * @return {@code true} if feet are included, even if the number of feet is zero.
+	 * @return 'true' if feet are included, even if the number of feet is zero.
 	 */
 	isFeetZero(): boolean
 	{
@@ -720,7 +772,7 @@ export default class LengthMeasurePreferences {
 	 * Set whether to include feet, even if the number of feet is zero (default:
 	 * false).
 	 *
-	 * @param enabled {@code true} to include feet, even if the number of feet is zero.
+	 * @param enabled 'true' to include feet, even if the number of feet is zero.
 	 */
 	setFeetZero( enabled: boolean ): void
 	{
@@ -774,7 +826,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Get whether to include inches, even if the number of inches is zero.
 	 *
-	 * @return {@code true} if inches are included, even if the number of inches is zero.
+	 * @return 'true' if inches are included, even if the number of inches is zero.
 	 */
 	isInchesZero(): boolean
 	{
@@ -784,7 +836,7 @@ export default class LengthMeasurePreferences {
 	/**
 	 * Set whether to include inches, even if the number of inches is zero.
 	 *
-	 * @param enabled {@code true} to include inches, even if the number of inches is zero.
+	 * @param enabled 'true' to include inches, even if the number of inches is zero.
 	 */
 	setInchesZero( enabled: boolean ): void
 	{
@@ -815,6 +867,8 @@ export default class LengthMeasurePreferences {
 	 * Get number format based on these preferences for the given locale.
 	 *
 	 * @param locale Locale to use.
+	 *
+	 * @return Number format.
 	 */
 	getNumberFormat( locale: Locale ): LengthMeasureFormat
 	{
@@ -826,6 +880,8 @@ export default class LengthMeasurePreferences {
 	 * a number and the unit suffix.
 	 *
 	 * @return Unit suffix.
+	 *
+	 * @throws If display unit is invalid.
 	 */
 	getUnitSuffix(): string
 	{
