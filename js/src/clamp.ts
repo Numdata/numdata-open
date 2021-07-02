@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021, Unicon Creation BV, The Netherlands.
+ * Copyright (c) 2018-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -18,18 +18,26 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL NUMDATA BV BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import toDegrees from '../toDegrees';
-
-test( 'toDegrees', () => {
-	expect( toDegrees( 0 ) ).toBe( 0 );
-	expect( toDegrees( Math.PI / 2 ) ).toBe( 90 );
-	expect( toDegrees( Math.PI ) ).toBe( 180 );
-	expect( toDegrees( -Math.PI / 4 ) ).toBe( -45 );
-} );
+/**
+ * Limits the given value to the specified range. If the given value is
+ * <code>NaN</code>, the result will be <code>minimum</code>.
+ *
+ * @author Gerrit Meinders
+ *
+ * @param value Value.
+ * @param minimum Minimum value in the range.
+ * @param maximum Maximum value in the range.
+ *
+ * @return Value from the specified range.
+ */
+export default function clamp( value: number, minimum: number, maximum: number ): number
+{
+	return value >= minimum ? value <= maximum ? value : maximum : minimum;
+}

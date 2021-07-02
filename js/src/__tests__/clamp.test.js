@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,19 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Limits the given value to the specified range. If the given value is
- * <code>NaN</code>, the result will be <code>minimum</code>.
- *
- * @author Gerrit Meinders
- *
- * @param {number} value Value.
- * @param {number} minimum Minimum value in the range.
- * @param {number} maximum Maximum value in the range.
- *
- * @return {number} Value from the specified range.
- */
-export default function clamp( value, minimum, maximum )
+import clamp from '../clamp';
+
+test( 'basic usage', () =>
 {
-	return value >= minimum ? value <= maximum ? value : maximum : minimum;
-}
+	expect( clamp( 1, 0, 2 ) ).toBe( 1 );
+	expect( clamp( 0, 1, 2 ) ).toBe( 1 );
+	expect( clamp( 2, 0, 1 ) ).toBe( 1 );
+} );
+
+test( 'NaN handling', () =>
+{
+	expect( clamp( NaN, 1, 2 ) ).toBe( 1 );
+} );
