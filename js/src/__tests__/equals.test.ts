@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
+ * Copyright (c) 2021-2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,25 +25,37 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Tests if two objects are equal, using an equals method if available or
- * the strict equality operator (===) otherwise.
- *
- * @param o1 First value.
- * @param o2 Second value.
- *
- * @return true if the values are equal; false otherwise.
- */
-export default function equals( o1: ObjectWithEquals | any, o2: ObjectWithEquals | any ): boolean
-{
-	return o1 && o1.equals ? o2 && o1.equals( o2 ) : o1 === o2;
-}
+import equals from '../equals';
+
+test( 'without equals method', () => {
+	expect( equals( 1, 1 ) ).toBe( true );
+	expect( equals( 1, 2 ) ).toBe( false );
+	expect( equals( 1, '1' ) ).toBe( false );
+	expect( equals( 'abc', 'abc' ) ).toBe( true );
+	expect( equals( 'abc', 'ab' ) ).toBe( false );
+	expect( equals( NaN, NaN ) ).toBe( false );
+	expect( equals( { a: 1 }, { a: 1 } ) ).toBe( false );
+	const object = { a: 2 };
+	expect( equals( object, object ) ).toBe( true );
+} );
+
+test( 'without equals method', () => {
+	expect( equals( new Example( 1 ), new Example( 1 ) ) ).toBe( true );
+	expect( equals( new Example( 1 ), { value: 1 } ) ).toBe( false );
+} );
 
 /**
- * Interface for custom equality testing.
+ * Example type with equals.
  */
-interface ObjectWithEquals
+class Example
 {
+	value: number;
+
+	constructor( value: number )
+	{
+		this.value = value;
+	}
+
 	/**
 	 * Returns whether this object and the other object are equal.
 	 *
@@ -51,5 +63,8 @@ interface ObjectWithEquals
 	 *
 	 * @return 'true' if equal, otherwise 'false'.
 	 */
-	equals( other: any ): boolean;
+	equals( other: any ): boolean
+	{
+		return this === other || other instanceof Example && this.value === other.value;
+	}
 }
