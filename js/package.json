@@ -16,10 +16,11 @@
     "test": "jest src"
   },
   "license": "SEE LICENSE IN LICENSE.TXT",
-  "main": "./module.js",
-  "module": "./module.js",
+  "main": "./lib/module.js",
+  "module": "./lib/module.js",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
+    "@types/scrollparent": "^2.0.0",
     "big-rational": "^0.10.9",
     "bigdecimal": "^0.6.1",
     "scrollparent": "^2.0.1"

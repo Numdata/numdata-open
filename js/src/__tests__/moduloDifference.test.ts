@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021, Unicon Creation BV, The Netherlands.
+ * Copyright (c) 2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,48 +25,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Base class for enumeration types.
- *
- * @author Gerrit Meinders
- */
-export default class Enum
-{
-	readonly name: string;
+import moduloDifference from '../moduloDifference';
 
-	constructor( name: string )
-	{
-		this.name = name;
-	}
-
-	valueOf()
-	{
-		return this.name;
-	}
-
-	toString()
-	{
-		return Object.getPrototypeOf( this ).constructor.name + "." + this.name;
-	}
-
-	static values: Enum[];
-
-	/**
-	 * Returns the enum constant with the specified value.
-	 *
-	 * @param value Value to find.
-	 *
-	 * @returns Enum type.
-	 *
-	 * @throws TypeError if no matching enum constant is found.
-	 */
-	static valueOf( value: string ): Enum
-	{
-		const result = this.values.find( e => e.name === value );
-		if ( !result )
-		{
-			throw new TypeError( value + " not found in " + this.name );
-		}
-		return result;
-	}
-}
+test( 'basic usage', () => {
+	expect( moduloDifference( 3, 4, 10 ) ).toBe( 1 );
+	expect( moduloDifference( 3, 9, 10 ) ).toBe( -4 );
+	expect( moduloDifference( 3, 104, 10 ) ).toBe( 1 );
+	expect( moduloDifference( 3, 109, 10 ) ).toBe( -4 );
+	expect( moduloDifference( 3, 4 - 100, 10 ) ).toBe( 1 );
+	expect( moduloDifference( 3, 9 - 100, 10 ) ).toBe( -4 );
+	expect( moduloDifference( 103, 4, 10 ) ).toBe( 1 );
+	expect( moduloDifference( 103, 9, 10 ) ).toBe( -4 );
+	expect( moduloDifference( 3 - 100, 4, 10 ) ).toBe( 1 );
+	expect( moduloDifference( 3 - 100, 9, 10 ) ).toBe( -4 );
+} );

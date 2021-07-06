@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,34 +24,48 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import scrollParent from 'scrollparent';
+
+import moduloDifference from './moduloDifference';
 
 /**
- * Scrolls the given parent element vertically such that the given element is
- * visible. If the element is already fully visible, the scroll position is left
- * as-is. Horizontal scrolling is not supported.
+ * Returns the distance between a to b, modulo n.
  *
- * @author Gerrit Meinders
+ * @param a Any value.
+ * @param b Any value.
+ * @param n Modulus to use.
  *
- * @param element Element to scroll to.
- * @param [parent] Scroll parent of the element. Determined automatically if omitted.
+ * @return Distance between a and b, in the range [0, n/2].
  */
-export default function scrollToElement( element, parent = scrollParent( element ) )
+export function distance( a: number, b: number, n: number ): number
 {
-	if ( element && element.getBoundingClientRect &&
-		 parent && parent.getBoundingClientRect )
+	return Math.abs( moduloDifference( a, b, n ) );
+}
+
+/**
+ * Finds the element from candidates that is nearest the specified value
+ * modulo n. If candidates is empty, the original value is returned.
+ *
+ * @param {number} value Value to compare to.
+ * @param {number} modulus Modulus to use.
+ * @param {number[]} candidates Values to choose from.
+ *
+ * @return {number} Nearest value.
+ */
+export default function moduloNearest( value: number, modulus: number, candidates: number[] ): number
+{
+	let nearestValue = value;
+	let nearestDistance = NaN;
+
+	for ( let i = 0; i < candidates.length; i++ )
 	{
-		const itemBounds = element.getBoundingClientRect();
-		const parentBounds = parent.getBoundingClientRect();
-
-		if ( itemBounds.top < parentBounds.top ||
-			 itemBounds.bottom > parentBounds.bottom )
+		const candidate = candidates[ i ];
+		const candidateDistance = distance( value, candidate, modulus );
+		if ( !( nearestDistance <= candidateDistance ) )
 		{
-			// Not all browsers include width/height properties in DOMRect.
-			const itemHeight = itemBounds.bottom - itemBounds.top;
-			const parentHeight = parentBounds.bottom - parentBounds.top;
-
-			parent.scrollTop += itemBounds.top - parentBounds.top - ( parentHeight - itemHeight ) / 2;
+			nearestValue = candidate;
+			nearestDistance = candidateDistance;
 		}
 	}
+
+	return nearestValue;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2019-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,27 +26,27 @@
  */
 
 /**
- * Returns the smallest non-negative value congruent to a modulo n.
+ * Return the smallest non-negative value congruent to a modulo n.
  *
  * @param {number} a Value.
  * @param {number} n Modulus to use.
  *
  * @return {number} Value between 0 (inclusive) and n (exclusive).
  */
-export function mod( a, n )
+function mod( a: number, n: number ): number
 {
 	return ( a % n + n ) % n;
 }
 
 /**
- * Returns the smallest (nearest to zero) value congruent to a modulo n.
+ * Return the smallest (nearest to zero) value congruent to a modulo n.
  *
  * @param {number} a Value.
  * @param {number} n Modulus to use.
  *
  * @return {number} Value between -n/2 (inclusive) and n/2 (exclusive).
  */
-export function smallest( a, n )
+function smallest( a: number, n: number ): number
 {
 	const h = n / 2;
 	return mod( a + h, n ) - h;
@@ -59,52 +59,9 @@ export function smallest( a, n )
  * @param {number} b End value.
  * @param {number} n Modulus to use.
  *
- * @returns {number} Signed distance, in the range [-n/2, n/2>.
+ * @return {number} Signed distance, in the range [-n/2, n/2>.
  */
-export function difference( a, b, n )
+export default function moduloDifference( a: number, b: number, n: number ): number
 {
 	return smallest( b - a, n );
-}
-
-/**
- * Returns the distance between a to b, modulo n.
- *
- * @param {number} a Any value.
- * @param {number} b Any value.
- * @param {number} n Modulus to use.
- *
- * @returns {number} Distance between a and b, in the range [0, n/2].
- */
-export function distance( a, b, n )
-{
-	return Math.abs( difference( a, b, n ) );
-}
-
-/**
- * Finds the element from candidates that is nearest the specified value
- * modulo n. If candidates is empty, the original value is returned.
- *
- * @param {number} value Value to compare to.
- * @param {number} modulus Modulus to use.
- * @param {number[]} candidates Values to choose from.
- *
- * @returns {number} Nearest value.
- */
-export function nearest( value, modulus, candidates )
-{
-	let nearestValue = value;
-	let nearestDistance = NaN;
-
-	for ( let i = 0; i < candidates.length; i++ )
-	{
-		const candidate = candidates[ i ];
-		const candidateDistance = distance( value, candidate, modulus );
-		if ( !( nearestDistance <= candidateDistance ) )
-		{
-			nearestValue = candidate;
-			nearestDistance = candidateDistance;
-		}
-	}
-
-	return nearestValue;
 }

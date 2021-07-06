@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,19 +24,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import scrollParent from 'scrollparent';
 
 /**
- * Compare function representing the natural order of values, as defined by the
- * '<' and '>' operators. Does not handle exotic values like NaN.
+ * Scrolls the given parent element vertically such that the given element is
+ * visible. If the element is already fully visible, the scroll position is left
+ * as-is. Horizontal scrolling is not supported.
  *
  * @author Gerrit Meinders
  *
- * @param {*} a First value.
- * @param {*} b Second value.
- *
- * @returns {number} -1, 0 or 1 if a is respectively less than, equal to or greater than b.
+ * @param element Element to scroll to.
+ * @param [parent] Scroll parent of the element. Determined automatically if omitted.
  */
-export default function naturalOrder( a, b )
+export default function scrollToElement( element: HTMLElement, parent = scrollParent( element ) ): void
 {
-	return a < b ? -1 : a > b ? 1 : 0;
+	if ( element && element.getBoundingClientRect &&
+	     parent && parent.getBoundingClientRect )
+	{
+		const itemBounds = element.getBoundingClientRect();
+		const parentBounds = parent.getBoundingClientRect();
+
+		if ( itemBounds.top < parentBounds.top ||
+		     itemBounds.bottom > parentBounds.bottom )
+		{
+			// Not all browsers include width/height properties in DOMRect.
+			const itemHeight = itemBounds.bottom - itemBounds.top;
+			const parentHeight = parentBounds.bottom - parentBounds.top;
+			parent.scrollTop += itemBounds.top - parentBounds.top - ( parentHeight - itemHeight ) / 2;
+		}
+	}
 }

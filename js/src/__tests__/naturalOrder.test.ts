@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, Numdata BV, The Netherlands.
+ * Copyright (c) 2021, Unicon Creation BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,63 +24,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import { assert } from 'chai';
-import Enum from '../Enum';
 
-class Enum1 extends Enum
-{
-}
+import naturalOrder from '../naturalOrder';
 
-Enum1.values = [
-	Enum1.A = new Enum1( "A" ),
-	Enum1.B = new Enum1( "B" ),
-	Enum1.C = new Enum1( "C" )
-];
+test( 'number comparison', () => {
+	expect( naturalOrder( 123, 234 ) ).toBe( -1 );
+	expect( naturalOrder( 345, 234 ) ).toBe( 1 );
+	expect( naturalOrder( 234, 234 ) ).toBe( 0 );
+} );
 
-class Enum2 extends Enum
-{
-}
-
-Enum2.values = [
-	Enum2.A = new Enum2( "A" ),
-	Enum2.B = new Enum2( "B" ),
-	Enum2.C = new Enum2( "C" )
-];
-
-describe( "Enum", function()
-{
-	it( "should have enum constants", function()
-	{
-		assert.instanceOf( Enum1.A, Enum1 );
-		assert.instanceOf( Enum1.B, Enum1 );
-		assert.instanceOf( Enum1.C, Enum1 );
-	} );
-
-	it( "should extends Enum", function()
-	{
-		assert.instanceOf( Enum1.A, Enum );
-		assert.instanceOf( Enum1.B, Enum );
-		assert.instanceOf( Enum1.C, Enum );
-	} );
-
-	it( "should have values property", function()
-	{
-		assert.deepEqual( Enum1.values, [ Enum1.A, Enum1.B, Enum1.C ] );
-	} );
-
-	it( "should be type-safe", function()
-	{
-		assert.notEqual( Enum1.A, Enum2.A );
-		assert.notEqual( Enum1.B, Enum2.B );
-		assert.notEqual( Enum1.C, Enum2.C );
-		assert.notInstanceOf( Enum1.A, Enum2 );
-		assert.notInstanceOf( Enum2.B, Enum1 );
-	} );
-
-	it( "should match strings", function()
-	{
-		assert.equal( Enum1.A, "A" );
-		assert.equal( Enum1.B, "B" );
-		assert.equal( Enum1.C, "C" );
-	} );
+test( 'string comparison', () => {
+	expect( naturalOrder( 'apple', 'banana' ) ).toBe( -1 );
+	expect( naturalOrder( 'pear', 'banana' ) ).toBe( 1 );
+	expect( naturalOrder( 'banana', 'banana' ) ).toBe( 0 );
 } );

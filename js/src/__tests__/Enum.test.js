@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Numdata BV, The Netherlands.
+ * Copyright (c) 2017-2020, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,66 +25,68 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import Enum from '../Enum';
+
 /**
- * Trivially simple replacement for 'ClassLogger'.
- *
- * @author Peter S. Heijnen
- * @author Gerrit Meinders
+ * Enum for testing.
  */
-export default class ClassLogger
+class Enum1 extends Enum
 {
-	static getFor()
-	{
-		return instance;
-	}
-
-	/**
-	 * Log 'fatal' message.
-	 */
-	fatal()
-	{
-		console.error.apply( console, arguments );
-	}
-
-	/**
-	 * Log 'error' message.
-	 */
-	error()
-	{
-		console.error.apply( console, arguments );
-	}
-
-	/**
-	 * Log 'warn' message.
-	 */
-	warn()
-	{
-		console.warn.apply( console, arguments );
-	}
-
-	/**
-	 * Log 'info' message.
-	 */
-	info()
-	{
-		console.info.apply( console, arguments );
-	}
-
-	/**
-	 * Log 'debug' message.
-	 */
-	debug()
-	{
-		console.log.apply( console, arguments );
-	}
-
-	/**
-	 * Log 'trace' message.
-	 */
-	trace()
-	{
-		console.log.apply( console, arguments );
-	}
 }
 
-var instance = new ClassLogger();
+Enum1.values = [
+	Enum1.A = new Enum1( "A" ),
+	Enum1.B = new Enum1( "B" ),
+	Enum1.C = new Enum1( "C" )
+];
+
+/**
+ * Enum for testing.
+ */
+class Enum2 extends Enum
+{
+}
+
+Enum2.values = [
+	Enum2.A = new Enum2( "A" ),
+	Enum2.B = new Enum2( "B" ),
+	Enum2.C = new Enum2( "C" )
+];
+
+test( "type-safety", () =>
+{
+	expect( Enum1.A ).toBeInstanceOf( Enum );
+	expect( Enum2.B ).toBeInstanceOf( Enum );
+	expect( Enum1.C ).toBeInstanceOf( Enum );
+
+	expect( Enum1.A ).toBeInstanceOf( Enum1 );
+	expect( Enum2.B ).toBeInstanceOf( Enum2 );
+	expect( Enum2.C ).toBeInstanceOf( Enum2 );
+
+	expect( Enum1.A ).not.toBeInstanceOf( Enum2 );
+	expect( Enum2.B ).not.toBeInstanceOf( Enum1 );
+} )
+test( "should have values property", () =>
+{
+	expect( Enum1.values ).toEqual( [ Enum1.A, Enum1.B, Enum1.C ] );
+} );
+
+test( 'valueOf', () =>
+{
+	expect( Enum1.A.valueOf() ).toEqual( "A" );
+	expect( Enum1.B.valueOf() ).toEqual( "B" );
+	expect( Enum1.C.valueOf() ).toEqual( "C" );
+} );
+
+test( 'toString', () =>
+{
+	expect( Enum1.A.toString() ).toEqual( "Enum1.A" );
+	expect( Enum2.B.toString() ).toEqual( "Enum2.B" );
+} );
+
+test( 'static valueOf', () =>
+{
+	expect( Enum1.valueOf( 'A' ) ).toBe( Enum1.A );
+	expect( Enum2.valueOf( 'B' ) ).toBe( Enum2.B );
+	expect( () => Enum1.valueOf( 'D' ) ).toThrow();
+} );

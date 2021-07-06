@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import Enum from '../java.lang/Enum';
+import Enum from '../Enum';
 // @ts-ignore
 import { BigDecimal, RoundingMode } from 'bigdecimal';
 // @ts-ignore
