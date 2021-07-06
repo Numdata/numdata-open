@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
- * Copyright (c) 2018-2019, Numdata BV, The Netherlands.
+ * Copyright (c) 2018-2021, Numdata BV, The Netherlands.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ export { default as moduloDifference } from './moduloDifference';
 export { default as moduloNearest } from './moduloNearest';
 
 export { default as ArrayTools } from './com.numdata.oss/ArrayTools';
+export { default as AugmentedList } from './com.numdata.oss/AugmentedList';
 export { default as AugmentedArrayList } from './com.numdata.oss/AugmentedArrayList';
 // @ts-ignore
 export { default as DecimalFormat } from './com.numdata.oss/DecimalFormat';
